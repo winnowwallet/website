@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Tailscale Workaround for Tor and I2P — Winnow</title>
+    <meta name="description" content="Winnow still does not bundle Tor or I2P. This is how it reaches them anyway, through gateways you run yourself, and how to build those gateways.">
+    <link rel="canonical" href="https://winnowwallet.com/blog/tailscale-workaround-tor-i2p/">
+    <link rel="alternate" type="application/rss+xml" title="Winnow blog" href="https://winnowwallet.com/blog/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Winnow">
+    <meta property="og:title" content="A Tailscale Workaround for Tor and I2P — Winnow">
+    <meta property="og:description" content="Winnow still does not bundle Tor or I2P. This is how it reaches them anyway, through gateways you run yourself, and how to build those gateways.">
+    <meta property="og:url" content="https://winnowwallet.com/blog/tailscale-workaround-tor-i2p/">
+    <meta property="og:image" content="https://winnowwallet.com/images/blog/tailscale-workaround-tor-i2p/share-card.png">
+    <meta property="article:published_time" content="2026-09-30T13:40:00.000Z">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="A Tailscale Workaround for Tor and I2P — Winnow">
+    <meta name="twitter:description" content="Winnow still does not bundle Tor or I2P. This is how it reaches them anyway, through gateways you run yourself, and how to build those gateways.">
+    <meta name="twitter:image" content="https://winnowwallet.com/images/blog/tailscale-workaround-tor-i2p/share-card.png">
+    <link rel="stylesheet" href="/blog/article.css">
+    <style>
+        .article-content code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--light-gray);
+            padding: 0.1em 0.35em;
+            border-radius: 4px;
+            word-break: break-word;
+        }
+        .article-content pre {
+            background: var(--light-gray);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem 1.1rem;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            line-height: 1.55;
+        }
+        .article-content pre code { background: none; padding: 0; }
+        .article-content table { font-size: 0.92rem; }
+        .article-content td.num, .article-content th.num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        .article-content .figure-note { color: var(--muted-ink, #697078); font-size: 0.9rem; margin-top: 0.35rem; }
+    </style>
+    <style>
+        .article-content img { max-width: 100%; height: auto; border-radius: 8px; }
+    </style>
+</head>
+<body class="blog-body">
+    <nav><div class="nav-container"><a href="/" class="logo">winnow</a><ul class="nav-links"><li><a href="/">Wallet</a></li><li><a href="/blog/" aria-current="page">Blog</a></li><li><a href="https://compare.winnowwallet.com/">Compare</a></li></ul></div></nav>
+    <main class="article-main">
+        <article class="article-card">
+            <header class="article-header">
+                <p class="eyebrow"><a href="/blog/">Winnow blog</a></p>
+                <h1>A Tailscale Workaround for Tor and I2P</h1>
+                <p class="article-subtitle">Winnow still does not bundle Tor or I2P. This is how it reaches them anyway, through gateways you run yourself, and how to build those gateways.</p>
+                <div class="article-byline">
+                    <span class="author-mark" aria-hidden="true">AN</span>
+                    <p><strong>Alex Newman</strong><span><time datetime="2026-09-30T13:40:00.000Z">September 30, 2026</time> · 10 min read</span></p>
+                </div>
+            </header>
+            <div class="article-content">
+<p>Every power eventually learns that its map of the world was drawn too small. Mine is a phone wallet, and the map was the Bitcoin network.</p>
+<p>In early September I dialed every reachable Bitcoin node I could find, 26,746 of them, for a piece about <a href="https://winnowwallet.com/blog/dead-chain-peers/">a dead fork</a>. The fork made the headline. The footnote mattered more. Of the 7,761 endpoints that could serve Winnow the compact filters it reads the chain with, 6,478 lived behind Tor or I2P. On clearnet, one node in eight will give a light client what it needs. A wallet confined to clearnet is a great power that has decided to trade only with its smallest neighbor.</p>
+<p>So I built Tor into Winnow. Then I took it out. Then I found a way around the problem that let me keep the ground without garrisoning it, and this month that workaround became the default.</p>
+<h2>The first campaign</h2>
+<p>The instrument was <a href="https://gitlab.torproject.org/tpo/core/arti">Arti</a>, the Tor Project's rewrite of Tor in Rust, pinned at release 2.6.0. A thin Rust and C bridge carried it into Swift. It listened for SOCKS connections on loopback and resolved onion names itself, so none of them touched the phone's resolver. With the switch on, everything went through Tor, and if Tor could not bootstrap the wallet went dark. I would rather hand someone an error than a surprise.</p>
+<p>A screenshot that says "Ready" proves about as much as a press release, so CI captured packets and required the routed run to show no direct traffic at all. It passed on an iPhone and an iPad and shipped in <a href="https://github.com/winnowwallet/winnow/releases/tag/v0.6.3">Winnow 0.6.3</a> on September 14.</p>
+<p>For about a day, it was glorious.</p>
+<h2>The retreat</h2>
+<p>Glory has a supply chain. On September 15, <a href="https://github.com/winnowwallet/winnow/commit/5c1aed8">0.7.1 removed it</a>: a Rust bridge, an XCFramework, 407 crates nobody had reviewed, onion validation, about 2,000 bundled onion peers, and build steps in three CI workflows. Then a hole turned up in code I wrote myself. The loopback SOCKS listener accepted anyone, and as far as I can tell iOS does not give each app a private loopback, so any app beside Winnow could have used it as a free Tor client or learned that Winnow was running with Tor on.</p>
+<p>A wallet that promises to fail closed cannot stand on ground nobody has surveyed. The code rests at the <a href="https://github.com/winnowwallet/winnow/tree/v0.7.0"><code>v0.7.0</code> tag</a>. Tor will come back into the app, but not as 407 crates nobody has read; more on that at the end.</p>
+<h2>Holding the line</h2>
+<p>Byzantium lasted a thousand years largely by declining battles it did not need to fight. I declined this one.</p>
+<p>I already ran Tor and I2P on my own machines. The workaround leaves them there. Winnow keeps a SOCKS5 client of about 130 lines of Swift (<a href="https://github.com/winnowwallet/winnow/pull/179">#179</a>), short enough to read over coffee, and hands peer connections to whatever gateway it finds on my <a href="https://tailscale.com">Tailscale</a> network (<a href="https://github.com/winnowwallet/winnow/pull/181">#181</a>):</p>
+<pre><code class="language-text">Winnow → Tailscale → Tor gateway → Tor → .onion Bitcoin peer
+Winnow → Tailscale → I2P gateway → I2P → .b32.i2p Bitcoin peer
+</code></pre>
+<p>It passes the destination name to the gateway unresolved and runs the ordinary Bitcoin handshake through the tunnel. It never falls back to a direct connection. The gateway never sees keys, addresses or filter matches; Winnow still fetches and checks every header, filter and block itself. The gateway does see which peers you talk to, and it can cut you off. Run it yourself, or let someone run it whom you would lend your car.</p>
+<p>Now the part that made me grin. The workaround reaches I2P, which the app never could: i2pd is a large C++ daemon with no iOS build anyone would want to embed. On a gateway it is one more port. In the census, three in five I2P endpoints serve filters, against one in seven on clearnet; the numbers are below.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Built-in Tor (0.6.3 to 0.7.0)</th>
+<th>Tailscale gateways (0.7.10 on)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Code inside the wallet</td>
+<td>Arti, a Rust bridge, 407 crates</td>
+<td>A SOCKS5 client</td>
+</tr>
+<tr>
+<td>Works on any network</td>
+<td>Yes</td>
+<td>Needs Tailscale and your gateways</td>
+</tr>
+<tr>
+<td>Who learns your peer destinations</td>
+<td>Only Tor</td>
+<td>Your gateway, then Tor or I2P</td>
+</tr>
+<tr>
+<td>I2P</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Local attack surface on the phone</td>
+<td>A loopback listener other apps could reach</td>
+<td>None added</td>
+</tr>
+</tbody></table>
+<h2>Private by default</h2>
+<p>The phone humbled me twice with built-in Tor, and once more with the gateways. In 0.7.10, <strong>Automatic</strong> routing treated Tor and I2P as extras: clearnet stayed on, peers were seated first come, first served, and an ordinary node answers in milliseconds while a hidden service takes seconds. Automatic almost always ended up talking to clearnet peers that could see my IP address. The preference I had written was ornamental again.</p>
+<p>In 0.7.11 (<a href="https://github.com/winnowwallet/winnow/pull/190">#190</a>), when either of my gateways answers, Automatic drops clearnet entirely. Every peer, the signed peer-list download and any explorer lookup I approve go through Tor or I2P. Only when no gateway answers does it fall back to clearnet, so the wallet keeps syncing when Tailscale is off. The home screen says which it is, in colour.</p>
+<p><img src="/images/blog/tailscale-workaround-tor-i2p/banner-private.png" alt="Winnow's home screen with a green banner: Private: peers reached through Tor and I2P" /></p>
+<p><img src="/images/blog/tailscale-workaround-tor-i2p/banner-direct.png" alt="Winnow's home screen with an orange banner: Direct: peers can see your IP address" /></p>
+<p>Two rules keep the pool honest once clearnet is gone. Onion and I2P names have no address block, so the usual "one peer per /16" rule can't limit them; instead, with both gateways up, neither network may hold all three slots, and a round that cannot fill with a mix relaxes the rule rather than leave the wallet short. And every peer is still judged on the headers and filters it serves, not on its label.</p>
+<p>Since 0.7.12 the wallet also checks the chain when iOS lets it run in the background, through the same routing. One rule is stricter there. If the foreground last reached peers through a gateway and no gateway answers, the background check is skipped rather than made in the clear. There is no banner in the background to say which it was, so the background doesn't get to choose clearnet.</p>
+<p><img src="/images/blog/tailscale-workaround-tor-i2p/connected-peers.png" alt="Advanced settings, Connected peers: one peer labelled I2P with a .b32.i2p address and one labelled Tor with a .onion address, both at height 969,195" /></p>
+<h2>Build your own gateways</h2>
+<p>Winnow finds gateways by name. On your tailnet, give them these <a href="https://tailscale.com/docs/features/magicdns">MagicDNS</a> names:</p>
+<table>
+<thead>
+<tr>
+<th>Gateway</th>
+<th>MagicDNS name</th>
+<th>SOCKS5 port</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tor</td>
+<td><code>winnow-tor-gateway</code></td>
+<td><code>9050</code></td>
+</tr>
+<tr>
+<td>I2P</td>
+<td><code>winnow-i2p-gateway</code></td>
+<td><code>4447</code></td>
+</tr>
+</tbody></table>
+<p>When networking starts, Winnow asks Tailscale's local resolver at <a href="https://tailscale.com/docs/reference/quad100"><code>100.100.100.100</code></a> for those two names, accepts only a tailnet IPv4 address, and checks for a SOCKS5 greeting, two seconds each, with no public DNS as a fallback. It looks again each time it comes to the foreground.</p>
+<p>Mine are two small VMs, and the whole recipe is public in <a href="https://github.com/winnowwallet/census/tree/main/gateways">winnowwallet/census <code>gateways/</code></a>. It is what actually runs: <code>provision.py</code> renders cloud-init byte for byte identical to both deployed guests. Each VM gets two vCPUs, 1.5 GiB of RAM and a 12 GiB disk from a pinned Ubuntu cloud image, apt pinned to a dated snapshot, Tor from that snapshot, i2pd 2.61.0 and Tailscale 1.102.4 checked by hash. On any Linux host with KVM:</p>
+<pre><code class="language-sh">git clone https://github.com/winnowwallet/census &amp;&amp; cd census/gateways
+sudo python3 provision.py ~/.ssh/id_ed25519.pub
+</code></pre>
+<p>The whole Tor configuration is three lines:</p>
+<pre><code class="language-text">SocksPort 0.0.0.0:9050
+ClientOnly 1
+SafeSocks 1
+</code></pre>
+<p>The I2P side is i2pd with only its SOCKS proxy turned on and no outproxy, so I2P-only really means I2P-only:</p>
+<pre><code class="language-ini">[socksproxy]
+enabled = true
+address = 0.0.0.0
+port = 4447
+outproxy.enabled = false
+
+[http]
+enabled = false
+[httpproxy]
+enabled = false
+[sam]
+enabled = false
+</code></pre>
+<p>Then join each VM to your tailnet under its conventional name, with the helper the recipe installs:</p>
+<pre><code class="language-sh">ssh -J your-host -p 22051 gateway@127.0.0.1 'sudo /usr/local/sbin/enroll-gateway-tailscale tor'
+ssh -J your-host -p 22052 gateway@127.0.0.1 'sudo /usr/local/sbin/enroll-gateway-tailscale i2p'
+</code></pre>
+<p>Let the phones that should use them reach TCP 9050 and 4447 in your tailnet policy. There is no SOCKS password; the tailnet policy is the lock on the door. I tag mine <code>tag:winnow-tor</code> and <code>tag:winnow-i2p</code> to keep them straight, but Winnow looks up names and ignores tags. Give Tor a minute to bootstrap and i2pd ten to integrate before you judge whether Bitcoin peers work, and use the recipe's <code>check-peer.py</code> to complete a real handshake through each.</p>
+<p>On the phone, connect Tailscale and open Winnow. Automatic is the default; <strong>Advanced → Settings → Peer networks</strong> shows what it found.</p>
+<p><img src="/images/blog/tailscale-workaround-tor-i2p/peer-networks.png" alt="Advanced settings, Peer networks: Gateway routing Automatic, Active Tor gateway and Active I2P gateway with their tailnet addresses" /></p>
+<table>
+<thead>
+<tr>
+<th>What I want</th>
+<th>Setting</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tor and I2P when my gateways answer, clearnet otherwise</td>
+<td><strong>Automatic</strong></td>
+</tr>
+<tr>
+<td>Clearnet only</td>
+<td><strong>Direct only</strong></td>
+</tr>
+<tr>
+<td>Tor only, never clearnet</td>
+<td><strong>Manual</strong>, only <strong>Tor peers</strong>, gateway <code>winnow-tor-gateway:9050</code></td>
+</tr>
+<tr>
+<td>I2P only, never clearnet</td>
+<td><strong>Manual</strong>, only <strong>I2P peers</strong>, gateway <code>winnow-i2p-gateway:4447</code></td>
+</tr>
+</tbody></table>
+<p>In Manual, a failed overlay connection stays failed: with Tailscale off, the wallet goes quiet rather than direct.</p>
+<h2>What the census sees</h2>
+<p>Every peer Winnow dials starts as a line in a census. Once a day a GitHub runner takes the full <a href="https://btcnodes.io">BTCNodes</a> snapshot and dials every endpoint in it with Winnow's own handshake code, through a Tor client and an i2pd router of its own. It does not use my gateways; they only ever carry my phone's traffic. It keeps the peers that answer near the tip and serve compact filters, signs the list, and publishes it at <a href="https://census.winnowwallet.com">census.winnowwallet.com</a>. The wallet trusts the signature, not the website.</p>
+<p><a href="https://census.winnowwallet.com"><img src="/images/blog/tailscale-workaround-tor-i2p/census-overview.png" alt="The census site for September 30, 2026: 25,394 endpoints attempted, 7,150 advertised compact filters, 6,587 filter peers within 100 blocks of the tip" /></a></p>
+<p>September 30, split by transport:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Dialled</th>
+<th>Serve compact filters</th>
+<th>In the wallet's list</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tor</td>
+<td>12,457</td>
+<td>3,257 (26%)</td>
+<td>2,988</td>
+</tr>
+<tr>
+<td>I2P</td>
+<td>4,389</td>
+<td>2,681 (61%)</td>
+<td>2,490</td>
+</tr>
+<tr>
+<td>Clearnet</td>
+<td>8,548</td>
+<td>1,212 (14%)</td>
+<td>939</td>
+</tr>
+</tbody></table>
+<p>The wallet's list keeps only peers within a hundred blocks of the tip, and on clearnet only one per address block.</p>
+<p><a href="https://census.winnowwallet.com"><img src="/images/blog/tailscale-workaround-tor-i2p/census-transports.png" alt="The census By transport table: clearnet 8,548 attempts and 1,212 with filters, I2P 4,389 and 2,681, Tor 12,457 and 3,257" /></a></p>
+<p>Until this week the list stopped at 2,000 per overlay. The wallet refused anything longer, so the census kept a sample of 2,000 and threw the rest away: on September 29, 1,212 of the 3,212 Tor peers at the tip and 451 of the 2,451 I2P peers. It was a border drawn for the map-maker's convenience. Winnow 0.7.13 accepts every verified peer (<a href="https://github.com/winnowwallet/winnow/pull/193">winnowwallet/winnow#193</a>), and the census now publishes them all (<a href="https://github.com/winnowwallet/census/pull/23">winnowwallet/census#23</a>).</p>
+<p>The shape barely moves from day to day. About a quarter of the endpoints it dials serve filters, and the peers still stuck at the old fork's split height keep thinning out.</p>
+<p><a href="https://census.winnowwallet.com"><img src="/images/blog/tailscale-workaround-tor-i2p/census-trend.png" alt="The census daily chart from September 4 to 30: filter handshakes steady near 27% of attempts, split-height reports below 10% and falling" /></a></p>
+<h2>The I2P trap, disarmed</h2>
+<p>A proxy is useless without peers on the far side. Winnow gets them from its signed mainnet census, which expires after seven days and lives on an ordinary website. For a wallet told to use I2P alone, an ordinary website is foreign territory. A fortress that must send to the capital for bread is not much of a fortress.</p>
+<p>So the census has an I2P embassy. The I2P gateway keeps a copy of the signed files and serves them as an I2P site:</p>
+<pre><code class="language-text">http://yts2d2oyrsz2eytnofuutgnsixymdkj2nmcmmpfv3aofzsnjt4eq.b32.i2p/census/peers.json
+</code></pre>
+<p>It is four small pieces, all in the recipe's <a href="https://github.com/winnowwallet/census/tree/main/gateways/i2p-mirror"><code>i2p-mirror/</code></a>: an i2pd server tunnel from I2P port 80 to a loopback web server, Python's <code>http.server</code> in a sandboxed systemd unit, and a sync script on a thirty-minute timer that fetches the list and its signature with size and time limits. The mirror needs no trust of its own; Winnow checks the publisher's signature exactly as it does for the public copy, so a mirror that lies simply gets ignored. Anyone can run one.</p>
+<p>One warning I learned the careful way: the mirror's <code>.b32.i2p</code> address comes from the tunnel's key file, and that address is compiled into the wallet. Rebuild the VM without backing up <code>winnow-census-mirror.dat</code> and every I2P-only wallet loses its bread until the next release.</p>
+<h2>The evidence</h2>
+<p>On September 29, from a Mac on the same tailnet, Winnow's opt-in live test found both gateways, fetched the census from the I2P mirror and verified its signature, and completed real Bitcoin handshakes through each. A separate Python client dialed six random Tor and six random I2P census peers through the gateways: all twelve answered at the current tip and advertised compact filters. The census downloaded through the Tor gateway from its Cloudflare-hosted site in about three seconds. The full UI journey (Automatic, then I2P alone, then Tor alone) passed on a physical iPhone on 5G before #181 merged, and again on a simulator.</p>
+<p>On September 30 the mirror served the first uncapped census, 1.28 MB, through the I2P gateway in twenty seconds, byte for byte the public copy, signature intact. Earlier that night I thought the gateway had died: nothing answered for the better part of half an hour. It was fine. My laptop's Tailscale had wandered onto a relay and was dropping the traffic, and when it found a direct path again, so did I2P. If your I2P goes quiet, look at the tailnet before the router.</p>
+<p>The simulator also caught something the handshake tests could not. With clearnet gone, the wallet seated a Tor peer and an I2P peer and synced headers, then sat on its first batch of filters forever. A chunk of a hundred mainnet filters is a few megabytes; the deadline was thirty seconds; I2P had carried the census at about half a megabit. Tor and I2P peers now get deadlines sized for them, and the same wallet scanned two thousand blocks in two minutes. Slower than clearnet, and honest about it.</p>
+<p>Tor does not make a peer forget what you asked it. Compact filters keep your addresses off the wire, but the blocks you fetch afterward, and when you fetch them, still say something about you; <a href="https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki">BIP157</a> spells this out. An explorer still learns the transaction you look up. Tailscale's coordination server knows your devices exist, though not what they say to each other. And one gateway is one point of failure for everyone behind it.</p>
+<h2>The longer game</h2>
+<p>This all began with a stranger ambition than Tor: Bitcoin over bad links. Signed transactions out over radio, just enough chain data back, connections that vanish for hours and return without apology. None of that exists yet.</p>
+<p>Tor and I2P belong inside the app eventually. I doubt they get there as imported daemons. The likely route is to write both clients in native Swift, small enough to read, and have them audited before any wallet trusts them, with no silent fallback to a direct connection and physical-iPhone testing through foreground, background, failure and off. That is a long campaign. Until it is won, the gateways hold the line.</p>
+<p>What exists is a narrow door between the wallet and whatever carries its bytes. Durable systems are built from narrow doors, because a narrow door can be guarded. This one is the default way through today, and it will still be standing when native Tor and I2P come home to the app.</p>
+
+            </div>
+        </article>
+
+        <p class="back-to-writing"><a href="/blog/">← All writing</a></p>
+    </main>
+    <footer><p><a href="/blog/">Winnow blog</a> · Written by <a href="https://apnewman.com">Alex Newman</a> · <a href="/blog/feed.xml">RSS</a></p></footer>
+</body>
+</html>

@@ -1,0 +1,52 @@
+name: Website
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: website-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          lfs: true
+          persist-credentials: false
+      - name: Validate site and historical evidence
+        run: |
+          python3 -m unittest discover -s scripts/tests
+          scripts/build-site --check
+          scripts/check-site
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: website
+          path: docs/
+          if-no-files-found: error
+  deploy:
+    needs: check
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    environment:
+      name: website
+      url: ${{ steps.deploy.outputs.deployment-url }}
+    steps:
+      - name: Prepare deployment tool
+        run: printf '{"private":true}\n' > package.json
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: website
+          path: site
+      - name: Deploy Winnow website
+        id: deploy
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          packageManager: npm
+          wranglerVersion: '4.125.0'
+          command: pages deploy site --project-name=winnow --branch=main --commit-dirty=true

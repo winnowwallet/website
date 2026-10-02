@@ -1,0 +1,5 @@
+{
+  "repository": "winnowwallet/winnow",
+  "commit": "7751cfd30f5e1b108fcfe322db38b76948a0bb1d",
+  "purpose": "Read-only UI test snapshot validating the historical recording."
+}

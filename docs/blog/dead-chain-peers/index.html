@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One in Twelve Peers Is on a Dead Chain — Winnow</title>
+    <meta name="description" content="A stalled mainnet test, a dead fork, and a census of every reachable Bitcoin node">
+    <link rel="canonical" href="https://winnowwallet.com/blog/dead-chain-peers/">
+    <link rel="alternate" type="application/rss+xml" title="Winnow blog" href="https://winnowwallet.com/blog/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Winnow">
+    <meta property="og:title" content="One in Twelve Peers Is on a Dead Chain — Winnow">
+    <meta property="og:description" content="A stalled mainnet test, a dead fork, and a census of every reachable Bitcoin node">
+    <meta property="og:url" content="https://winnowwallet.com/blog/dead-chain-peers/">
+    <meta property="og:image" content="https://winnowwallet.com/images/blog/dead-chain-peers/census.png">
+    <meta property="article:published_time" content="2026-09-04T22:00:00.000Z">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="One in Twelve Peers Is on a Dead Chain — Winnow">
+    <meta name="twitter:description" content="A stalled mainnet test, a dead fork, and a census of every reachable Bitcoin node">
+    <meta name="twitter:image" content="https://winnowwallet.com/images/blog/dead-chain-peers/census.png">
+    <link rel="stylesheet" href="/blog/article.css">
+</head>
+<body class="blog-body">
+    <nav><div class="nav-container"><a href="/" class="logo">winnow</a><ul class="nav-links"><li><a href="/">Wallet</a></li><li><a href="/blog/" aria-current="page">Blog</a></li><li><a href="https://compare.winnowwallet.com/">Compare</a></li></ul></div></nav>
+    <main class="article-main">
+        <article class="article-card">
+            <header class="article-header">
+                <p class="eyebrow"><a href="/blog/">Bitcoin</a></p>
+                <h1>One in Twelve Peers Is on a Dead Chain</h1>
+                <p class="article-subtitle">A stalled mainnet test, a dead fork, and a census of every reachable Bitcoin node</p>
+                <div class="article-byline">
+                    <span class="author-mark" aria-hidden="true">AN</span>
+                    <p><strong>Alex Newman</strong><span><time datetime="2026-09-04T22:00:00.000Z">September 4, 2026</time> · 8 min read</span></p>
+                </div>
+            </header>
+            <figure class="article-lead-media"><a class="article-image-link" target="_blank" href="/images/blog/dead-chain-peers/census.png"><img fetchpriority="high" src="/images/blog/dead-chain-peers/census.png" alt="Bar chart: share of reachable endpoints serving compact filters, 13% on clearnet, 29% on Tor, 65% on I2P"></a><figcaption>Every reachable Bitcoin endpoint, dialled with Winnow's own handshake on September 4, 2026.</figcaption></figure>
+            <div class="article-content">
+                <p>I was running the mainnet test for <a href="https://github.com/posix4e/winnow">Winnow</a>, my Taproot-only iOS wallet that learns about the chain from ordinary Bitcoin peers over compact filters. No server, no account. Fresh wallet, receive a few thousand sats, watch it confirm, send it back. Simple.</p>
+                <p>It never got to the receive step. The filter scan stopped at block 965,021 of 965,521, five hundred short of the tip, with three peers connected and a red line saying "The connection to the peer was not open." Ten minutes later it was still sitting there.</p>
+                <p>The peer list explained it.</p>
+                <table>
+                    <thead><tr><th>Peer</th><th>Software</th><th>Reported height</th><th>Fee filter</th></tr></thead>
+                    <tbody>
+                        <tr><td>142.114.30.4</td><td>Core 31.1</td><td>965,521</td><td>0.1 sat/vB</td></tr>
+                        <tr><td>85.92.61.97</td><td>Knots 29.2 (Nov 2025)</td><td>965,521</td><td>1 sat/vB</td></tr>
+                        <tr><td>108.233.254.177</td><td>Knots 29.4 (May 2026)</td><td>961,639</td><td>9,171 sat/vB</td></tr>
+                    </tbody>
+                </table>
+                <p>The third peer was 3,882 blocks behind. Block 961,632 is where the BIP-110 chain split off on August 8. The minority chain produced a handful of blocks and stopped. That node had been sitting at 961,639 ever since, with a mempool full of transactions that will never confirm, which is exactly what a 9,171 sat/vB fee filter means.</p>
+                <p>Ask a node like that for filter checkpoints at your tip, a block hash it has never seen, and it hangs up on you. That is what Bitcoin Core does with an unknown stop hash. My checkpoint loop asked every connected peer so it could compare their answers and drop liars, and it treated the hang-up as a failed sync. Every pass. The design that protects against a lying peer had turned a mute one into a veto, while two honest peers at the tip sat idle next to it.</p>
+                <p>Winnow itself was never on the wrong chain. It validates proof of work on every header, its tip matched an independent node, and the dead fork has no work past the split. This was slot hygiene and failover, and the fix is small: unseat any peer reporting a tip more than a hundred blocks behind the best connected one, fail over when a peer hangs up during the checkpoint exchange, and never ship a behind-the-tip node in the compiled-in fallback list. All of it keys on what a node reports, never on which software it runs.</p>
+
+                <h2>Why nobody else noticed</h2>
+                <p>Full nodes have not cared since 2017. Bitcoin Core evicts an outbound peer whose chain lags for twenty minutes. Wallets that talk to an Electrum or Esplora server never meet a peer at all. The only clients that can hit this are the ones that read the chain from peers directly over compact filters: lnd with Neutrino, the mobile nodes built on it, BDK's Kyoto, and mine. And when it bites, it looks like "sync is stuck, restart the app." The restart redials, the pool seats different peers, and nobody connects it to a fork that died in August.</p>
+                <p>So how common is it? I built a census tool to find out.</p>
+
+                <h2>The census</h2>
+                <p><code>WinnowCensus</code> dials a list of nodes with the same connection code the wallet uses, records what each one says in its handshake, waits a moment for the fee filter Core pushes right after, and disconnects. Nothing is requested. Using the wallet's own connection is the point: a peer that fails this handshake is a peer Winnow could never seat, so the numbers describe the wallet's world rather than the abstract network.</p>
+                <p>The node list came from the btcnodes.io snapshot: 26,746 reachable endpoints on September 4. Clearnet addresses I dialled directly. Tor and I2P addresses, which turn out to be most of the list, went through a local Tor and a local i2pd router over a SOCKS5 option I added to the connection for the purpose. All 26,746, in about ninety minutes.</p>
+                <table>
+                    <thead><tr><th>Network</th><th>Dialled</th><th>Usable</th><th>No compact filters</th><th>Stuck at the split, of usable</th></tr></thead>
+                    <tbody>
+                        <tr><td>Clearnet</td><td>9,612</td><td>1,283 (13%)</td><td>72%</td><td>82 (6.4%)</td></tr>
+                        <tr><td>Tor</td><td>12,984</td><td>3,776 (29%)</td><td>60%</td><td>306 (8.1%)</td></tr>
+                        <tr><td>I2P</td><td>4,150</td><td>2,702 (65%)</td><td>33%</td><td>231 (8.5%)</td></tr>
+                        <tr><td><strong>All</strong></td><td><strong>26,746</strong></td><td><strong>7,761 (29%)</strong></td><td><strong>60%</strong></td><td><strong>619 (8.0%)</strong></td></tr>
+                    </tbody>
+                </table>
+                <p>Three things fall out of that table.</p>
+                <p><strong>The compact-filter network is mostly hidden.</strong> Only one clearnet endpoint in eight serves filters. On Tor it is one in three, and on I2P two in three. Of the 7,761 usable endpoints, 6,478 are behind Tor or I2P.</p>
+                <p>Endpoints, not nodes. One Core node listens on clearnet, Tor and I2P at once with a line of configuration each, and Core deliberately makes linking a node's addresses across networks hard, so the census cannot say how many of those endpoints are doors into the same node. Distinct usable nodes number somewhere between 1,283 and 7,761. What holds either way is that a phone wallet without a Tor transport cannot reach any node that is Tor-only or I2P-only, and among operators who run I2P at all, running it alone is common. That reframed my "add a proxy setting someday" item into the single biggest reachability lever the wallet has.</p>
+                <p><strong>One usable endpoint in twelve is on the dead chain.</strong> 619 of 7,761 report the BIP-110 split height, and the share is nearly the same on all three networks, which is what you would expect if much of the same population answers on each. With three seats and random selection, a fresh wallet has roughly a one-in-four chance of seating one. My fallback list, generated two weeks after the split with no height check, had two in forty-two.</p>
+                <p><strong>There is a third population.</strong> 153 usable endpoints report heights around 967,723, about 2,200 blocks <em>above</em> Bitcoin's tip. Every one of them is a Knots 29.4.1 build from May 8, and the height matches the BLAKE2b fork chain that launched on September 1 with a different proof of work. A wallet that seats one of these gets headers that fail proof-of-work validation, and Winnow already evicts a peer for that. But it is a reminder that "height" in a handshake is a claim, not a fact, which is why the census judges peers against the median reported height and the wallet validates every header itself.</p>
+                <p>Of the usable endpoints, by software:</p>
+                <table>
+                    <thead><tr><th>Family</th><th>Usable</th><th>At the tip</th><th>Stuck at the split</th><th>Median fee filter</th></tr></thead>
+                    <tbody>
+                        <tr><td>Core</td><td>6,077</td><td>99.9%</td><td>0.0%</td><td>0.1 sat/vB</td></tr>
+                        <tr><td>Knots</td><td>1,661</td><td>62.4%</td><td>37.2%</td><td>1.0 sat/vB</td></tr>
+                        <tr><td>btcd</td><td>16</td><td>81.2%</td><td>0.0%</td><td>—</td></tr>
+                    </tbody>
+                </table>
+                <p>And the Knots detail is worth a look:</p>
+                <table>
+                    <thead><tr><th>Knots build</th><th>Usable</th><th>Stuck at the split</th></tr></thead>
+                    <tbody>
+                        <tr><td>20251110</td><td>89</td><td>6%</td></tr>
+                        <tr><td>20260210</td><td>124</td><td>10%</td></tr>
+                        <tr><td>20260507</td><td>538</td><td>0.2%</td></tr>
+                        <tr><td>20260508</td><td>752</td><td>79.5%</td></tr>
+                    </tbody>
+                </table>
+                <p>Two builds one day apart. The May 7 build is on the majority chain. The May 8 build, which enforces BIP-110, is four in five stuck, and the other one in five is mostly the BLAKE2b population above rather than nodes that resynced. Four weeks on, most of those operators are running a node that has not seen a Bitcoin block since August 8 and is still answering handshakes as if nothing happened.</p>
+
+                <h2>What I changed</h2>
+                <ul>
+                    <li><strong>Peers are judged by the height they report.</strong> A peer more than a hundred blocks behind the best connected peer is unseated, dropped from the remembered-peers file, and cooled off. A hundred blocks is about sixteen hours, the wallet's own reorg horizon. Peers the user typed in by hand are exempt; their node, their choice.</li>
+                    <li><strong>A hang-up is a transport fault, not a verdict.</strong> The checkpoint loop now cools that peer off and asks the others, the same distinction the header sync already drew.</li>
+                    <li><strong>The fallback list generator refuses candidates behind the median tip</strong>, and prints each one it drops into the release log.</li>
+                    <li><strong>No announcements to peers whose fee filter refuses the transaction.</strong> Harmless, but it was earning those peers a mark that hid the real reason.</li>
+                </ul>
+                <p>None of it looks at the user-agent string. A stuck Core node and a stuck Knots node get the same treatment, and a Knots node at the tip is as good a peer as any.</p>
+
+                <h2>Reproduce it</h2>
+                <p>The tool and the tables script are in the <a href="https://github.com/posix4e/winnow">Winnow repository</a>, and the SOCKS5 option that reached the hidden networks is in the wallet's own connection layer now. A scheduled job runs the census daily and publishes the aggregates, per network, with the per-node detail kept as a two-week artifact, so the numbers above can be checked rather than believed, and watched as the stuck nodes upgrade or don't.</p>
+                <pre><code>swift run WinnowCensus --input snapshot.json --tor-socks 127.0.0.1:9050 --i2p-socks 127.0.0.1:4447 \
+    --tip 965522 --out census.jsonl --summary-json summary.json
+scripts/census-tables census.jsonl</code></pre>
+                <p><em>Sources: btcnodes.io snapshot of 2026-09-04; Bitcoin Core <code>net_processing.cpp</code>, stale-tip eviction; coverage of the BIP-110 split by CoinDesk and Crypto Briefing.</em></p>
+            </div>
+        </article>
+
+        <p class="back-to-writing"><a href="/blog/">← All writing</a></p>
+    </main>
+    <footer><p><a href="/blog/">Winnow blog</a> · Written by <a href="https://apnewman.com">Alex Newman</a> · <a href="/blog/feed.xml">RSS</a></p></footer>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "source_repo": "posix4e/apnewman.com",
+  "posts": [
+    {
+      "slug": "not-in-china-or-france",
+      "title": "Why Winnow Won't Ship in China or France",
+      "description": "Lightning has to encrypt. France wants that declared to its Prime Minister, and China wants a registered operator for an app it calls illegal. Winnow will ship to neither.",
+      "date": "2026-10-01T14:19:00.000Z",
+      "original": "https://apnewman.com/p/not-in-china-or-france/"
+    },
+    {
+      "slug": "tailscale-workaround-tor-i2p",
+      "title": "A Tailscale Workaround for Tor and I2P",
+      "description": "Winnow still does not bundle Tor or I2P. This is how it reaches them anyway, through gateways you run yourself, and how to build those gateways.",
+      "date": "2026-09-30T13:40:00.000Z",
+      "original": "https://apnewman.com/p/tailscale-workaround-tor-i2p/"
+    },
+    {
+      "slug": "dead-chain-peers",
+      "title": "One in Twelve Peers Is on a Dead Chain",
+      "description": "A stalled mainnet test, a dead fork, and a census of every reachable Bitcoin node",
+      "date": "2026-09-04T22:00:00.000Z",
+      "original": "https://apnewman.com/p/dead-chain-peers/"
+    }
+  ]
+}

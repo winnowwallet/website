@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <rect width="1200" height="630" fill="#fbfaf6"/>
+  <text x="70" y="86" font-size="40" font-weight="700" fill="#201f1b">Who can a compact-filter wallet actually talk to?</text>
+  <text x="70" y="126" font-size="22" fill="#706c63">26,746 reachable Bitcoin endpoints, dialled with Winnow's own handshake · 2026-09-04</text>
+  <g font-size="22" fill="#201f1b">
+    <text x="70" y="205">Clearnet</text><text x="70" y="235" font-size="17" fill="#706c63">9,612 endpoints</text>
+    <text x="70" y="315">Tor</text><text x="70" y="345" font-size="17" fill="#706c63">12,984 endpoints</text>
+    <text x="70" y="425">I2P</text><text x="70" y="455" font-size="17" fill="#706c63">4,150 endpoints</text>
+  </g>
+  <g>
+    <rect x="290" y="180" width="800" height="56" rx="6" fill="#e8e3d8"/>
+    <rect x="290" y="180" width="106" height="56" rx="6" fill="#8c3f2b"/>
+    <text x="410" y="217" font-size="22" fill="#201f1b">13% serve compact filters</text>
+    <rect x="290" y="290" width="800" height="56" rx="6" fill="#e8e3d8"/>
+    <rect x="290" y="290" width="233" height="56" rx="6" fill="#8c3f2b"/>
+    <text x="537" y="327" font-size="22" fill="#201f1b">29%</text>
+    <rect x="290" y="400" width="800" height="56" rx="6" fill="#e8e3d8"/>
+    <rect x="290" y="400" width="521" height="56" rx="6" fill="#8c3f2b"/>
+    <text x="825" y="437" font-size="22" fill="#201f1b">65%</text>
+  </g>
+  <text x="70" y="540" font-size="24" fill="#201f1b">Of the 7,761 usable endpoints, <tspan font-weight="700">619 (8.0%)</tspan> sit on the dead BIP-110 chain,</text>
+  <text x="70" y="575" font-size="24" fill="#201f1b">and <tspan font-weight="700">153</tspan> claim a chain 2,200 blocks taller than Bitcoin.</text>
+  <text x="1130" y="600" font-size="16" fill="#706c63" text-anchor="end">apnewman.com</text>
+</svg>

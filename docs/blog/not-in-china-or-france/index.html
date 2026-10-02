@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why Winnow Won&#39;t Ship in China or France — Winnow</title>
+    <meta name="description" content="Lightning has to encrypt. France wants that declared to its Prime Minister, and China wants a registered operator for an app it calls illegal. Winnow will ship to neither.">
+    <link rel="canonical" href="https://winnowwallet.com/blog/not-in-china-or-france/">
+    <link rel="alternate" type="application/rss+xml" title="Winnow blog" href="https://winnowwallet.com/blog/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Winnow">
+    <meta property="og:title" content="Why Winnow Won't Ship in China or France — Winnow">
+    <meta property="og:description" content="Lightning has to encrypt. France wants that declared to its Prime Minister, and China wants a registered operator for an app it calls illegal. Winnow will ship to neither.">
+    <meta property="og:url" content="https://winnowwallet.com/blog/not-in-china-or-france/">
+    <meta property="og:image" content="https://winnowwallet.com/images/blog/not-in-china-or-france/share-card.png">
+    <meta property="article:published_time" content="2026-10-01T14:19:00.000Z">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Why Winnow Won't Ship in China or France — Winnow">
+    <meta name="twitter:description" content="Lightning has to encrypt. France wants that declared to its Prime Minister, and China wants a registered operator for an app it calls illegal. Winnow will ship to neither.">
+    <meta name="twitter:image" content="https://winnowwallet.com/images/blog/not-in-china-or-france/share-card.png">
+    <link rel="stylesheet" href="/blog/article.css">
+    <style>
+        .article-content code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--light-gray);
+            padding: 0.1em 0.35em;
+            border-radius: 4px;
+            word-break: break-word;
+        }
+        .article-content pre {
+            background: var(--light-gray);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem 1.1rem;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            line-height: 1.55;
+        }
+        .article-content pre code { background: none; padding: 0; }
+        .article-content table { font-size: 0.92rem; }
+        .article-content td.num, .article-content th.num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        .article-content .figure-note { color: var(--muted-ink, #697078); font-size: 0.9rem; margin-top: 0.35rem; }
+    </style>
+    <style>
+        .article-content img { max-width: 100%; height: auto; border-radius: 8px; }
+    </style>
+</head>
+<body class="blog-body">
+    <nav><div class="nav-container"><a href="/" class="logo">winnow</a><ul class="nav-links"><li><a href="/">Wallet</a></li><li><a href="/blog/" aria-current="page">Blog</a></li><li><a href="https://compare.winnowwallet.com/">Compare</a></li></ul></div></nav>
+    <main class="article-main">
+        <article class="article-card">
+            <header class="article-header">
+                <p class="eyebrow"><a href="/blog/">Winnow blog</a></p>
+                <h1>Why Winnow Won&#39;t Ship in China or France</h1>
+                <p class="article-subtitle">Lightning has to encrypt. France wants that declared to its Prime Minister, and China wants a registered operator for an app it calls illegal. Winnow will ship to neither.</p>
+                <div class="article-byline">
+                    <span class="author-mark" aria-hidden="true">AN</span>
+                    <p><strong>Alex Newman</strong><span><time datetime="2026-10-01T14:19:00.000Z">October 1, 2026</time> · 4 min read</span></p>
+                </div>
+            </header>
+            <div class="article-content">
+<p>On October 1 the first build of Winnow with Lightning, 0.8.0, sat in TestFlight marked Missing Compliance. Nobody could install it, me included. Apple wanted a document from the French government.</p>
+<p>I turned France off, and the build cleared without any document. China is off too, for different reasons. Neither is coming back while the rules stand, and this is why.</p>
+<h2>The paperwork Apple asked for</h2>
+<p>Lightning encrypts, and it has to. Every channel runs over an encrypted, authenticated connection to its peer, and every payment travels as an onion: layers of ChaCha20 that each node on the route peels one at a time, so no node learns more than its neighbors. Without it, the route would learn who paid whom. It is not a feature I can switch off.</p>
+<p>Apple sorts encryption into three bins (<a href="https://developer.apple.com/help/app-store-connect/reference/app-information/export-compliance-documentation-for-encryption">Apple&#39;s table</a>):</p>
+<table>
+<thead>
+<tr>
+<th>What the app uses</th>
+<th>What Apple asks for</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Only the encryption built into iOS</td>
+<td>Nothing</td>
+</tr>
+<tr>
+<td>Standard algorithms implemented outside iOS</td>
+<td>A French encryption declaration, if the app is sold in France</td>
+</tr>
+<tr>
+<td>Proprietary algorithms</td>
+<td>A US export classification, plus the French declaration if sold in France</td>
+</tr>
+</tbody></table>
+<p>Winnow is in the middle row. Its algorithms are public standards (secp256k1, SHA-256, HKDF, ChaCha20-Poly1305, AES-GCM), and some of them run in Winnow&#39;s own code and a third-party library rather than in iOS. For an app like that, the only government whose paperwork Apple asks for is France&#39;s.</p>
+<p>The document is an attestation from ANSSI, France&#39;s national cybersecurity agency. <a href="https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000801164/LEGISCTA000006117690/">Article 30</a> of France&#39;s 2004 digital economy law opens with a sentence I like: &quot;L&#39;utilisation des moyens de cryptologie est libre.&quot; Using encryption is free. The next sentence takes it back from anyone who hands encryption to someone else. Supplying a means of cryptology that does more than authenticate requires a prior declaration to the Prime Minister, and the supplier must keep a description of its technical characteristics, and its source code, at the Prime Minister&#39;s disposal. <a href="https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006421583">Article 35</a> makes failing to declare punishable by a year in prison and a €15,000 fine. ANSSI <a href="https://cyber.gouv.fr/controle-reglementaire-sur-la-cryptographie-demarches-accomplir">answers a complete declaration within a month</a>.</p>
+<p>That would have been a month with no TestFlight for any tester, in any country, to get a letter for one of them.</p>
+<h2>Why I didn&#39;t just file</h2>
+<p>I could have. Plenty of companies do. Three things stopped me.</p>
+<p><strong>There is nothing to disclose.</strong> The algorithms are published standards. Winnow is <a href="https://github.com/winnowwallet/winnow">MIT licensed on GitHub</a>. The source code the law asks me to hold for the Prime Minister is already held for everyone. A declaration would tell the French state nothing it can&#39;t read today. What it adds is the idea that shipping public math needs the state&#39;s leave, with prison for not filing.</p>
+<p><strong>It is the wrong first move for this app.</strong> A self-custody wallet makes one promise: nobody stands between you and your money. Asking the Prime Minister&#39;s office for leave before I may hand anyone that promise sets the wrong precedent.</p>
+<p><strong>France already knows the answer.</strong> Until 1999, France required authorization for encryption stronger than 40 bits. That year Lionel Jospin&#39;s government <a href="https://www.droit-technologie.org/actualites/cryptographie-la-france-sur-la-voie-de-la-liberalisation/">raised the free threshold to 128 bits and replaced authorization with declaration</a>, and the 2004 law made use free outright. The declaration is what is left of the old system. I hope France finishes the job. Until it does, Winnow waits at the border.</p>
+<h2>China</h2>
+<p>China is not a form I can fill in.</p>
+<p>Since the Ministry of Industry and Information Technology&#39;s August 2023 notice, every app in mainland China that connects to the internet needs an ICP filing number. The filing puts the operator&#39;s identity and the app&#39;s domains on record with the ministry, and app stores must remove apps that lack one (<a href="https://techinsights.linklaters.com/post/102j72l/china-the-new-app-filing-regime-keeps-mobile-apps-under-tight-scrutiny">Linklaters</a>). A foreign developer can file only through a Chinese company or a local publisher. Separately, on September 24, 2021, ten agencies led by the People&#39;s Bank of China declared crypto business &quot;illegal financial activities&quot; (<a href="https://www.china-briefing.com/news/china-makes-cryptocurrency-transactions-illegal-an-explainer/">China Briefing</a>).</p>
+<p>So Winnow in China would need a state-registered Chinese operator for an app whose core function the state calls illegal. There is no form for that. There is only a different app, and I won&#39;t build it.</p>
+<h2>If you live there</h2>
+<p>French law says using encryption is free; supplying it is what needs the declaration. Winnow&#39;s source is public, and you can build it yourself. If you already have Winnow from the French App Store, you keep the version you have, but 0.8.0 and later won&#39;t reach you through it. I am a programmer, not a lawyer, so take none of this as legal advice.</p>
+<p>Winnow is not on the App Store in mainland China, and it won&#39;t be.</p>
+<h2>What would change my mind</h2>
+<p>For France, one change: supplying standard, public encryption without a declaration, the step after 1999 and 2004. For China, both the crypto ban and real-name app filing would have to go. I&#39;m not holding my breath for the second.</p>
+
+            </div>
+        </article>
+
+        <p class="back-to-writing"><a href="/blog/">← All writing</a></p>
+    </main>
+    <footer><p><a href="/blog/">Winnow blog</a> · Written by <a href="https://apnewman.com">Alex Newman</a> · <a href="/blog/feed.xml">RSS</a></p></footer>
+</body>
+</html>

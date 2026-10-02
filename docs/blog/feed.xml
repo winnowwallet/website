@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss version="2.0">
+  <channel>
+    <title>Winnow blog</title>
+    <link>https://winnowwallet.com/blog/</link>
+    <description>Wallet engineering and field reports by Alex Newman.</description>
+    <item>
+      <title>Why Winnow Won't Ship in China or France</title>
+      <link>https://winnowwallet.com/blog/not-in-china-or-france/</link>
+      <guid>https://winnowwallet.com/blog/not-in-china-or-france/</guid>
+      <description>Lightning has to encrypt. France wants that declared to its Prime Minister, and China wants a registered operator for an app it calls illegal. Winnow will ship to neither.</description>
+      <pubDate>Thu, 01 Oct 2026 14:19:00 +0000</pubDate>
+    </item>
+    <item>
+      <title>A Tailscale Workaround for Tor and I2P</title>
+      <link>https://winnowwallet.com/blog/tailscale-workaround-tor-i2p/</link>
+      <guid>https://winnowwallet.com/blog/tailscale-workaround-tor-i2p/</guid>
+      <description>Winnow still does not bundle Tor or I2P. This is how it reaches them anyway, through gateways you run yourself, and how to build those gateways.</description>
+      <pubDate>Wed, 30 Sep 2026 13:40:00 +0000</pubDate>
+    </item>
+    <item>
+      <title>One in Twelve Peers Is on a Dead Chain</title>
+      <link>https://winnowwallet.com/blog/dead-chain-peers/</link>
+      <guid>https://winnowwallet.com/blog/dead-chain-peers/</guid>
+      <description>A stalled mainnet test, a dead fork, and a census of every reachable Bitcoin node</description>
+      <pubDate>Fri, 04 Sep 2026 22:00:00 +0000</pubDate>
+    </item>
+  </channel>
+</rss>

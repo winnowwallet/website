@@ -1,0 +1,23 @@
+Winnow 0.7.13: every verified Tor and I2P peer, plus background chain checks
+
+The daily peer list is no longer cut to 2,000 Tor and 2,000 I2P peers; Winnow now keeps every one the census verified (3,212 Tor and 2,451 I2P on 2026-09-29). Once the census publishes the full list, Tor-only and I2P-only routing should connect as before, just with more peers to choose from. Advanced → Settings → Refresh peer list should succeed.
+
+Winnow now asks iOS to let it check the chain while closed. iOS decides when these run, usually no more than every 15 minutes and often less, and never after you force-quit Winnow or with Background App Refresh off (Settings → General → Background App Refresh).
+
+Background checks
+
+In Advanced → Sync, note "Chain last checked … ago". Leave Winnow in the background (do not force-quit it) for an hour or more, ideally on Wi-Fi and charging. Reopen Advanced → Sync before the foreground sync finishes: the time should be recent, from while Winnow was closed. A payment sent to you while it was closed should appear quickly on open.
+
+Private routing in the background
+
+With Tailscale connected and your Tor and I2P gateways running, open Winnow once so the green Private banner shows, then background it. Turn Tailscale off and wait: background checks should skip rather than connect directly, so "Chain last checked" should not advance until you reopen Winnow. Turn Tailscale back on and it should advance again.
+
+Simple mode errors
+
+In simple mode, a peer dropping mid-sync (previously a red "The peer disconnected (closed).") should no longer show. If the connection keeps failing for several passes, a plain message should say Winnow keeps losing its connection. Advanced → Sync still shows every error.
+
+Upgrading from an older version
+
+Check that your accounts, transaction history, backups, routing and saved settings remain available after the update.
+
+Report bugs publicly at https://github.com/winnowwallet/winnow/issues. Include the app version, device, network, routing mode and steps to reproduce. Never include recovery words, private keys, or wallet backup files.
