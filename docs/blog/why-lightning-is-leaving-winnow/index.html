@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why Lightning Is Leaving Winnow — Winnow</title>
+    <meta name="description" content="I added it, then took it out. The next Lightning wallet will start with a different foundation.">
+    <link rel="canonical" href="https://winnowwallet.com/blog/why-lightning-is-leaving-winnow/">
+    <link rel="alternate" type="application/rss+xml" title="Winnow blog" href="https://winnowwallet.com/blog/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Winnow">
+    <meta property="og:title" content="Why Lightning Is Leaving Winnow — Winnow">
+    <meta property="og:description" content="I added it, then took it out. The next Lightning wallet will start with a different foundation.">
+    <meta property="og:url" content="https://winnowwallet.com/blog/why-lightning-is-leaving-winnow/">
+    <meta property="og:image" content="https://winnowwallet.com/og.png">
+    <meta property="article:published_time" content="2026-10-07T15:48:00.000Z">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Why Lightning Is Leaving Winnow — Winnow">
+    <meta name="twitter:description" content="I added it, then took it out. The next Lightning wallet will start with a different foundation.">
+    <meta name="twitter:image" content="https://winnowwallet.com/og.png">
+    <link rel="stylesheet" href="/blog/article.css">
+</head>
+<body class="blog-body">
+    <nav><div class="nav-container"><a href="/" class="logo">winnow</a><ul class="nav-links"><li><a href="/">Wallet</a></li><li><a href="/blog/" aria-current="page">Blog</a></li><li><a href="https://compare.winnowwallet.com/">Compare</a></li></ul></div></nav>
+    <main class="article-main">
+        <article class="article-card">
+            <header class="article-header">
+                <p class="eyebrow"><a href="/blog/">Winnow blog</a></p>
+                <h1>Why Lightning Is Leaving Winnow</h1>
+                <p class="article-subtitle">I added it, then took it out. The next Lightning wallet will start with a different foundation.</p>
+                <div class="article-byline">
+                    <span class="author-mark" aria-hidden="true">AN</span>
+                    <p><strong>Alex Newman</strong><span><time datetime="2026-10-07T15:48:00.000Z">October 7, 2026</time> · 8 min read</span></p>
+                </div>
+            </header>
+            <div class="article-content">
+<p>I have pulled Lightning from Winnow. Winnow goes back to being a Bitcoin wallet written in Swift. I still want an iOS Lightning wallet, but I intend to build it separately, around an established Lightning implementation.</p>
+<p>This is becoming a habit. I built Tor into Winnow, removed it, and brought access back through gateways. Each retreat has taught me something about where the wallet should end.</p>
+<p>With Tor, I wanted access to more of the Bitcoin network. Embedding a whole networking stack was one way to get there. Eventually I found a smaller boundary: Winnow could speak SOCKS to a gateway and keep checking the Bitcoin data itself. The transport could live elsewhere. I described that route in <a href="https://apnewman.com/p/tailscale-workaround-tor-i2p/">A Tailscale Workaround for Tor and I2P</a>.</p>
+<p>Lightning asks a harder question. Where does the responsibility for the money live?</p>
+<p>My first answer was to write the engine in Swift. It fit the app. I could follow the code from the interface down into the protocol, and the tests could put it opposite another implementation and make payments work. There is real satisfaction in that. There is also a temptation to mistake a working payment for a finished wallet.</p>
+<p>A payment arriving is evidence about the path it took. It says much less about what happens when the channel must close, the chain reorganizes, or the app disappears halfway through an operation.</p>
+<p>The turning point was an exchange with <a href="https://megalithic.me/">Megalith</a>, the Lightning service provider I had been integrating. They put the objection plainly. I am quoting their email with permission:</p>
+<blockquote><p>Lightning is extremely hard to get right, and the hard part isn't the happy path you can cover in CI.</p></blockquote>
+<p>They pointed to force closes under fee pressure, HTLC timeouts racing on-chain, reorgs, anchor fee bumping, justice transactions, and watchtower behavior. That is the territory a wallet has to defend after the demonstration ends.</p>
+<p>The public <a href="https://github.com/lightningdevkit/rust-lightning/blob/main/CHANGELOG.md">LDK changelog</a> is useful reading here. Recent releases describe fixes involving on-chain HTLC claims, reorgs, persistence, and the fee reserves needed to close channels. That is work by people who maintain this machinery continuously. Their fixes are a measure of how much machinery there is to maintain.</p>
+<p>Their condition for helping with the integration was equally clear:</p>
+<blockquote><p>I'd be happy to work with you if Winnow uses LDK (LDK Node is a good fit for a mobile wallet).</p></blockquote>
+<p>They required LDK for that collaboration and recommended LDK Node as a mobile fit. Those are distinct choices. I accept the argument that a production Lightning wallet should put its channel engine on an established implementation. If I accept that argument, I have to build around it.</p>
+<p><a href="https://github.com/lightningdevkit/ldk-node#readme">LDK Node</a> offers a Lightning node with an integrated BDK on-chain wallet, written in Rust and available to Swift through bindings. It is an attractive starting point for a Lightning app. It also brings decisions about the wallet underneath it.</p>
+<p>My first design criterion is to preserve local compact-filter matching. I want the wallet to get chain data from Bitcoin peers and decide on the device which blocks matter to it. I don't want adopting a Lightning engine to quietly turn the app into a client of a wallet-history server. <a href="https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki">BIP157</a> gives light clients that route, with privacy limits of its own: peers still see connections and block requests.</p>
+<p>For LDK Node, the starting point I want to use is the proposed <a href="https://github.com/lightningdevkit/ldk-node/pull/828">compact-filter chain source, PR #828</a>, built on Kyoto. It is still open upstream as I write this. Using it would mean carrying and reviewing a patch until there is an upstream release I can depend on. I am describing a design, not announcing that the next wallet already does this.</p>
+<p>The patch also exposes a compromise I need to make explicitly. Compact filters describe confirmed blocks; they don't supply a live mempool. Its design offers fee estimates from recent blocks or from an Electrum or Esplora server. Asking a server for general fee estimates is a different disclosure from sending it my wallet's addresses, but it is still a dependency. I need to choose the fee source, explain it, and test what happens when it is unavailable. The patch also lists zero-confirmation and fee-bumping tests that do not apply to its current chain source. I need evidence for those behaviors before I offer them to users.</p>
+<p>Winnow already has an answer to that part: its own Swift wallet and its own route to verified Bitcoin data. Putting another wallet engine beside it means deciding which engine owns which coins, which state gets backed up, and which component is responsible when something goes wrong. Putting LDK Node underneath the whole app means accepting its architecture as Winnow's foundation.</p>
+<p>I don't want either arrangement to become mandatory for someone who only wants Winnow's on-chain wallet.</p>
+<p>Nothing about Swift makes a wallet safe by itself. A short dependency list cannot prove correctness either. Those choices help me understand the system I am responsible for. They do not excuse me from checking it. The same standard applies to code I wrote myself.</p>
+<p>My second criterion is that receiving must survive ordinary phone use. A person receiving a payment may leave the wallet to open an exchange app on the same device. That ordinary action can suspend the wallet while the payment still needs it. A Lightning app has to be designed around that lifecycle from the beginning. Adding a receive button to an existing Bitcoin wallet does not settle it.</p>
+<p>Megalith suggested investigating ZEUS's background-audio approach first. They were willing to look into LSPS5 if I moved to LDK, but that was an offer to investigate, not a promise that notifications were already available. They declined longer intercepted-payment holds and said they would not enable async payments on their LSP anytime soon. I need to design for the service I can actually use.</p>
+<p>One technique I intend to test is the music-in-the-background trick. ZEUS publicly <a href="https://github.com/ZeusLN/zeus-docs/blob/master/docs/nostr-wallet-connect/background.md">documents an ambient audio loop</a> that keeps its Nostr Wallet Connect service running on iOS when the user switches apps. That is evidence of an approach worth investigating for a Lightning session; it does not establish that my own payment flow will work. ZEUS also documents interruptions, memory pressure, and force-quitting as limits. An audio session buys execution time. It cannot promise that a phone will remain online.</p>
+<p>If I use it, I want the session to be visible and under the user's control, with a clear way to stop it. I want to test switching to the exchange, locking the screen, taking a call, losing connectivity, and returning to the wallet. The app should say when it can receive and when it needs to reconnect. An invoice on screen is no proof that the app behind it is still listening.</p>
+<p>My third criterion is a way to alert the user when the app has gone to sleep. <a href="https://github.com/lightning/blips/blob/master/blip-0055.md">LSPS5</a> provides webhook registration so an LSP can contact a notification service, which can deliver a push to the phone. It is a possible companion to the audio session. I want a notification route where the provider supports it, with the notification service carrying only what it needs to deliver the alert. It should never need wallet signing keys.</p>
+<p>A notification tells the user there is work waiting. The wallet still has to reconnect and complete that work. The LSPS5 specification itself calls for a reasonable hold that lets the client wake without unduly affecting the network. I don't want a design whose ordinary operation assumes the whole payment route will wait indefinitely for my phone. I also won't describe a payment as received just because a webhook arrived.</p>
+<p>Async payments remain a direction to investigate. They become a product feature when the actual sender, service, and wallet support the same flow and I can demonstrate it. Until then, the app has to be honest about the receive conditions it supports today.</p>
+<p>My fourth criterion is that instant receiving must explain its bargain. If a payment opens a channel just in time, the user should see the liquidity fee before agreeing. If I offer zero-confirmation acceptance, I need to explain the trust it places in the provider. Channel capacity and the money reserved for closing fees have to be accounted for before I present a spendable balance. Fast onboarding is useful only if the wallet can afford its exit.</p>
+<p>My fifth criterion is recovery under failure. I want evidence for restart during a payment, interrupted state persistence, force-close under fee pressure, HTLC expiry, and chain reorganization. I need to decide how channel state is backed up and whether a watchtower is part of the design, then test the protection I actually claim. Using LDK gives me maintained machinery for this work. I still own the integration, the storage, and the promises on the screen.</p>
+<p>Those criteria make the separation concrete. Winnow's on-chain build must stay usable without LDK Node, an audio session, or a payment-notification service. The Lightning app can take on those dependencies deliberately, and prove that they work together.</p>
+<p>So the two apps will have different foundations. Winnow will concentrate on on-chain Bitcoin. A separate Lightning wallet can choose its channel engine, persistence, recovery, and mobile behavior together. Some small pieces may turn out to be worth sharing. That can happen when there is a clear reason to share them.</p>
+<p>The Tor retreat preserved the goal and changed where the work happened. This retreat preserves the goal too, but it needs a different boundary. A gateway can carry bytes while Winnow verifies what comes back. A Lightning engine participates in the machinery that protects the funds. It deserves an app built around that responsibility.</p>
+<p>I still want Lightning on my phone. I want Winnow to remain a wallet whose foundations I can explain. Building them separately gives me a way to pursue both.</p>
+
+            </div>
+        </article>
+
+        <p class="back-to-writing"><a href="/blog/">← All writing</a></p>
+    </main>
+    <footer><p><a href="/blog/">Winnow blog</a> · Written by <a href="https://apnewman.com">Alex Newman</a> · <a href="/blog/feed.xml">RSS</a></p></footer>
+</body>
+</html>

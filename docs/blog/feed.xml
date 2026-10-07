@@ -5,6 +5,13 @@
     <link>https://winnowwallet.com/blog/</link>
     <description>Wallet engineering and field reports by Alex Newman.</description>
     <item>
+      <title>Why Lightning Is Leaving Winnow</title>
+      <link>https://winnowwallet.com/blog/why-lightning-is-leaving-winnow/</link>
+      <guid>https://winnowwallet.com/blog/why-lightning-is-leaving-winnow/</guid>
+      <description>I added it, then took it out. The next Lightning wallet will start with a different foundation.</description>
+      <pubDate>Wed, 07 Oct 2026 15:48:00 +0000</pubDate>
+    </item>
+    <item>
       <title>Why Winnow Won't Ship in China or France</title>
       <link>https://winnowwallet.com/blog/not-in-china-or-france/</link>
       <guid>https://winnowwallet.com/blog/not-in-china-or-france/</guid>
