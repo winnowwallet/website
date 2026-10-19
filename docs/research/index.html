@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Research at Winnow</title>
+<meta name="description" content="Why Winnow is exploring native Swift cryptography, wallet rescue, P2MR, existing hardware wallets, and Silent Payments. Current evidence and the next experiments.">
+<link rel="canonical" href="https://winnowwallet.com/research/">
+<meta property="og:site_name" content="Winnow">
+<meta property="og:title" content="Research at Winnow">
+<meta property="og:description" content="Five research projects. The reasons to pursue them, what exists today, and what still needs to be proved.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://winnowwallet.com/research/">
+<meta property="og:image" content="https://winnowwallet.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Research at Winnow">
+<meta name="twitter:description" content="Bitcoin custody, recovery, cryptography, interoperability, and payment privacy. Research in progress at Winnow.">
+<meta name="twitter:image" content="https://winnowwallet.com/og.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f7931a'/%3E%3Cpath d='M7 9h18L18 19v5l-4 2v-7z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/site.css">
+<link rel="stylesheet" href="/research/research.css">
+</head>
+<body class="research-page">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar"><div class="bar">
+  <a class="mark" href="/" aria-label="Winnow home">winnow<span class="brand-dot" aria-hidden="true">.</span></a>
+  <nav class="links" aria-label="Main"><a href="/">Wallet</a><a href="/architecture">How it works</a><a href="/blog/">Blog</a><a href="/research/" aria-current="page">Research</a><a href="https://github.com/winnowwallet/website">Source <span aria-hidden="true">↗</span></a></nav>
+</div></header>
+<main id="main">
+  <header class="research-intro">
+    <p class="eyebrow"><span aria-hidden="true"></span> Questions worth working on</p>
+    <h1>Research at<br><em>Winnow.</em></h1>
+    <p class="intro-lead">A wallet should be able to explain its foundations.<br class="desktop-break"> Research is how we decide what comes next.</p>
+    <div class="intro-context">
+      <p>How do we recover older wallets? How much cryptographic code do we need to maintain? What changes when another device signs, or when Bitcoin gains a different way to receive payments?</p>
+      <p>These projects give those questions room to be tested. Each starts with a reason to investigate, records what works, and names the evidence still missing before we make new promises to people using Winnow.</p>
+    </div>
+    <p class="edition">Research notes · Updated <time datetime="2026-10-19">19 October 2026</time></p>
+  </header>
+
+  <nav class="research-index" aria-label="Research projects">
+    <a href="#native-swift"><span>01</span> Native Swift</a>
+    <a href="#rescue"><span>02</span> Winnow Rescue</a>
+    <a href="#p2mr"><span>03</span> P2MR</a>
+    <a href="#hardware-wallets"><span>04</span> Hardware wallets</a>
+    <a href="#silent-payments"><span>05</span> Silent Payments</a>
+  </nav>
+
+  <section class="research-project" id="native-swift" aria-labelledby="native-title">
+    <header class="project-heading">
+      <div class="project-label"><span class="project-number">01 / CRYPTOGRAPHY</span><span class="status">Early implementation</span></div>
+      <h2 id="native-title">A focused Bitcoin library,<br><em>written in Swift.</em></h2>
+      <p class="project-question">Can we own a narrow implementation of the keys and signatures Winnow needs, and justify the responsibility that comes with it?</p>
+    </header>
+    <div class="project-body">
+      <div class="prose">
+        <p>Winnow already implements its wallet and Bitcoin transaction logic in Swift. At the <a href="https://github.com/winnowwallet/winnow/blob/6566871db0a40be481dd63b7960790ef4de9192e/Package.swift">revision we inspected</a>, its curve operations use P256K, a Swift interface to C libsecp256k1. We want to investigate a small, independently reusable Swift library for that boundary.</p>
+        <p>The attraction is being able to follow the types and implementation all the way through: a key, a tweak, a signature, and the mathematics behind them. A focused library could make integration and maintenance easier to understand. Build time, binary size, and performance are questions to measure.</p>
+        <p>This comes with a substantial cost. <a href="https://github.com/bitcoin-core/secp256k1#implementation-details">libsecp256k1</a> is an established implementation with extensive testing and deliberate treatment of secret operations. Replacing it transfers that responsibility to us. Swift does not, by itself, establish correct arithmetic, safe nonce handling, or constant-time execution.</p>
+        <h3>What is the minimum?</h3>
+        <p><strong>Schnorr still needs secp256k1.</strong> Schnorr is the signature scheme; secp256k1 is the curve used by Bitcoin's <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340.mediawiki">BIP340</a>. Winnow also needs key parsing and public-key derivation, BIP32 and Taproot tweaks, and the point and scalar operations used by its existing MuSig2 shared-signing code.</p>
+        <p>The proposed library owns those operations. Transaction formats, wallet policy, networking, backups, and the interface remain in Winnow. The initial production scope does not call for ECDSA, key recovery, or a general-purpose big-integer API.</p>
+      </div>
+
+      <figure class="boundary" aria-labelledby="boundary-title">
+        <figcaption id="boundary-title"><span class="eyebrow">Proposed architecture</span><strong>A library with a clear job.</strong></figcaption>
+        <ol class="boundary-stack">
+          <li><span class="layer-tag">The application</span><strong>Winnow</strong><p>Wallet policy · transactions · MuSig2 coordination · storage · interface</p></li>
+          <li class="library-layer"><span class="layer-tag">The independent Swift package</span><strong>Bitcoin keys &amp; Schnorr signatures</strong><p>Key validation · derivation tweaks · Taproot · required point and scalar operations</p><span class="kernel">Internal: fixed-width secp256k1 arithmetic</span></li>
+          <li><span class="layer-tag">Supported Apple services</span><strong>CryptoKit + Security</strong><p>Hashing and HMAC · secure random bytes<br>Keychain stays with the consuming app.</p></li>
+        </ol>
+        <p class="figure-note">An intended boundary. The native curve and signing implementation is still to be built.</p>
+      </figure>
+
+      <div class="prose">
+        <h3>Use Apple where it fits. Keep the library independent.</h3>
+        <p><a href="https://developer.apple.com/documentation/cryptokit">CryptoKit</a> supplies hashes and HMAC; Security supplies secure randomness. Apple's public P-256 APIs use a different curve from Bitcoin's secp256k1. They do not provide a drop-in BIP340 signer. Native Swift here means owning the Bitcoin curve implementation in Swift, while using supported platform services.</p>
+        <p>We want the package to build and test without Winnow, and to be useful beyond this app. A possible contribution to <a href="https://github.com/apple/swift-crypto/blob/0f6f68df04180034ef62e0d5f40195ac3189317a/CONTRIBUTING.md">Apple's Swift Crypto project</a> is one direction to explore. Its current contribution rules require maintainer agreement and a usable BoringSSL implementation for new APIs. A native Swift backend therefore needs an explicit upstream decision. Apple acceptance and future CryptoKit availability are open questions.</p>
+      </div>
+      <aside class="research-evidence" aria-label="Native Swift current evidence">
+        <span class="evidence-label">What exists today</span>
+        <p>The independent research starter implements <strong>tagged SHA-256</strong>, checked against known answers. It does not yet implement native curve arithmetic or signing. Existing wallet test results describe the current C-backed implementation; they do not validate a replacement.</p>
+      </aside>
+      <div class="next-experiment">
+        <h3>The next experiments</h3>
+        <ol class="research-steps">
+          <li><strong>Verify public inputs.</strong> Execute official valid and invalid signature vectors, test arithmetic boundaries, and compare with the existing backend.</li>
+          <li><strong>Review secret operations.</strong> Add signing only with explicit nonce ownership, failure handling, and review of optimized code and secret lifetimes.</li>
+          <li><strong>Integrate and measure.</strong> Exercise Winnow's wallet and shared-signing flows, then validate signed device builds and internal TestFlight builds using test wallets. Record device performance and dependency changes before deciding on migration.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="research-project" id="rescue" aria-labelledby="rescue-title">
+    <header class="project-heading">
+      <div class="project-label"><span class="project-number">02 / RECOVERY</span><span class="status">Early development</span></div>
+      <h2 id="rescue-title">Give an old wallet<br><em>a way forward.</em></h2>
+      <p class="project-question">Winnow Rescue explores how to move funds from older Bitcoin wallet backups into an account the owner already controls.</p>
+    </header>
+    <div class="project-body">
+      <div class="prose">
+        <p>A backup can outlive the software that created it. Recovery means understanding its format, finding the right keys and outputs, and showing the owner exactly where the money will go. That work deserves a focused tool with explicit limits for every supported format.</p>
+        <p><strong>Winnow Rescue</strong> is being developed separately, with an embeddable Rust core, a command-line interface, and a desktop graphical interface. Its intended destination is an existing Taproot account. Keeping recovery in its own tool lets it address older wallet formats without adding those formats to the everyday phone wallet.</p>
+      </div>
+      <aside class="research-evidence"><span class="evidence-label">What exists today</span><p>The <a href="https://github.com/winnowwallet/winnowrescue/tree/79ffa4da975b4134af20ce35986a39002cd76bc9">inspected repository</a> contains the initial workspace and interface scaffolding. A complete recovery and sweep workflow has not yet been demonstrated.</p></aside>
+      <div class="next-experiment"><h3>The next experiment</h3><p>Take one precisely defined wallet format through a reproducible test-coin recovery: discover the funds, review the destination and fee, sign, and verify the resulting payment. Test damaged backups, wrong passwords, and interrupted scans before widening support.</p></div>
+      <p class="project-source"><a href="https://github.com/winnowwallet/winnowrescue">Follow Winnow Rescue <span aria-hidden="true">↗</span></a></p>
+    </div>
+  </section>
+
+  <section class="research-project" id="p2mr" aria-labelledby="p2mr-title">
+    <header class="project-heading">
+      <div class="project-label"><span class="project-number">03 / BITCOIN SCRIPTS</span><span class="status">Protocol research</span></div>
+      <h2 id="p2mr-title">Understand a different<br><em>way to commit.</em></h2>
+      <p class="project-question">Pay-to-Merkle-Root asks what changes when an output commits directly to a tree of spending scripts.</p>
+    </header>
+    <div class="project-body">
+      <div class="prose">
+        <p><a href="https://github.com/bitcoin/bips/blob/e7263a4cfe500c89e4269889244606953691ca33/bip-0360.mediawiki">BIP360</a> proposes P2MR: script-tree spending without Taproot's key-path spend. We want to understand the consequences for wallet policy, backups, interoperability, and an eventual opt-in migration.</p>
+        <p>Removing the exposed output key addresses one part of the long-term public-key exposure problem. It does not replace the signatures inside the scripts with post-quantum signatures. That distinction matters when explaining what the proposal could protect.</p>
+      </div>
+      <aside class="research-evidence"><span class="evidence-label">What exists today</span><p>BIP360 is a <strong>draft proposal</strong>. Winnow's inspected main revision rejects witness-version-2 funding destinations. This is research into future rules, with no Bitcoin activation date or shipping support implied.</p></aside>
+      <div class="next-experiment"><h3>The next experiment</h3><p>Build an isolated experiment with explicit network rules. Check address construction and spending against independent implementations, then exercise backup, restoration, and migration. Record which rules the test network actually enforces.</p></div>
+      <p class="project-source"><a href="https://github.com/bitcoin/bips/blob/e7263a4cfe500c89e4269889244606953691ca33/bip-0360.mediawiki">Read the P2MR proposal <span aria-hidden="true">↗</span></a><a href="https://github.com/winnowwallet/winnow/blob/6566871db0a40be481dd63b7960790ef4de9192e/Tests/WalletCoreTests/TransactionBuilderTests.swift#L54">Current wallet boundary <span aria-hidden="true">↗</span></a></p>
+    </div>
+  </section>
+
+  <section class="research-project" id="hardware-wallets" aria-labelledby="hardware-title">
+    <header class="project-heading">
+      <div class="project-label"><span class="project-number">04 / SIGNING DEVICES</span><span class="status">Compatibility research</span></div>
+      <h2 id="hardware-title">Work with the hardware<br><em>people already own.</em></h2>
+      <p class="project-question">Can Winnow coordinate payments with an independent signing device, while keeping approval and recovery understandable?</p>
+    </header>
+    <div class="project-body">
+      <div class="prose">
+        <p>A separate signer can give a wallet a different boundary for key custody. That only helps if the phone and device agree on the account, receiving addresses, spending policy, and transaction being approved. We are researching compatibility with existing hardware wallets.</p>
+        <p>The full flow matters: what the device can display and verify, how signing messages travel, how shared-signing nonces are used once, and what happens when approval fails. Recovery must cover a lost phone, a replaced signer, and the backups needed to reconstruct the same policy.</p>
+      </div>
+      <aside class="research-evidence"><span class="evidence-label">What exists today</span><p>A preserved <a href="https://github.com/winnowwallet/winnow/blob/3200521453173c0e9131c3331ec0c5ac3315ee82/Tools/Satochip/README.md">Satochip simulator prototype</a> explores signing and recovery. Its <a href="https://github.com/winnowwallet/winnow/pull/224">pull request is closed and unmerged</a>. Simulation does not demonstrate physical-card operation or iPhone NFC compatibility. The existing <a href="/core-cosigner">Bitcoin Core cosigner guide</a> documents a separate software-signer flow.</p></aside>
+      <div class="next-experiment"><h3>The next experiment</h3><p>Choose a specific hardware model and firmware, then demonstrate receiving, approving, signing, and restoring a test wallet. Publish the coordinator revision, transport, supported policy, and display limitations. Exercise refusal, disconnection, retries, and replacement before claiming compatibility.</p></div>
+    </div>
+  </section>
+
+  <section class="research-project" id="silent-payments" aria-labelledby="silent-title">
+    <header class="project-heading">
+      <div class="project-label"><span class="project-number">05 / PAYMENT PRIVACY</span><span class="status">Protocol research</span></div>
+      <h2 id="silent-title">Receive repeatedly.<br><em>Reveal less.</em></h2>
+      <p class="project-question">Can reusable payment information fit a wallet that discovers its own payments on a phone?</p>
+    </header>
+    <div class="project-body">
+      <div class="prose">
+        <p><a href="https://github.com/bitcoin/bips/blob/master/bip-0352.mediawiki">BIP352 Silent Payments</a> lets a recipient publish reusable payment information while senders derive separate on-chain output keys. The motivation is to make repeated receiving more practical without putting the same receiving address into every payment.</p>
+        <p>The tradeoff is discovery. A recipient needs to identify payments intended for them using transaction input information and their scanning key. For Winnow, the research question includes how that work fits its direct-to-peer design, the cost of restoring a wallet, and what the phone must download and compute. Ordinary compact filters alone do not provide everything needed for discovery.</p>
+        <p>Silent Payments also needs secret scalar multiplication with public points for a shared-secret calculation (ECDH). That would expand the <a href="#native-swift">native Swift library</a> beyond the minimum required by current Winnow. We will evaluate that addition explicitly.</p>
+      </div>
+      <aside class="research-evidence"><span class="evidence-label">What exists today</span><p>Winnow currently <a href="https://github.com/winnowwallet/winnow/blob/6566871db0a40be481dd63b7960790ef4de9192e/Tests/WalletCoreTests/UnsupportedWalletDataTests.swift#L58">rejects Silent Payments destinations</a>. BIP352 is a complete specification; light-client discovery remains a research area. Sending, recipient scanning, and recovery need their own Winnow implementation and interoperability evidence.</p></aside>
+      <div class="next-experiment"><h3>The next experiment</h3><p>Start with specification vectors and a test-coin exchange with an independent implementation. Measure the data, time, and energy needed to find and restore payments on an iPhone. Test interrupted scans and chain reorganizations. Make the scanning-key, spending-key, and label recovery requirements explicit, and evaluate any server assistance by what it learns about the recipient.</p></div>
+      <p class="project-source"><a href="https://github.com/bitcoin/bips/blob/master/bip-0352.mediawiki">Read BIP352 <span aria-hidden="true">↗</span></a></p>
+    </div>
+  </section>
+
+  <section class="research-closing" aria-labelledby="evidence-title">
+    <p class="eyebrow">The standard for every project</p>
+    <h2 id="evidence-title">Let the evidence<br><em>set the pace.</em></h2>
+    <p>Keep the source inspectable. Name the revision and environment behind a result. Test recovery and failure as deliberately as a successful payment. Measure the costs. A useful research result can be a working implementation, a smaller scope, or a well-supported decision to keep the existing approach.</p>
+    <a class="back-link" href="/roadmap">Read the Winnow roadmap <span aria-hidden="true">→</span></a>
+  </section>
+</main>
+<footer><div class="bar"><p><strong>winnow</strong><span>Research in public. Evidence before promises.</span></p><nav aria-label="Footer"><a href="/">Wallet</a><a href="/roadmap">Roadmap</a><a href="/privacy">Privacy</a><a href="https://github.com/winnowwallet/website">Website source</a></nav></div></footer>
+</body>
+</html>

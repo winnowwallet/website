@@ -141,7 +141,7 @@ def homepage(journeys, cases):
 </head><body>
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header wrap"><a class="brand" href="/" aria-label="Winnow home"><span class="brand-icon" aria-hidden="true">₿</span> winnow</a>
-<nav aria-label="Main"><a href="https://census.winnowwallet.com/">Census</a><a href="https://census.winnowwallet.com/health/">Network health</a><a href="https://compare.winnowwallet.com/">Compare</a><a href="/blog/">Blog</a><a href="/architecture">How it works</a><a href="https://github.com/winnowwallet/winnow">GitHub <span aria-hidden="true">↗</span></a></nav></header>
+<nav aria-label="Main"><a href="https://census.winnowwallet.com/">Census</a><a href="https://census.winnowwallet.com/health/">Network health</a><a href="https://compare.winnowwallet.com/">Compare</a><a href="/blog/">Blog</a><a href="/research/">Research</a><a href="/architecture">How it works</a><a href="https://github.com/winnowwallet/winnow">GitHub <span aria-hidden="true">↗</span></a></nav></header>
 <main id="main" class="wrap">
 <section class="hero" aria-labelledby="hero-title">
 <div class="hero-copy"><p class="eyebrow"><span></span> A BITCOIN WALLET FOR IPHONE</p>
@@ -186,7 +186,7 @@ def recording_page(root):
 <title>Wallet journey — Winnow</title><link rel="stylesheet" href="/site.css">
 <style>video{{display:block;width:min(100%,26rem);max-height:75vh;margin:1.5rem auto;border:1px solid var(--rule);border-radius:1rem;background:#111}}</style></head>
 <body><a class="skip-link" href="#main">Skip to content</a>
-<header class="topbar"><div class="bar"><a class="mark" href="/" aria-label="Winnow home">winnow</a><nav class="links" aria-label="Main"><a href="/blog/">Blog</a><a href="/architecture">How it works</a><a href="/vaults">Shared wallets</a><a href="https://github.com/winnowwallet/winnow">GitHub ↗</a></nav></div></header><main id="main"><p class="page-kicker">Recorded in the real app</p><h1>Wallet journey</h1>
+<header class="topbar"><div class="bar"><a class="mark" href="/" aria-label="Winnow home">winnow</a><nav class="links" aria-label="Main"><a href="/blog/">Blog</a><a href="/research/">Research</a><a href="/architecture">How it works</a><a href="/vaults">Shared wallets</a><a href="https://github.com/winnowwallet/winnow">GitHub ↗</a></nav></div></header><main id="main"><p class="page-kicker">Recorded in the real app</p><h1>Wallet journey</h1>
 <video controls playsinline preload="metadata" poster="/screenshots/56-home-beginner.png" aria-label="Ordinary and shared-account payments in Winnow">
 <source src="/{VIDEO_PATH}" type="video/mp4">
 <a href="/{VIDEO_PATH}">Download the wallet journey recording</a>.
