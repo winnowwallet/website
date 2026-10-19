@@ -35,6 +35,7 @@
       <p>How do we recover older wallets? How much cryptographic code do we need to maintain? What changes when another device signs, or when Bitcoin gains a different way to receive payments?</p>
       <p>These projects give those questions room to be tested. Each starts with a reason to investigate, records what works, and names the evidence still missing before we make new promises to people using Winnow.</p>
     </div>
+    <p>From the blog: <a href="/blog/bitcoin-beyond-conspiracy-theories/">Bitcoin Beyond Conspiracy Theories</a> — why we trust standard hashes, and what a wallet must preserve to recover safely.</p>
     <p class="edition">Research notes · Updated <time datetime="2026-10-19">19 October 2026</time></p>
   </header>
 
@@ -158,6 +159,15 @@
       <div class="next-experiment"><h3>The next experiment</h3><p>Start with specification vectors and a test-coin exchange with an independent implementation. Measure the data, time, and energy needed to find and restore payments on an iPhone. Test interrupted scans and chain reorganizations. Make the scanning-key, spending-key, and label recovery requirements explicit, and evaluate any server assistance by what it learns about the recipient.</p></div>
       <p class="project-source"><a href="https://github.com/bitcoin/bips/blob/master/bip-0352.mediawiki">Read BIP352 <span aria-hidden="true">↗</span></a></p>
     </div>
+  </section>
+
+  <section class="research-closing" id="recovery-strategy" aria-labelledby="recovery-title">
+    <p class="eyebrow">A question shared by every project</p>
+    <h2 id="recovery-title">What must survive<br><em>the lost device?</em></h2>
+    <p>A recovery strategy must account for signing authority, coin discovery, spending policy, and any state required to sign safely. Winnow's emphasis on local discovery and Rescue's broader recovery task require separate privacy evaluations: asking a server about wallet-specific scripts or combining coins in a sweep can disclose relationships.</p>
+    <p>Hash-based signatures make this distinction especially important. SPHINCS+-based SLH-DSA is stateless, but a wallet still needs recoverable keys and account information. Stateful schemes such as XMSS and LMS also require a reliable record of used one-time signing keys. Restoring an old backup can roll that record backward; a chain rescan cannot reveal every signature exported before the device was lost.</p>
+    <p>These are research questions, not supported post-quantum recovery flows in Winnow or Rescue. The next experiment should specify what is backed up, what can be reconstructed, who learns about the wallet during recovery, and what makes signing safe after restoration.</p>
+    <a class="back-link" href="/blog/bitcoin-beyond-conspiracy-theories/">Read the hash security and recovery explainer <span aria-hidden="true">→</span></a>
   </section>
 
   <section class="research-closing" aria-labelledby="evidence-title">
