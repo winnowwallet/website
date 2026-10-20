@@ -46,7 +46,7 @@ Measured in a release build on an Apple silicon Mac, microseconds per operation:
 | BIP340 sign, including its self-check | 271 | 26 |
 | BIP340 verify | 207 | 18 |
 
-Address derivation, the thing a wallet does constantly, stays within three times the C library. Signing and verifying happen once per spent input and are ten times slower, which on a phone is still a quarter of a millisecond.
+Address derivation, the thing a wallet does constantly, stays within three times the C library on the child-key and tweak rows; multiplying the generator on its own is about 3.4 times. Signing and verifying happen once per spent input and are roughly ten times slower, which on a phone is still a quarter of a millisecond.
 
 The larger cost is not speed. Every operation in this first version is variable-time: how long it takes depends on the secret it is processing. And the scalar copies made while signing and tweaking are not cleared from memory afterwards. libsecp256k1 has had years of deliberate work on exactly those two properties, and the honest statement is that this module has had none yet. The wallet's documentation used to say that all secret math ran in constant-time C. Those sentences were rewritten, because they would otherwise have been false.
 
