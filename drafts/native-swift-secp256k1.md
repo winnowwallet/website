@@ -144,6 +144,10 @@ The [notes in TestFlight](https://github.com/winnowwallet/winnow/blob/ff892b9039
 
 Then I installed it on my own phone, over the App Store Winnow and a live wallet. It upgraded the wallet in place, and the wallet went on receiving and sending as before. One of those sends is [ad627d56…5d6e](https://blockstream.info/tx/ad627d565202df6e644af195fd2ba9a1908631999ec55ae12a36ce5e784b5d6e) on Bitcoin mainnet. Here is what its 193 bytes say, read with the wallet's own inspector (`winnow-debug inspect tx`) and checked against Blockstream's API:
 
+![Winnow's Advanced Wallet tab on build 97: the filter scan at block 972,361 of 972,361 with two peers, and the transactions Sent 13,060 sats in block 972,351 with a 715-sat fee, Sent to Kraken 1,710 sats in block 972,342 with a 710-sat fee, Received from Kraken 100,000 sats in block 972,325, and the two older transactions from before the upgrade](/images/blog/native-swift-secp256k1/advanced-transactions.png)
+
+*The wallet after the upgrade. The two bottom rows predate build 97; the top three are the funding coin and the two sends described below.*
+
 | | |
 |---|---|
 | Version | 2 |
@@ -162,7 +166,11 @@ I checked the signature myself, two ways. First with the wallet's own code: Wall
 
 What the chain cannot tell you is which code made that signature. libsecp256k1 would have produced a signature that verifies the same way. Because the auxiliary randomness was fresh, nobody can reproduce these exact bytes. The evidence that the Swift module signed is the build: build 97's TestFlight job never compiled libsecp256k1, and the phone that sent this payment was running build 97. The verified signature adds one thing the build alone does not show. To sign, build 97 had to derive the private key itself, through BIP32 and the BIP86 tweak, and it arrived at exactly the key the spent output commits to.
 
-The timing deserves care too. The coin this transaction spends arrived in block 972,325, whose timestamp is 12:34:00 UTC, about eighteen minutes after the build reached the internal group. So I make no claim that this payment spent a coin the C-backed build had derived. It shows something narrower: a wallet created under the C library, upgraded in place, derived its keys and signed with the Swift module, and Bitcoin mainnet accepted the result less than three hours after the build reached TestFlight.
+The timing deserves care too. The coin this transaction spends arrived in block 972,325, whose timestamp is 12:34:00 UTC, about eighteen minutes after the build reached the internal group. So I make no claim that this payment spent a coin the C-backed build had derived. One coin from before the upgrade is still unspent: the 4,230 sats left over from the send in block 970,649, the second row from the bottom above. Spending it is the test that would show the Swift module signing for a key the C library derived. It shows something narrower: a wallet created under the C library, upgraded in place, derived its keys and signed with the Swift module, and Bitcoin mainnet accepted the result less than three hours after the build reached TestFlight.
+
+![The payment detail for the funding coin: Received from Kraken, 100,000 sats, confirmed, with the receive address labelled Kraken](/images/blog/native-swift-secp256k1/funding-coin.png)
+
+*The coin the first send spent; the second spent that send's change. The label is my own note on the address; the screen says it does not verify who sent the payment.*
 
 The payment itself was too small for where it went. It went to a deposit address at Kraken, and Kraken's [minimum Bitcoin deposit](https://support.kraken.com/articles/360000292886-cryptocurrency-deposit-fees-and-minimums) on the Bitcoin network is 0.0001 BTC: 10,000 sats, ten times what I sent. Kraken's page says a deposit below the minimum is marked failed and the funds are lost. Those 1,000 sats paid for the lesson rather than reaching the account.
 
