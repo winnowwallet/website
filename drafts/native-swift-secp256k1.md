@@ -56,6 +56,8 @@ That trade-off is acceptable for an internal test build on a phone I control. It
 
 The build went to TestFlight as Winnow 0.8.7, build 97, for internal testers only, under Winnow's own app identity. That choice has consequences I would rather state than discover. It replaces the App Store Winnow on a tester's phone. It cannot see shared-account funds, and creating or deleting a wallet inside it removes their records. And because its automatic iCloud backup has no shared accounts in it, it rewrites the backup the production app made. The notes in TestFlight say: do not install it over a phone that holds shared-account funds.
 
+Then I installed it on my own phone, over the App Store Winnow and a live wallet. It upgraded the wallet in place, and the wallet went on receiving and sending as before. The signature on [the mainnet send](https://blockstream.info/tx/ad627d565202df6e644af195fd2ba9a1908631999ec55ae12a36ce5e784b5d6e) came from the Swift module, and Bitcoin mainnet accepted and mined it a few hours after the build reached TestFlight.
+
 A separate app identity, so the two can live side by side, is the next thing to build.
 
 ## What is next
