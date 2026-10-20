@@ -2,13 +2,13 @@
 
 Draft — Alex Newman · October 20, 2026
 
-*A single-key build of Winnow whose curve math is 894 lines of Swift, the mainnet payment it signed, and what it still lacks.*
+*A single-key build of Winnow whose curve math is 894 lines of Swift, the mainnet payments it signed, and what it still lacks.*
 
 Winnow has been a Bitcoin wallet written in Swift for a while, with one exception. Every key, every tweak and every signature went through P256K, a Swift wrapper around Bitcoin Core's C library, libsecp256k1. That library is excellent. It is also the one part of the wallet I could not read end to end, from the screen down to the arithmetic, and the question kept coming back: how hard would it be to own that boundary?
 
 I had a [proof of concept](https://github.com/posix4e/native-secp256k1-swift-test) to start from. It did field arithmetic modulo the curve prime and the `lift_x` operation from BIP340, with expected answers produced outside Swift, and nothing else. It could not derive a key or sign a message. The distance from there to a wallet that pays is the interesting part.
 
-This post describes the code, the evidence that it is correct, what it costs, and the first payment it signed on mainnet. Every number about the wallet comes from its repository at tag [v0.8.7](https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d), from the [release run](https://github.com/winnowwallet/winnow/actions/runs/39419425172) that built it, or from the block chain, and the appendix gives the commands to check the transaction yourself.
+This post describes the code, the evidence that it is correct, what it costs, and the first payments it signed on mainnet. Every number about the wallet comes from its repository at tag [v0.8.7](https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d), from the [release run](https://github.com/winnowwallet/winnow/actions/runs/39419425172) that built it, or from the block chain, and the appendix gives the commands to check the transaction yourself.
 
 ## Shrink the problem first
 
@@ -150,7 +150,7 @@ Then I installed it on my own phone, over the App Store Winnow and a live wallet
 | Size | 193 bytes, weight 568, virtual size 142 vbytes |
 | Input | output 1 of `deeeaa2b…9d6a`: 100,000 sats locked to a Taproot (P2TR) output key, `22e48712…9950d`; sequence `0xfffffffd` |
 | Witness | one item of 64 bytes |
-| Outputs | 98,290 sats to a P2TR address (the change); 1,000 sats to a P2WPKH address (the payment) |
+| Outputs | 98,290 sats to a P2TR address (the change); 1,000 sats to a P2WPKH deposit address at Kraken (the payment) |
 | Fee | 710 sats, 5.0 sat/vbyte |
 | Locktime | 972,341 |
 | Mined | [block 972,342](https://blockstream.info/block/000000000000000000003524d2ae7205c8ac854deb3d9afe5c3e8f8a5296e352), timestamp 15:03:42 UTC on 20 October |
@@ -163,6 +163,10 @@ I checked the signature myself, two ways. First with the wallet's own code: Wall
 What the chain cannot tell you is which code made that signature. libsecp256k1 would have produced a signature that verifies the same way. Because the auxiliary randomness was fresh, nobody can reproduce these exact bytes. The evidence that the Swift module signed is the build: build 97's TestFlight job never compiled libsecp256k1, and the phone that sent this payment was running build 97. The verified signature adds one thing the build alone does not show. To sign, build 97 had to derive the private key itself, through BIP32 and the BIP86 tweak, and it arrived at exactly the key the spent output commits to.
 
 The timing deserves care too. The coin this transaction spends arrived in block 972,325, whose timestamp is 12:34:00 UTC, about eighteen minutes after the build reached the internal group. So I make no claim that this payment spent a coin the C-backed build had derived. It shows something narrower: a wallet created under the C library, upgraded in place, derived its keys and signed with the Swift module, and Bitcoin mainnet accepted the result less than three hours after the build reached TestFlight.
+
+The payment itself was too small for where it went. It went to a deposit address at Kraken, and Kraken's [minimum Bitcoin deposit](https://support.kraken.com/articles/360000292886-cryptocurrency-deposit-fees-and-minimums) on the Bitcoin network is 0.0001 BTC: 10,000 sats, ten times what I sent. Kraken's page says a deposit below the minimum is marked failed and the funds are lost. Those 1,000 sats paid for the lesson rather than reaching the account.
+
+So I sent it again. The second transaction, [3e28224c…a7a6](https://blockstream.info/tx/3e28224cb67f95a1909a34b7bfceca5c10305d94a031fdc34b374007bc0ae7a6), pays 12,345 sats to a Kraken deposit address, and that one went through. It has the same shape: one input, one 64-byte signature, and 715 sats in fees on 143 vbytes, again 5.0 sat/vbyte. It was mined in block 972,351, whose timestamp is 16:07:23 UTC. Its locktime, 972,271, is below the height the wallet had already reached when it signed the first payment, so this is the one-in-ten case where the wallet picks a height up to 99 blocks back. Its signature passes the same checks against its own sighash, `a715126d…5380`. Its input is the 98,290-sat change output of the first transaction, and that closes the question the timing left open. This coin was created by a transaction that build 97 built and signed, and build 97 spent it.
 
 A separate app identity, so the two builds can live side by side, is the next thing to build.
 
@@ -344,3 +348,5 @@ valid if the spent amount were 1 sat more False
 ```
 
 The message is BIP341's: the epoch byte, the hash type, version and locktime, then hashes of the prevouts, the spent amounts, the spent scripts, the sequences and the outputs, then the spend type and the input index. That message is hashed with the `TapSighash` tag. The Python and the Swift agree on all 32 bytes of it.
+
+The same two programs check the second transaction, `3e28224c…a7a6`. Fetch its hex the same way, and change the spent output to output 0 of the first transaction: 98,290 sats locked by `512039e8fb58bce093e6eb458807f25b5b8c1732e66a41b694519a8e4521f69b4bea`. Both then print the sighash `a715126d3d57c8f7f97ca5a021348af22a00ec9f43925250876e10233d6b5380` and accept the signature.
