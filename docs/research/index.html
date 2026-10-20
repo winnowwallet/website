@@ -36,7 +36,7 @@
       <p>These projects give those questions room to be tested. Each starts with a reason to investigate, records what works, and names the evidence still missing before we make new promises to people using Winnow.</p>
     </div>
     <p>From the blog: <a href="/blog/bitcoin-beyond-conspiracy-theories/">Bitcoin Beyond Conspiracy Theories</a> — why we trust standard hashes, and what a wallet must preserve to recover safely.</p>
-    <p class="edition">Research notes · Updated <time datetime="2026-10-19">19 October 2026</time></p>
+    <p class="edition">Research notes · Updated <time datetime="2026-10-20">20 October 2026</time></p>
   </header>
 
   <nav class="research-index" aria-label="Research projects">
@@ -49,45 +49,45 @@
 
   <section class="research-project" id="native-swift" aria-labelledby="native-title">
     <header class="project-heading">
-      <div class="project-label"><span class="project-number">01 / CRYPTOGRAPHY</span><span class="status">Early implementation</span></div>
+      <div class="project-label"><span class="project-number">01 / CRYPTOGRAPHY</span><span class="status">Internal test build</span></div>
       <h2 id="native-title">A focused Bitcoin library,<br><em>written in Swift.</em></h2>
       <p class="project-question">Can we own a narrow implementation of the keys and signatures Winnow needs, and justify the responsibility that comes with it?</p>
     </header>
     <div class="project-body">
       <div class="prose">
-        <p>Winnow already implements its wallet and Bitcoin transaction logic in Swift. At the <a href="https://github.com/winnowwallet/winnow/blob/6566871db0a40be481dd63b7960790ef4de9192e/Package.swift">revision we inspected</a>, its curve operations use P256K, a Swift interface to C libsecp256k1. We want to investigate a small, independently reusable Swift library for that boundary.</p>
-        <p>The attraction is being able to follow the types and implementation all the way through: a key, a tweak, a signature, and the mathematics behind them. A focused library could make integration and maintenance easier to understand. Build time, binary size, and performance are questions to measure.</p>
-        <p>This comes with a substantial cost. <a href="https://github.com/bitcoin-core/secp256k1#implementation-details">libsecp256k1</a> is an established implementation with extensive testing and deliberate treatment of secret operations. Replacing it transfers that responsibility to us. Swift does not, by itself, establish correct arithmetic, safe nonce handling, or constant-time execution.</p>
+        <p>Winnow already implements its wallet and Bitcoin transaction logic in Swift. At the <a href="https://github.com/winnowwallet/winnow/blob/6566871db0a40be481dd63b7960790ef4de9192e/Package.swift">revision we first inspected</a>, its curve operations used P256K, a Swift interface to C libsecp256k1. On the <a href="https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d">single-key branch</a> that boundary is now Swift: a module inside the wallet repository, <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/README.md">NativeSecp256k1</a>, nine files and about nine hundred lines that depend only on Foundation and CryptoKit. Winnow 0.8.7 build 97 ships on it to internal TestFlight testers.</p>
+        <p>The attraction was being able to follow the types and implementation all the way through: a key, a tweak, a signature, and the mathematics behind them. That part held up. A reader can start at a 256-bit integer in four limbs and arrive at a BIP340 signature without leaving Swift.</p>
+        <p>The cost is as described below. <a href="https://github.com/bitcoin-core/secp256k1#implementation-details">libsecp256k1</a> is an established implementation with extensive testing and deliberate treatment of secret operations. Replacing it transfers that responsibility to us, and the first version accepts two gaps on purpose: every operation is <strong>variable-time</strong>, and secret scalars are <strong>not zeroized</strong>. Timing and memory contents may depend on keys and nonces. The module's guide and the wallet's own pages say so rather than inheriting the C library's claims.</p>
         <h3>What is the minimum?</h3>
-        <p><strong>Schnorr still needs secp256k1.</strong> Schnorr is the signature scheme; secp256k1 is the curve used by Bitcoin's <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340.mediawiki">BIP340</a>. Winnow also needs key parsing and public-key derivation, BIP32 and Taproot tweaks, and the point and scalar operations used by its existing MuSig2 shared-signing code.</p>
-        <p>The proposed library owns those operations. Transaction formats, wallet policy, networking, backups, and the interface remain in Winnow. The initial production scope does not call for ECDSA, key recovery, or a general-purpose big-integer API.</p>
+        <p><strong>Schnorr still needs secp256k1.</strong> Schnorr is the signature scheme; secp256k1 is the curve used by Bitcoin's <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340.mediawiki">BIP340</a>. The first build takes the minimum literally. It is a single-key Winnow with shared accounts removed, so the module implements only what the ordinary receive and send path calls: field and scalar arithmetic, point addition and multiplication with a fixed-base table for the generator, compressed and x-only encodings, BIP32 and Taproot tweaks with libsecp256k1's exact validation rules and parity behaviour, BIP340 signing and verification, and the tagged hash.</p>
+        <p>Transaction formats, wallet policy, networking, backups, and the interface remain in Winnow. MuSig2, script-path multisig, ECDSA, key recovery and ECDH are out of scope for this build, and a backup that carries shared-account records is refused rather than restored without them.</p>
       </div>
 
       <figure class="boundary" aria-labelledby="boundary-title">
-        <figcaption id="boundary-title"><span class="eyebrow">Proposed architecture</span><strong>A library with a clear job.</strong></figcaption>
+        <figcaption id="boundary-title"><span class="eyebrow">Current architecture</span><strong>A module with a clear job.</strong></figcaption>
         <ol class="boundary-stack">
-          <li><span class="layer-tag">The application</span><strong>Winnow</strong><p>Wallet policy · transactions · MuSig2 coordination · storage · interface</p></li>
-          <li class="library-layer"><span class="layer-tag">The independent Swift package</span><strong>Bitcoin keys &amp; Schnorr signatures</strong><p>Key validation · derivation tweaks · Taproot · required point and scalar operations</p><span class="kernel">Internal: fixed-width secp256k1 arithmetic</span></li>
-          <li><span class="layer-tag">Supported Apple services</span><strong>CryptoKit + Security</strong><p>Hashing and HMAC · secure random bytes<br>Keychain stays with the consuming app.</p></li>
+          <li><span class="layer-tag">The application</span><strong>Winnow, single-key build</strong><p>Wallet policy · transactions · compact-filter sync · storage · interface</p></li>
+          <li class="library-layer"><span class="layer-tag">The Swift module</span><strong>Bitcoin keys &amp; Schnorr signatures</strong><p>Key validation · BIP32 and Taproot tweaks · BIP340 signing and verification</p><span class="kernel">Internal: fixed-width secp256k1 field, scalar and point arithmetic</span></li>
+          <li><span class="layer-tag">Supported Apple services</span><strong>CryptoKit + Security</strong><p>SHA-256 for the tagged hashes · secure random bytes<br>Keychain stays with the app.</p></li>
         </ol>
-        <p class="figure-note">An intended boundary. The native curve and signing implementation is still to be built.</p>
+        <p class="figure-note">Built and shipped in the internal build. The module is a target inside the wallet repository; an independent package is still a decision to make.</p>
       </figure>
 
       <div class="prose">
         <h3>Use Apple where it fits. Keep the library independent.</h3>
-        <p><a href="https://developer.apple.com/documentation/cryptokit">CryptoKit</a> supplies hashes and HMAC; Security supplies secure randomness. Apple's public P-256 APIs use a different curve from Bitcoin's secp256k1. They do not provide a drop-in BIP340 signer. Native Swift here means owning the Bitcoin curve implementation in Swift, while using supported platform services.</p>
+        <p><a href="https://developer.apple.com/documentation/cryptokit">CryptoKit</a> supplies SHA-256, which the module uses for BIP340's tagged hashes; Security supplies secure randomness. Apple's public P-256 APIs use a different curve from Bitcoin's secp256k1. They do not provide a drop-in BIP340 signer. Native Swift here means owning the Bitcoin curve implementation in Swift, while using supported platform services.</p>
         <p>We want the package to build and test without Winnow, and to be useful beyond this app. A possible contribution to <a href="https://github.com/apple/swift-crypto/blob/0f6f68df04180034ef62e0d5f40195ac3189317a/CONTRIBUTING.md">Apple's Swift Crypto project</a> is one direction to explore. Its current contribution rules require maintainer agreement and a usable BoringSSL implementation for new APIs. A native Swift backend therefore needs an explicit upstream decision. Apple acceptance and future CryptoKit availability are open questions.</p>
       </div>
       <aside class="research-evidence" aria-label="Native Swift current evidence">
         <span class="evidence-label">What exists today</span>
-        <p>The independent research starter implements <strong>tagged SHA-256</strong>, checked against known answers. It does not yet implement native curve arithmetic or signing. Existing wallet test results describe the current C-backed implementation; they do not validate a replacement.</p>
+        <p>Expected answers never come from the code under test. Field, scalar and point tests use <strong>fixtures computed in Python integer arithmetic and by a libsecp256k1 x-only oracle</strong>; the wallet's BIP32, BIP86, BIP340 and BIP341 vectors run unchanged through the new backend; differential tests compare every public operation with libsecp256k1, and signatures must match it <strong>byte for byte</strong> under fixed auxiliary randomness. The fuzz harness feeds the same input to both backends. The recorded signet journey creates a wallet, receives, sends and confirms on a real node with the native signature under it, and the shipped binary links no libsecp256k1 at all. Measured on an Apple silicon Mac in a release build: address derivation stays within three times the C library (k·G 37 µs against 11 µs); signing takes 271 µs and verification 207 µs against 26 µs and 18 µs.</p>
       </aside>
       <div class="next-experiment">
         <h3>The next experiments</h3>
         <ol class="research-steps">
-          <li><strong>Verify public inputs.</strong> Execute official valid and invalid signature vectors, test arithmetic boundaries, and compare with the existing backend.</li>
-          <li><strong>Review secret operations.</strong> Add signing only with explicit nonce ownership, failure handling, and review of optimized code and secret lifetimes.</li>
-          <li><strong>Integrate and measure.</strong> Exercise Winnow's wallet and shared-signing flows, then validate signed device builds and internal TestFlight builds using test wallets. Record device performance and dependency changes before deciding on migration.</li>
+          <li><strong>Constant time and secret lifetimes.</strong> Replace the conditional subtractions, the per-bit branch in scalar multiplication and the secret-indexed table lookup with constant-time selects, clear the scalar copies made while signing and tweaking, and measure what that costs.</li>
+          <li><strong>Remove the last pin.</strong> The test suite still links libsecp256k1 as the differential oracle and for the signet miner's ECDSA signatures. Recorded vectors and a miner signer of its own would leave the repository with no third-party package at all.</li>
+          <li><strong>Decide where it lives.</strong> A separate app identity for the single-key build, so it can be installed beside Winnow; whether the module becomes an independent package or an upstream contribution; and whether shared signing and Silent Payments justify adding the point operations this build left out.</li>
         </ol>
       </div>
     </div>
