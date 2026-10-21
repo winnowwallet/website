@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Research at Winnow</title>
-<meta name="description" content="Why Winnow is exploring native Swift cryptography, wallet rescue, P2MR, existing hardware wallets, and Silent Payments. Current evidence and the next experiments.">
+<meta name="description" content="Why Winnow is exploring native Swift cryptography, wallet rescue, P2MR, existing hardware wallets, Silent Payments, and thresholds and timelocks. Current evidence and the next experiments.">
 <link rel="canonical" href="https://winnowwallet.com/research/">
 <meta property="og:site_name" content="Winnow">
 <meta property="og:title" content="Research at Winnow">
@@ -45,6 +45,7 @@
     <a href="#p2mr"><span>03</span> P2MR</a>
     <a href="#hardware-wallets"><span>04</span> Hardware wallets</a>
     <a href="#silent-payments"><span>05</span> Silent Payments</a>
+    <a href="#thresholds"><span>06</span> Thresholds and timelocks</a>
   </nav>
 
   <section class="research-project" id="native-swift" aria-labelledby="native-title">
@@ -158,6 +159,32 @@
       <aside class="research-evidence"><span class="evidence-label">What exists today</span><p>Winnow currently <a href="https://github.com/winnowwallet/winnow/blob/6566871db0a40be481dd63b7960790ef4de9192e/Tests/WalletCoreTests/UnsupportedWalletDataTests.swift#L58">rejects Silent Payments destinations</a>. BIP352 is a complete specification; light-client discovery remains a research area. Sending, recipient scanning, and recovery need their own Winnow implementation and interoperability evidence.</p></aside>
       <div class="next-experiment"><h3>The next experiment</h3><p>Start with specification vectors and a test-coin exchange with an independent implementation. Measure the data, time, and energy needed to find and restore payments on an iPhone. Test interrupted scans and chain reorganizations. Make the scanning-key, spending-key, and label recovery requirements explicit, and evaluate any server assistance by what it learns about the recipient.</p></div>
       <p class="project-source"><a href="https://github.com/bitcoin/bips/blob/master/bip-0352.mediawiki">Read BIP352 <span aria-hidden="true">↗</span></a></p>
+    </div>
+  </section>
+
+  <section class="research-project" id="thresholds" aria-labelledby="thresholds-title">
+    <header class="project-heading">
+      <div class="project-label"><span class="project-number">06 / SPENDING POLICY</span><span class="status">Research</span></div>
+      <h2 id="thresholds-title">Not every key,<br><em>not right away.</em></h2>
+      <p class="project-question">Can the Swift build let any k of n keys spend, or let a recovery key spend after a delay, without giving up the cheap, private path where everyone signs?</p>
+    </header>
+    <div class="project-body">
+      <div class="prose">
+        <p>Shared signing in the <a href="#native-swift">native Swift build</a> is in an <a href="https://github.com/winnowwallet/winnow/pull/235">open pull request</a>, and it is n-of-n. MuSig2 combines every signer's key into one Taproot key, so every signer signs every payment. That path is cheap and private: the spend is one 64-byte signature that looks like any other.</p>
+        <p>Thresholds and timelocks cannot live in that key. In Taproot they are script-path leaves, defined by <a href="https://github.com/bitcoin/bips/blob/master/bip-0342.mediawiki">BIP342</a>: a <code>multi_a</code> leaf lets any k of n keys sign, and an <code>older()</code> or <code>after()</code> condition lets a recovery key spend only after a delay. Leaves stay hidden until one is used, so an account can keep the all-signers key path for ordinary payments. The single-key build removed script-path spending together with shared accounts, and the MuSig2 work kept it out on purpose.</p>
+        <p>The curve is not the obstacle. A script-path signature is an ordinary BIP340 signature over a different message. The work is around it: the descriptor tree, control blocks, PSBT fields for leaf scripts and signatures, witness assembly, and an interface that states who can spend and when. The shipping Winnow's threshold accounts show where the risk sits. Four of its security findings concern building and checking spending policies, not the curve.</p>
+      </div>
+      <aside class="research-evidence"><span class="evidence-label">What exists today</span><p>The shipping Winnow spends <a href="https://github.com/winnowwallet/winnow/blob/6566871db0a40be481dd63b7960790ef4de9192e/Sources/VaultKit/Vault.swift">2-of-3 script-path accounts</a> through the C library. Its <a href="https://github.com/winnowwallet/winnow/blob/6566871db0a40be481dd63b7960790ef4de9192e/docs/security/findings.md">security findings</a> SEC-004, SEC-009, SEC-019 and SEC-020 record the policy checks that code needed: reviewing change against the descriptor, refusing a repeated signer, proving signers independent at every address, and requiring an unspendable internal key. The Swift build still carries the <a href="https://github.com/winnowwallet/winnow/blob/3794057eae11a18e33af2ffba76d91dce71b5da8/Sources/WalletCore/Transactions/SighashBIP341.swift#L138-L147">BIP341 script-path signature hash</a>, unused. Nothing in the Swift build spends a threshold or timelocked leaf today.</p></aside>
+      <div class="next-experiment">
+        <h3>The next experiments</h3>
+        <ol class="research-steps">
+          <li><strong>A threshold leaf.</strong> Give a MuSig2 account one <code>multi_a</code> leaf and spend it both ways on signet, with Bitcoin Core as a cosigner on each path.</li>
+          <li><strong>Timelocked recovery.</strong> Add a leaf with <code>older()</code> and work out what the phone must do before it matures. A relative lock counts from each coin's own confirmation, so keeping the cooperative path primary means refreshing coins in time.</li>
+          <li><strong>A policy people can read.</strong> Show who can spend, and when, before anyone funds the account. Port the shipping app's policy checks with their regression tests. The display question is shared with <a href="#hardware-wallets">hardware wallets</a>.</li>
+          <li><strong>FROST, watched.</strong> Threshold Schnorr signatures would keep k-of-n on the key path. Follow its Bitcoin standardization rather than adopt it early.</li>
+        </ol>
+      </div>
+      <p class="project-source"><a href="https://github.com/bitcoin/bips/blob/master/bip-0342.mediawiki">Read BIP342 <span aria-hidden="true">↗</span></a></p>
     </div>
   </section>
 
