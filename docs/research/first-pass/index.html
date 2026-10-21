@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>First-pass research results — Winnow</title>
+<meta name="description" content="Recorded October 19 research results for Winnow recovery, P2MR, Silent Payments and hardware signing, with the limits of each experiment.">
+<link rel="canonical" href="https://winnowwallet.com/research/first-pass/">
+<meta property="og:site_name" content="Winnow">
+<meta property="og:title" content="First-pass research results — Winnow">
+<meta property="og:description" content="What the first recovery, protocol and hardware experiments established, and what they did not test.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://winnowwallet.com/research/first-pass/">
+<meta property="og:image" content="https://winnowwallet.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="First-pass research results — Winnow">
+<meta name="twitter:description" content="Recorded results and limits from Winnow's first recovery, protocol and hardware experiments.">
+<meta name="twitter:image" content="https://winnowwallet.com/og.png">
+<link rel="stylesheet" href="/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar"><div class="bar"><a class="mark" href="/">winnow</a><nav class="links" aria-label="Main"><a href="/">Wallet</a><a href="/research/">Research</a><a href="/blog/">Blog</a></nav></div></header>
+<main id="main">
+<h1>First-pass research results</h1>
+<p class="lede">Experiments recorded on <time datetime="2026-10-19">19 October 2026</time>. Results reviewed for publication on <time datetime="2026-10-21">21 October 2026</time>.</p>
+<p>These are bounded experiments with public vectors and synthetic wallets. The counts below come from the recorded first-pass runs; they are not a fresh run of every experiment or measurements of test coverage. The <a href="/research/">Research page</a> tracks subsequent branches separately, including the native Swift wallet, script-path multisig and the draft Ledger integration.</p>
+<p>Protocol and recovery checks used <a href="https://github.com/winnowwallet/winnow/tree/6566871db0a40be481dd63b7960790ef4de9192e">Winnow revision 6566871</a> and <a href="https://github.com/bitcoin/bips/tree/927b6de9915c9262615a6399de51b200f81e5aa4">BIPs revision 927b6de</a>. Hardware tests used the older coordinator identified below. <a href="/research/first-pass/results.json">Machine-readable record and artifact hashes</a>.</p>
+<nav class="contents" aria-label="Recorded experiments"><a href="#recovery">Recovery</a><a href="#p2mr">P2MR</a><a href="#silent-payments">Silent Payments</a><a href="#hardware">Hardware</a></nav>
+
+<section id="recovery">
+<h2>Recovery: restored keys are only one requirement</h2>
+<p>The source review separated signing authority, coin discovery, account policy and safe signing state. Winnow's import path uses saved records and scans forward from a saved height. Its historical range scanner is implemented library code, but the inspected app import path does not connect it into a complete words-only restore.</p>
+<ul>
+<li><strong>23 import tests and 23 range-scan tests passed.</strong> These exercise library behavior with synthetic chains and loopback peers; they do not demonstrate a phone, Keychain or live iCloud recovery.</li>
+<li><strong>18 synthetic model tests passed.</strong> A stale restore and an independent clone both reused a signing slot after an earlier signature record was exported but never appeared on-chain.</li>
+<li>The coordinated model avoided reuse by assuming one shared authority, atomic reservation before export, and refusal when the authority was unavailable. It burned a reserved slot after an injected interruption.</li>
+</ul>
+<p>The model does not implement XMSS or LMS, produce cryptographic signatures, persist state across a real power failure, or prevent rollback of its authority. It demonstrates why those guarantees are needed. <a href="https://csrc.nist.gov/pubs/sp/800/208/final">SP 800-208</a> describes the state requirement and its own hardware conformance profile; it is not a Bitcoin wallet backup format. <a href="https://csrc.nist.gov/pubs/fips/205/final">SPHINCS+-based SLH-DSA</a> avoids the evolving used-key index, while ordinary key, policy and discovery backups remain necessary.</p>
+<p>Rescue was inspected at <a href="https://github.com/winnowwallet/winnowrescue/tree/79ffa4da975b4134af20ce35986a39002cd76bc9">79ffa4d</a>. Its core, network adapter, CLI and GUI were scaffolds. No working recovery/sweep or Rust test run was established in this pass. The next step is one precisely defined backup format taken through discovery, review and a test-coin sweep, with privacy disclosures recorded.</p>
+</section>
+
+<section id="p2mr">
+<h2>P2MR: construction is not script enforcement</h2>
+<p><a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0360.mediawiki">BIP360 v0.12.1</a> was a draft at the pinned revision. Its reference runner reported nine vectors: seven constructed outputs and two checks of expected-error metadata. The additional local harness passed 83 checks of construction, address boundaries and a partial rule model. It did not execute a script interpreter.</p>
+<p>The draft's depth-zero rule matters: once the script commitment matches, that case succeeds without executing the script. A single-leaf CHECKSIG example therefore does not demonstrate that a signature is required. A future spend test needs a deliberately chosen policy and an implementation enforcing the full pinned rules.</p>
+<p>A separate executable importing unchanged WalletCore matched the seven constructions and checked the address-based funding boundary. Its full 127-check run covered P2MR and Silent Payments, with 21 selected existing wallet tests also passing. P2MR destinations were refused. The low-level initializer accepting a raw output script remains generic; these results describe the address/payment gate.</p>
+<p>The next milestone is a two-leaf policy restored from a versioned backup, with both accepted and corrupted witnesses tested against a complete draft-rule implementation. Ordinary regtest acceptance, a correct address, and a matching Merkle root are not evidence of Bitcoin activation or post-quantum signing.</p>
+</section>
+
+<section id="silent-payments">
+<h2>Silent Payments: discovery needs complete information</h2>
+<p>The unchanged <a href="https://github.com/bitcoin/bips/tree/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0352">BIP352 reference runner</a> passed 28 sending and 29 receiving cases across 28 scenarios. Sixteen additional discovery/recovery checks passed. Reusing the reference implementation establishes agreement with those fixtures, not independent wallet interoperability.</p>
+<ul>
+<li>The scan secret and spend public key found a payment. Wrong keys, input aggregation or input-hash data prevented discovery.</li>
+<li>A missing label numbered 1,001,337 hid a published payment; restoring it recovered the payment. Omitting change label 0 also lost a receipt.</li>
+<li>A correctly computed public tweak point could stand in for full input data. A different valid point hid the payment, illustrating the need to check helper correctness and completeness.</li>
+<li>Removing an earlier matching output hid a later output in the same fixture. Retaining only unspent outputs from a transaction is not automatically sufficient for discovery.</li>
+</ul>
+<p>Ordinary compact filters do not supply all the transaction input and spent-output information needed for this calculation. A restore must specify its scan and spend keys, derivation conventions, labels and chain starting point. A server given scanning keys can identify receipts; a generic data feed avoids that disclosure but introduces completeness and request-metadata questions.</p>
+<p>Silent Payments needs secret scalar multiplication by an arbitrary validated public point and the specified compressed shared-point encoding. The native Swift library's public-data operations do not, by themselves, establish a suitable secret ECDH implementation. Also, <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0352.mediawiki#scanning-silent-payment-eligible-transactions">v0 eligibility rules</a> exclude transactions spending witness versions above 1, including proposed P2MR inputs.</p>
+<p>No seed-derived end-to-end wallet restore, transaction broadcast, iPhone throughput, bandwidth or battery measurement was performed. The next step is an independent test-coin send, discovery, spend and seed-plus-label restore with interruption and reorganization checks.</p>
+</section>
+
+<section id="hardware">
+<h2>Hardware: historical simulation and current devices are separate</h2>
+<p>The reproduction used <a href="https://github.com/winnowwallet/winnow/tree/3200521453173c0e9131c3331ec0c5ac3315ee82/Tools/Satochip">Winnow coordinator 3200521</a>, <a href="https://github.com/Toporin/SatochipApplet/tree/3aa97fdc32c3fe3afade3cd5eb7cd9d0d4bd197c">Satochip applet v0.15-0.1</a>, pysatochip v0.18.5, a corrected jCardSim 3.0.5.11 simulator, and Bitcoin Core 31.1 on local regtest.</p>
+<p>Four variants passed signature checks and Core's mempool-acceptance check: baseline, restored phone, replacement simulated card from the same seed, and both restored. These used saved account and coin records. The candidate spends were not broadcast or confirmed, and no fresh coin-discovery scan was tested.</p>
+<p>The stock historical applet failed at nonce counter 32,769. A temporary counter patch passed that boundary and wraparound checks. State was injected near the boundary; the test did not perform 32,769 physical-card operations. Both runs required the simulator correction. The stock run correctly reported a finding rather than overall success.</p>
+<p>The later <a href="https://github.com/Toporin/SatochipApplet/tree/048d789af6581d0391a1581358f28db0c4915230">v0.16-0.1 source</a> already contains an equivalent counter fix and other protocol changes. It was inspected but not executed in this pass. Neither that version nor a retail card inherits the old simulator result.</p>
+<p>No physical hardware, iPhone Bluetooth or NFC flow was tested. A coordinator rejecting a changed signing message is also not evidence that a device displays or understands the recipient. The <a href="/research/#hardware-wallets">current hardware research section</a> records the subsequent Ledger branch and its separate remaining device tests.</p>
+</section>
+<p><a href="/research/">← Back to Research at Winnow</a></p>
+</main>
+<footer><div class="bar"><nav aria-label="Footer"><a href="/research/">Research</a> · <a href="/roadmap">Roadmap</a> · <a href="/privacy">Privacy</a></nav></div></footer>
+</body>
+</html>

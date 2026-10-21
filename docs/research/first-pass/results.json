@@ -1,0 +1,87 @@
+{
+  "experiment_date": "2026-10-19",
+  "publication_review_date": "2026-10-21",
+  "basis": "Recorded first-pass runs; experiments were not rerun for this website update. Artifact hashes identify the retained research records, not a public source archive.",
+  "results": {
+    "recovery": {
+      "recorded_artifact_sha256": {
+        "recovery-report.md": "b9acd62b85745bffbf00c19119d6b9b6712dd6d17ee21b584c7885e58f740d83",
+        "sources.json": "44a8ea9f403704a375b3e9d6f161de91e0b3e35f34132807957e7aec1f5c25a9",
+        "model-results.json": "b56c0cc1ca9c5da6992b1d1af0e1b971488949d713dc19f7d410c53cc9e339a6",
+        "model-tests.txt": "28a62f1d53cda03737d705ea1ff386589ee6f081b112b3726f1385e50d7c14a5"
+      },
+      "winnow_revision": "6566871db0a40be481dd63b7960790ef4de9192e",
+      "rescue_revision": "79ffa4da975b4134af20ce35986a39002cd76bc9",
+      "import_tests_passed": 23,
+      "range_scan_tests_passed": 23,
+      "synthetic_model_tests_passed": 18,
+      "limits": [
+        "Synthetic model, not XMSS/LMS implementation",
+        "No durable or rollback-resistant storage implementation",
+        "No physical-device or live iCloud restore",
+        "Rescue source inspection only"
+      ]
+    },
+    "protocol": {
+      "recorded_artifact_sha256": {
+        "first-pass-report.md": "55f531c22e18f7f9b814a66a2d5a95c560f73a95303e7945691ce0bde6d99b9a",
+        "source-manifest.json": "186efbc386983225c94884bc9d32a8893cbe1c674c16366e7998e6e29b8b4b11",
+        "p2mr/results.json": "52970c83265736e15dfd6a3e9c52031c75b13efb8c05259076a1525bc1e69224",
+        "silent-payments/fixture-results.json": "77a31f4a5beb8fda04404bdc6863f66edbe9d8decc91edd2c64e4ea5a543a715"
+      },
+      "winnow_revision": "6566871db0a40be481dd63b7960790ef4de9192e",
+      "bips_revision": "927b6de9915c9262615a6399de51b200f81e5aa4",
+      "p2mr": {
+        "constructed_vectors": 7,
+        "error_metadata_checks": 2,
+        "additional_checks_passed": 83,
+        "full_script_execution": false
+      },
+      "silent_payments": {
+        "reference_scenarios": 28,
+        "reference_sending_cases": 28,
+        "reference_receiving_cases": 29,
+        "additional_checks_passed": 16
+      },
+      "wallet_boundary_checks_passed": 127,
+      "selected_wallet_tests_passed": 21,
+      "limits": [
+        "No Bitcoin activation or consensus implementation",
+        "No independent complete wallet interoperability",
+        "No phone performance measurements"
+      ]
+    },
+    "hardware": {
+      "recorded_artifact_sha256": {
+        "hardware-first-pass.md": "c144f805d8b1fbb7e53b45254aa3fe3017ba86706a8ef6bd42d90f5c13e9ec50",
+        "provenance.json": "f0c86bbbbf95bd4ab1db7bc698f69be09890d22dc2a9179ca547a92215a0f2d6",
+        "satochip-stock.json": "4473aee30a824677ed82c7186490c4179be6c107b38c9ae4ff26bb1d19a21dca",
+        "satochip-counter-fix.json": "c0a237980f8dba2c7fc2761a4eaf4bd66ceb045e3d5693bc4c3132d4237545c2"
+      },
+      "coordinator_revision": "3200521453173c0e9131c3331ec0c5ac3315ee82",
+      "applet_revision": "3aa97fdc32c3fe3afade3cd5eb7cd9d0d4bd197c",
+      "applet_version": "v0.15-0.1",
+      "client_version": "pysatochip v0.18.5",
+      "simulator": "jCardSim 3.0.5.11 with ByteContainer correction",
+      "core_version": "31.1",
+      "stock": {
+        "recovery_variants_passed": 4,
+        "regtest_mempool_acceptance_passed": 4,
+        "nonce_counter_32769": "failed",
+        "overall": "complete_with_findings"
+      },
+      "temporary_counter_patch": {
+        "recovery_variants_passed": 4,
+        "regtest_mempool_acceptance_passed": 4,
+        "nonce_counter_32769": "passed",
+        "wraparound": "passed"
+      },
+      "limits": [
+        "No physical hardware, iPhone Bluetooth or NFC",
+        "No broadcast or confirmation of candidate spends",
+        "No fresh discovery scan",
+        "No hardware display or recipient approval evidence"
+      ]
+    }
+  }
+}
