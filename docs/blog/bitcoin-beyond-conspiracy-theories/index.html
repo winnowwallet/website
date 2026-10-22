@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bitcoin Beyond Conspiracy Theories — Winnow</title>
-    <meta name="description" content="The NIST seeds' real origin, the odd thing about Bitcoin's generator, what it costs Bitcoin to have its own curve, and the Swift curve code behind my first mainnet payments and the multisig accounts that followed.">
+    <meta name="description" content="The NIST curve seeds had no secret and no lost phrase. Bitcoin's curve has no seed at all. And 894 lines of my own Swift signed a payment to Kraken.">
     <link rel="canonical" href="https://winnowwallet.com/blog/bitcoin-beyond-conspiracy-theories/">
     <link rel="alternate" type="application/rss+xml" title="Winnow blog" href="https://winnowwallet.com/blog/feed.xml">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="Winnow">
     <meta property="og:title" content="Bitcoin Beyond Conspiracy Theories — Winnow">
-    <meta property="og:description" content="The NIST seeds' real origin, the odd thing about Bitcoin's generator, what it costs Bitcoin to have its own curve, and the Swift curve code behind my first mainnet payments and the multisig accounts that followed.">
+    <meta property="og:description" content="The NIST curve seeds had no secret and no lost phrase. Bitcoin's curve has no seed at all. And 894 lines of my own Swift signed a payment to Kraken.">
     <meta property="og:url" content="https://winnowwallet.com/blog/bitcoin-beyond-conspiracy-theories/">
     <meta property="og:image" content="https://winnowwallet.com/images/blog/bitcoin-beyond-conspiracy-theories/share-card.png">
     <meta property="article:published_time" content="2026-10-20T21:57:26.000Z">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Bitcoin Beyond Conspiracy Theories — Winnow">
-    <meta name="twitter:description" content="The NIST seeds' real origin, the odd thing about Bitcoin's generator, what it costs Bitcoin to have its own curve, and the Swift curve code behind my first mainnet payments and the multisig accounts that followed.">
+    <meta name="twitter:description" content="The NIST curve seeds had no secret and no lost phrase. Bitcoin's curve has no seed at all. And 894 lines of my own Swift signed a payment to Kraken.">
     <meta name="twitter:image" content="https://winnowwallet.com/images/blog/bitcoin-beyond-conspiracy-theories/share-card.png">
     <link rel="stylesheet" href="/blog/article.css">
 </head>
@@ -27,64 +27,40 @@
             <header class="article-header">
                 <p class="eyebrow"><a href="/blog/">Winnow blog</a></p>
                 <h1>Bitcoin Beyond Conspiracy Theories</h1>
-                <p class="article-subtitle">The NIST seeds' real origin, the odd thing about Bitcoin's generator, what it costs Bitcoin to have its own curve, and the Swift curve code behind my first mainnet payments and the multisig accounts that followed.</p>
+                <p class="article-subtitle">The NIST curve seeds had no secret and no lost phrase. Bitcoin's curve has no seed at all. And 894 lines of my own Swift signed a payment to Kraken.</p>
                 <div class="article-byline">
                     <span class="author-mark" aria-hidden="true">AN</span>
-                    <p><strong>Alex Newman</strong><span><time datetime="2026-10-20T21:57:26.000Z">October 20, 2026</time> · Updated <time datetime="2026-10-22">October 22, 2026</time> · 31 min read</span></p>
+                    <p><strong>Alex Newman</strong><span><time datetime="2026-10-20T21:57:26.000Z">October 20, 2026</time> · Updated <time datetime="2026-10-22">October 22, 2026</time> · 14 min read</span></p>
                 </div>
             </header>
             <div class="article-content">
-<div class="toc" role="navigation" aria-label="Contents">
-<p class="toc-title">Contents</p>
-<ul>
-<li><a href="#a-joke-phrase-that-was-never-there">A joke phrase that was never there</a></li>
-<li><a href="#bitcoins-curve-has-no-seed-but-it-has-a-mystery">Bitcoin's curve has no seed, but it has a mystery</a></li>
-<li><a href="#the-cost-of-having-its-own-curve">The cost of having its own curve</a></li>
-<li><a href="#why-i-trust-the-hashes">Why I trust the hashes</a></li>
-<li><a href="#trusting-the-math-is-not-trusting-the-code">Trusting the math is not trusting the code</a></li>
-<li><a href="#the-shape-of-the-code">The shape of the code</a></li>
-<li><a href="#where-the-lines-are-now">Where the lines are now</a></li>
-<li><a href="#shipping-it">Shipping it</a></li>
-<li><a href="#since-build-97-internal-only">Since build 97 (internal only)</a></li>
-<li><a href="#multisig-without-new-curve-code">Multisig without new curve code</a></li>
-<li><a href="#summary">Summary</a></li>
-<li><a href="#appendix-checking-it-yourself">Appendix: checking it yourself</a></li>
-<li><a href="#references">References</a></li>
-</ul>
-</div>
-<h2 id="a-joke-phrase-that-was-never-there">A joke phrase that was never there</h2>
-<p>For almost thirty years the seeds behind NIST's elliptic curves were cryptography's favourite conspiracy theory. The curves P-192 through P-521 in <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf">FIPS 186</a> are "verifiably random": each curve's coefficient is derived from the SHA-1 hash of a published 160-bit seed.<sup class="cite">[<a id="cite-1" href="#ref-1">1</a>, <a id="cite-2" href="#ref-2">2</a>]</sup> Anyone can check the hash. Nobody could say where the seeds came from. After NIST <a href="https://www.nist.gov/news-events/news/2014/04/nist-removes-cryptography-algorithm-random-number-generator-recommendations">removed Dual_EC_DRBG</a> from its random-number recommendations in 2014, citing a lack of public confidence in it,<sup class="cite">[<a id="cite-3" href="#ref-3">3</a>]</sup> an unexplained number in a NIST curve looked like something worse than an unexplained number.</p>
-<p>The seeds were apparently generated in 1997 by Jerry Solinas at the NSA, and the story that came down from him was charming. A cryptographer who spoke to him around 2013 later recalled him saying they were hashes of English phrases, something like <code>SHA1("Jerry deserves a raise.")</code>, and that the exact phrases were lost when his computer was replaced. When the controversy came up he tried every phrase he could think of, and none matched.<sup class="cite">[<a id="cite-4" href="#ref-4">4</a>, <a href="#ref-2">2</a>]</sup> Solinas died in early 2023.<sup class="cite">[<a href="#ref-2">2</a>]</sup> That October, Filippo Valsorda put up <a href="https://words.filippo.io/dispatches/seeds-bounty/">a bounty</a> for the phrases: $12,288, tripled to $36,864 if the winner gave it to charity.<sup class="cite">[<a href="#ref-2">2</a>]</sup></p>
-<p>On 16 October 2026, Anthropic's Frontier Red Team <a href="https://www.anthropic.com/research/ecdsa-curve-origins">published the answer</a>, and it is better than a phrase: there was no phrase. An Anthropic employee asked an internal research model, Claude, to work out how the seeds were made, without pointing it at the clue. In under half an hour it guessed that a 1990s program had used a weak random number generator, wrote a scanner for that generator's fingerprints, noticed an unusual pattern of zero top bits, and recovered the generator's state, using lattice reduction where the program had kept only the top bits of each output. The seeds for P-192 through P-521 are outputs of the C library's <code>lrand48</code>, seeded with Unix timestamps from May 1997 to April 1998. In the code on Anthropic's page, P-256's seed is candidate 1,842 from a generator started at 01:52:34 UTC on 16 August 1997. The bounty goes to the Internet Security Research Group.<sup class="cite">[<a id="cite-5" href="#ref-5">5</a>]</sup></p>
-<h2 id="bitcoins-curve-has-no-seed-but-it-has-a-mystery">Bitcoin's curve has no seed, but it has a mystery</h2>
-<p>Bitcoin does not use P-256. It uses secp256k1, from Certicom's <a href="https://www.secg.org/sec2-v2.pdf">SEC 2</a>: y² = x³ + 7 over the prime p = 2²⁵⁶ − 2³² − 977.<sup class="cite">[<a id="cite-6" href="#ref-6">6</a>]</sup> Nothing in that definition is random. The prime's shape makes reduction cheap, and a = 0 and b = 7 are about as small as constants get. There is no seed to explain.</p>
-<p>It does have one loose end: the generator point. Halve Bitcoin's generator G and the x-coordinate of the result is <code>0x3b78ce563f89a0ed9414f5aa28ad0d96d6795f9c63</code>. That is 166 bits, where a random point's x-coordinate has about 256. So G is twice a point that somebody picked with a small x-coordinate, and nobody has said why. The appendix has the twenty lines of Python that show it.</p>
-<p>It does not matter for security, and the reason is worth a sentence. Every point on the curve other than infinity generates the same group, and a discrete logarithm with respect to one generator turns into a discrete logarithm with respect to any other at no cost. A chosen generator cannot hide a weakness the way a chosen curve could.</p>
-<h2 id="the-cost-of-having-its-own-curve">The cost of having its own curve</h2>
-<p>Having its own curve is expensive for Bitcoin, and the bill is compatibility. The hardware that guards keys on phones and the cryptography built into platforms and browsers speak the NIST curves. Apple's Secure Enclave works only with P-256 keys.<sup class="cite">[<a id="cite-7" href="#ref-7">7</a>]</sup> Android's documentation lists ECDSA and ECDH on P-256 among the algorithms StrongBox supports, and secp256k1 does not appear on the page.<sup class="cite">[<a id="cite-8" href="#ref-8">8</a>]</sup> The Web Crypto API in browsers names P-256, P-384 and P-521.<sup class="cite">[<a id="cite-9" href="#ref-9">9</a>]</sup> So a Bitcoin wallet generally cannot hand its keys to the secure hardware or lean on the platform's signatures. It has to bring its own implementation of the curve, and keep it correct on every platform it runs on.</p>
-<p>There are many secp256k1 implementations. Decred's dcrd has a pure-Go one,<sup class="cite">[<a id="cite-10" href="#ref-10">10</a>]</sup> RustCrypto has a pure-Rust one,<sup class="cite">[<a id="cite-11" href="#ref-11">11</a>]</sup> and noble-secp256k1 is pure JavaScript.<sup class="cite">[<a id="cite-12" href="#ref-12">12</a>]</sup> But one of them is used all over the place: libsecp256k1, the C library that Bitcoin Core carries in its source tree.<sup class="cite">[<a id="cite-13" href="#ref-13">13</a>, <a id="cite-14" href="#ref-14">14</a>]</sup> The Rust <code>secp256k1</code> crate wraps it,<sup class="cite">[<a id="cite-15" href="#ref-15">15</a>]</sup> so does Python's coincurve,<sup class="cite">[<a id="cite-16" href="#ref-16">16</a>]</sup> so does the Swift package P256K,<sup class="cite">[<a id="cite-17" href="#ref-17">17</a>]</sup> and go-ethereum's cgo build wraps it too.<sup class="cite">[<a id="cite-18" href="#ref-18">18</a>]</sup> Winnow was one of those wrappers until the build this post is about. That concentration has an upside, which is one library to review very well. The downside is that a mistake in it would be inherited by everything that wraps it, and independent implementations are how you would notice.</p>
-<h2 id="why-i-trust-the-hashes">Why I trust the hashes</h2>
-<p>I want Winnow's research to make the wallet's assumptions easier to inspect. That includes an uncomfortable question: why should we trust the cryptography underneath Bitcoin?</p>
-<p>It is reasonable to ask who designed an algorithm, how its parameters were chosen, and who has tried to break it. The useful next step is to look for evidence that can change our minds. An institution's name cannot settle the question in either direction. Neither can the fact that Bitcoin has money riding on the answer.</p>
-<p>I would not say that we proved the standard hashes were safe. We have reasons for confidence in particular algorithms, used for particular jobs, under particular assumptions. That is a more useful foundation for a wallet than either unconditional trust or an unfalsifiable suspicion.</p>
-<p>A hash turns a message into a fixed-size digest. Because there are more possible messages than digests, different messages must sometimes have the same digest. The security question is how hard it is to find a useful example. Finding two different messages with the same digest is a collision attack. Finding a message for a given digest is a preimage attack. Finding a different message with the same digest as a particular message is a second-preimage attack. Those are different jobs for an attacker; evidence about one does not automatically settle the others.</p>
-<p>SHA-256, part of the SHA-2 family used by Bitcoin, has a public specification. Even the apparently arbitrary constants have a recipe. Its initial values come from the fractional parts of square roots of the first eight primes; its round constants come from cube roots of the first sixty-four primes. The exact rules are in <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf">FIPS 180-4, sections 4.2.2 and 5.3.3</a>. Anyone can reproduce them.<sup class="cite">[<a id="cite-19" href="#ref-19">19</a>]</sup></p>
-<p>That answers a narrow and worthwhile question about where those numbers came from. It does not prove that every design choice was inevitable, that the whole construction is secure, or that no attack will be discovered. A reproducible origin for constants removes some mystery. It does not replace cryptanalysis.</p>
-<p>I want to be able to follow an attack claim back to its method. Does it attack the full algorithm or a version with fewer rounds? Does it find a collision or recover a preimage? What resources does it require? Can other researchers reproduce the result? These questions make a claim useful even when the result is bad news.</p>
-<p>We have a concrete example of bad news changing what people should use. In 2017, researchers demonstrated a collision for full SHA-1, producing two different PDF files with the same SHA-1 digest. The <a href="https://eprint.iacr.org/2017/190">original research paper</a> explains the attack.<sup class="cite">[<a id="cite-20" href="#ref-20">20</a>]</sup> That is evidence against SHA-1's collision resistance. It is not a demonstration that SHA-256 is broken, or that any arbitrary digest can be reversed. It is also a reason never to use “industry standard” as a synonym for permanently secure.</p>
-<p>SHA-3 offers another kind of evidence: an open selection process and a different design. NIST's <a href="https://csrc.nist.gov/Projects/hash-functions/sha-3-project">SHA-3 competition archive</a> includes submissions, public comments, and conferences.<sup class="cite">[<a id="cite-21" href="#ref-21">21</a>]</sup> Its <a href="https://nvlpubs.nist.gov/nistpubs/ir/2012/NIST.IR.7896.pdf">final-round report</a> explains the choice of Keccak after years of analysis.<sup class="cite">[<a id="cite-22" href="#ref-22">22</a>]</sup> <a href="https://csrc.nist.gov/pubs/fips/202/final">FIPS 202</a> specifies the resulting SHA-3 family and SHAKE functions.<sup class="cite">[<a id="cite-23" href="#ref-23">23</a>]</sup> That history is inspectable. SHA-3 supplies design diversity alongside SHA-2; its existence is not a finding that SHA-2 failed.</p>
-<h2 id="trusting-the-math-is-not-trusting-the-code">Trusting the math is not trusting the code</h2>
-<p>Inspectable evidence is the kind of trust I want Winnow to earn too. Publish the design, make the assumptions visible, invite attempts to find mistakes, and respond when the evidence changes. A Swift rewrite does not inherit correctness from the language. Passing known-answer tests establishes agreement on those cases. It does not establish resistance to timing leaks, bad randomness, or every malformed input. Our <a href="/research/#native-swift">native Swift cryptography research</a> has to earn confidence separately from the algorithms it implements.</p>
-<p>Winnow has been a Bitcoin wallet written in Swift for a while, with one exception. Every key, every tweak and every signature went through P256K, a Swift wrapper around Bitcoin Core's C library, libsecp256k1.<sup class="cite">[<a href="#ref-17">17</a>]</sup> That library is excellent. It is also the one part of the wallet I could not read end to end, from the screen down to the arithmetic, and the question kept coming back: how hard would it be to own that boundary?</p>
-<p>Owning that boundary means writing the curve, because the platform will not supply it. CryptoKit's <a href="https://developer.apple.com/documentation/cryptokit/p256"><code>P256</code></a> is NIST's curve, and there is no system secp256k1 to call.<sup class="cite">[<a id="cite-24" href="#ref-24">24</a>, <a href="#ref-17">17</a>]</sup></p>
-<p>I had a <a href="https://github.com/posix4e/native-secp256k1-swift-test">proof of concept</a> to start from. It did field arithmetic modulo the curve prime and the <code>lift_x</code> operation from BIP340, with expected answers produced outside Swift, and nothing else. It could not derive a key or sign a message. The distance from there to a wallet that pays is the interesting part.</p>
-<p>The rest of this post describes the code, where its lines are, and the first payments it signed on mainnet. The experiment is a specialized Winnow: a single-key build with shared accounts removed, because I expected them to need far more of the curve than an ordinary payment does. <a href="#multisig-without-new-curve-code">Only one kind did</a>. Numbers about what shipped come from the wallet repository at tag <a href="https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d">v0.8.7</a><sup class="cite">[<a id="cite-25" href="#ref-25">25</a>]</sup> and the <a href="https://github.com/winnowwallet/winnow/actions/runs/39419425172">release run</a><sup class="cite">[<a id="cite-26" href="#ref-26">26</a>]</sup> that built it. Numbers about the code since then come from commits <a href="https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8"><code>3794057</code></a><sup class="cite">[<a id="cite-27" href="#ref-27">27</a>]</sup> and <a href="https://github.com/winnowwallet/winnow/tree/7b7ff30db3156224e2cf1da3d93b591a59c88844"><code>7b7ff30</code></a>.<sup class="cite">[<a id="cite-28" href="#ref-28">28</a>]</sup> The rest come from the block chain, and the appendix gives the commands to check them yourself.</p>
-<h2 id="the-shape-of-the-code">The shape of the code</h2>
-<p>This is the part of the wallet that replaces libsecp256k1, and it is deliberately small. A single-key wallet needs from the curve: scalar arithmetic modulo the group order, field arithmetic modulo the prime, point addition and multiplication, the compressed and x-only encodings, the BIP32<sup class="cite">[<a id="cite-29" href="#ref-29">29</a>]</sup> and Taproot<sup class="cite">[<a id="cite-30" href="#ref-30">30</a>]</sup> tweaks, BIP340 signing and verification,<sup class="cite">[<a id="cite-31" href="#ref-31">31</a>]</sup> and the tagged hash. That is 894 lines of Swift in nine files under <a href="https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1"><code>Sources/NativeSecp256k1</code></a>, 781 of them not blank, and it imports Foundation and CryptoKit and nothing else. ECDSA, ECDH, MuSig2 and script-path signing are out of scope. The <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/README.md">module's guide</a> states that scope and the module's limits.</p>
-<p>It is also not hardened. Every operation is variable-time: how long it takes depends on the values it processes, including secret ones such as the private key and the signing nonce, and secrets are not cleared from memory afterwards. libsecp256k1 has had years of deliberate work on both properties, and this module has had none yet. The wallet's documentation used to say that all secret-key math ran in constant-time C. <a href="https://github.com/winnowwallet/winnow/compare/0348a9cc8c5a3c7e72cb7b3d3c94a993e3b2de66...8718dc554b3d4dc7fa895697c58a6b65d8947e01">The commit that switched the backend</a> rewrote those sentences, because they would otherwise have been false. That is acceptable for an internal test build on a phone I control. It is not a claim about what the shipping wallet should do.</p>
-<p>The module has four layers, and each layer uses only the one below it.</p>
-<p>At the bottom, <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Integer256.swift"><code>Integer256</code></a> is a 256-bit unsigned integer in four 64-bit limbs. It uses limbs because Swift's <a href="https://developer.apple.com/documentation/swift/uint128"><code>UInt128</code></a> requires iOS 18<sup class="cite">[<a id="cite-32" href="#ref-32">32</a>]</sup> and the app supports <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/project.yml#L21">iOS 17</a>. It adds, subtracts and multiplies. Its 512-bit product is built by product scanning: each output limb is the column sum of the partial products that land on it. Squaring computes each cross product once and adds it twice, so it needs ten 64-bit multiplications instead of sixteen.</p>
-<p>Above that are two modular types. A <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/FieldElement.swift"><code>FieldElement</code></a> is an integer below the curve prime p = 2²⁵⁶ − 2³² − 977, kept fully reduced. The shape of that prime is what makes reduction cheap. Because p is 2²⁵⁶ minus a small constant, 2²⁵⁶ is congruent to that constant, 2³² + 977, modulo p. Anything that spills past 256 bits can be multiplied by the constant and added back in:</p>
+<h2 id="there-was-no-phrase">There was no phrase</h2>
+<p>For 29 years, the seeds behind NIST's elliptic curves were cryptography's favourite conspiracy theory. Every curve from P-192 to P-521 in <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf">FIPS 186</a> is "verifiably random": its coefficient comes from the SHA-1 hash of a published 160-bit seed. Anyone could check the hash. Nobody could say where the seeds came from. And once NIST <a href="https://www.nist.gov/news-events/news/2014/04/nist-removes-cryptography-algorithm-random-number-generator-recommendations">dropped Dual_EC_DRBG</a> in 2014, an unexplained number in a NIST curve looked like a place to hide something.</p>
+<p>The seeds were apparently made by Jerry Solinas at the NSA in 1997, and the story that came down from him was charming. He reportedly said they were hashes of English phrases, something like <code>SHA1("Jerry deserves a raise.")</code>, and that the phrases were lost with an old computer. He tried every phrase he could remember. None matched.<sup class="cite">[<a id="cite-1" href="#ref-1">1</a>]</sup> Solinas died in 2023. That October, Filippo Valsorda offered <a href="https://words.filippo.io/dispatches/seeds-bounty/">$12,288</a> to anyone who found them.</p>
+<p>On 16 October, Anthropic's Frontier Red Team <a href="https://www.anthropic.com/research/ecdsa-curve-origins">published the answer</a>. There was no phrase.</p>
+<p>An Anthropic employee asked Claude how the seeds were made, without pointing it at the clue. In under half an hour it guessed that a 1990s program had used a weak random number generator, wrote a scanner for that generator's fingerprints, spotted a pattern of zero top bits, and recovered the generator's state with lattice reduction. The seeds are outputs of the C library's <code>lrand48</code>, seeded with Unix timestamps from 1997 and 1998. In Anthropic's code, P-256's seed is candidate 1,842 from a generator started at 01:52:34 UTC on 16 August 1997. The bounty goes to the Internet Security Research Group.</p>
+<h2 id="bitcoins-curve-has-no-seed">Bitcoin's curve has no seed</h2>
+<p>Bitcoin doesn't use P-256. It uses secp256k1, from Certicom's <a href="https://www.secg.org/sec2-v2.pdf">SEC 2</a>: y² = x³ + 7 over the prime p = 2²⁵⁶ − 2³² − 977. Nothing in it is random. The prime is shaped to make arithmetic cheap, and 0 and 7 are about as small as constants get. There's no seed to explain.</p>
+<p>There is one loose end. Halve Bitcoin's generator G and the x-coordinate of the result is <code>0x3b78ce563f89a0ed9414f5aa28ad0d96d6795f9c63</code>. That's 166 bits, where a random point's would have about 256. So G is twice a point somebody picked for its small x-coordinate, and nobody has said why. The appendix has the twenty lines of Python that show it.</p>
+<p>It doesn't matter for security. Every point except infinity generates the same group, and a discrete log with respect to one generator converts to any other for free. A chosen generator can't hide a weakness the way a chosen curve could.</p>
+<h2 id="every-wallet-brings-its-own-curve">Every wallet brings its own curve</h2>
+<p>Bitcoin pays for its own curve in compatibility. Apple's Secure Enclave only does P-256.<sup class="cite">[<a id="cite-2" href="#ref-2">2</a>]</sup> Android's StrongBox documentation lists P-256, and secp256k1 isn't on the page.<sup class="cite">[<a id="cite-3" href="#ref-3">3</a>]</sup> Browsers' Web Crypto offers P-256, P-384 and P-521.<sup class="cite">[<a id="cite-4" href="#ref-4">4</a>]</sup> So a Bitcoin wallet can't hand its keys to the phone's secure hardware or use the platform's signatures. It brings its own curve, and it has to keep it right everywhere it runs.</p>
+<p>There are plenty of implementations, in Go,<sup class="cite">[<a id="cite-5" href="#ref-5">5</a>]</sup> Rust<sup class="cite">[<a id="cite-6" href="#ref-6">6</a>]</sup> and JavaScript.<sup class="cite">[<a id="cite-7" href="#ref-7">7</a>]</sup> But one is everywhere: libsecp256k1, the C library inside Bitcoin Core.<sup class="cite">[<a id="cite-8" href="#ref-8">8</a>, <a id="cite-9" href="#ref-9">9</a>]</sup> Rust's <code>secp256k1</code> crate wraps it,<sup class="cite">[<a id="cite-10" href="#ref-10">10</a>]</sup> and so do Python's coincurve,<sup class="cite">[<a id="cite-11" href="#ref-11">11</a>]</sup> the Swift package P256K<sup class="cite">[<a id="cite-12" href="#ref-12">12</a>]</sup> and go-ethereum's cgo build.<sup class="cite">[<a id="cite-13" href="#ref-13">13</a>]</sup> Winnow was one of those wrappers. One library means one thing to review very well. It also means one mistake lands everywhere at once, and you'd only notice with an independent implementation.</p>
+<h2 id="why-i-trust-sha-256">Why I trust SHA-256</h2>
+<p>Bitcoin also leans on SHA-256, another NSA design. I trust it, but not because it's a standard. I trust it because the evidence can be checked.</p>
+<p>Its constants have a recipe. The eight initial values are the fractional parts of the square roots of the first eight primes, and the 64 round constants come from the cube roots of the first 64 primes (<a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf">FIPS 180-4</a>, sections 4.2.2 and 5.3.3). Anyone can reproduce them, so nobody tuned those numbers. That doesn't prove the design is secure. That part comes from people attacking it in public.</p>
+<p>And public attacks work. In 2017, researchers produced <a href="https://eprint.iacr.org/2017/190">two different PDFs with the same SHA-1 digest</a>. That broke SHA-1's collision resistance, and it's why "industry standard" never means "secure forever". It says nothing about SHA-256. SHA-3 came out of an <a href="https://csrc.nist.gov/Projects/hash-functions/sha-3-project">open competition</a>, with public submissions, public comments and a <a href="https://nvlpubs.nist.gov/nistpubs/ir/2012/NIST.IR.7896.pdf">final report</a> on why Keccak won. It's a different design alongside SHA-2, not a sign that SHA-2 failed.</p>
+<p>So when someone claims a break, I ask four things. The full algorithm, or fewer rounds? A collision, or a preimage? What did it cost? Has anyone reproduced it? Those answers make even bad news useful.</p>
+<h2 id="so-i-wrote-the-curve">So I wrote the curve</h2>
+<p>That's the kind of trust I want Winnow to earn: publish the design, show the assumptions, and change course when the evidence does. A Swift rewrite doesn't inherit anyone's correctness. Passing known-answer tests proves agreement on those answers and nothing more. It says nothing about timing leaks, bad randomness or malformed input, which is why the <a href="/research/#native-swift">native Swift research</a> tracks those separately.</p>
+<p>Winnow has been a Bitcoin wallet written in Swift for a while, with one exception. Every key, tweak and signature went through P256K, a Swift wrapper around libsecp256k1. That library is excellent. It was also the one part of the wallet I couldn't read end to end, from the screen down to the arithmetic. Owning it meant writing the curve, because Apple won't: CryptoKit's <a href="https://developer.apple.com/documentation/cryptokit/p256"><code>P256</code></a> is NIST's curve, and there's no system secp256k1.</p>
+<p>I started from a <a href="https://github.com/posix4e/native-secp256k1-swift-test">proof of concept</a> that did field arithmetic and BIP340's <code>lift_x</code>, and nothing else. It couldn't derive a key or sign anything. Getting from there to a wallet that pays was the interesting part.</p>
+<p>The result is <a href="https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1"><code>NativeSecp256k1</code></a>: nine files, 894 lines of Swift, 781 of them not blank, importing Foundation and CryptoKit and nothing else. It does what a single-key wallet needs and no more: field and scalar arithmetic, point addition and multiplication, compressed and x-only keys, the BIP32<sup class="cite">[<a id="cite-14" href="#ref-14">14</a>]</sup> and Taproot<sup class="cite">[<a id="cite-15" href="#ref-15">15</a>]</sup> tweaks, BIP340 signing and verification,<sup class="cite">[<a id="cite-16" href="#ref-16">16</a>]</sup> and the tagged hash. I shipped it in a single-key build of Winnow with shared accounts taken out.</p>
+<p>It isn't hardened. Every operation is variable-time, so how long it takes depends on the secrets it handles, and secrets aren't wiped from memory afterwards. libsecp256k1 has had years of work on both. This module has had none yet. Winnow's docs used to say all secret-key math ran in constant-time C, and <a href="https://github.com/winnowwallet/winnow/compare/0348a9cc8c5a3c7e72cb7b3d3c94a993e3b2de66...8718dc554b3d4dc7fa895697c58a6b65d8947e01">the commit that switched backends</a> took that sentence out. That's fine for a test build on my own phone. It's not a claim about what the shipping wallet should do.</p>
+<h2 id="four-layers">Four layers</h2>
+<p>Each layer only uses the one below it.</p>
+<p><a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Integer256.swift"><code>Integer256</code></a> is a 256-bit number in four 64-bit limbs, because Swift's <code>UInt128</code> needs iOS 18<sup class="cite">[<a id="cite-17" href="#ref-17">17</a>]</sup> and the app supports <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/project.yml#L21">iOS 17</a>. Squaring computes each cross product once and adds it twice, so it takes ten 64-bit multiplications instead of sixteen.</p>
+<p><a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/FieldElement.swift"><code>FieldElement</code></a> works modulo p, and p's shape is the trick. Because p is 2²⁵⁶ minus a small constant, 2²⁵⁶ is congruent to that constant, 2³² + 977. Anything that spills past 256 bits gets multiplied by the constant and added back in:</p>
 <pre><code class="language-swift">// fold = 0x1_0000_03D1 = 2^32 + 977 = 2^256 − p
 private static func reduce(high: Integer256, low: Integer256) -&gt; FieldElement {
     let (highFold, lowFold) = high.multipliedFullWidth(by: fold)
@@ -104,25 +80,10 @@ private static func reduce(high: Integer256, low: Integer256) -&gt; FieldElement
     return FieldElement(reducing: result)
 }
 </code></pre>
-<p>The <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/FieldElement.swift#L106-L130">full function</a> carries the bound argument as a comment. The first fold turns the top 256 bits into a value of at most 289 bits, which leaves one extra limb below 2³⁴. Folding that limb contributes less than 2⁶⁷, so at most one carry comes out of the top. When it does, the remainder is tiny, and one more fold brings it below p. A final conditional subtraction makes the result canonical. Inversion is Fermat's little theorem, a^(p−2). Square roots use the fact that p ≡ 3 (mod 4), so a^((p+1)/4) is a root whenever one exists, and the code squares the result to check.</p>
-<p>A <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Scalar.swift"><code>Scalar</code></a> is the same idea modulo the group order n, and that is what private keys, nonces and tweaks are. Its multiplication is the binary method, 256 doublings and up to 256 additions. That is slow, but simple, and the wallet multiplies scalars once per signature.</p>
-<p>Then the curve. <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Point.swift"><code>Point.swift</code></a> keeps points in Jacobian coordinates and uses the a = 0 formulas from the Explicit-Formulas Database: <a href="https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#doubling-dbl-2009-l"><code>dbl-2009-l</code></a> for doubling and <a href="https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#addition-madd-2007-bl"><code>madd-2007-bl</code></a> for adding an affine point.<sup class="cite">[<a id="cite-33" href="#ref-33">33</a>]</sup> The addition formula assumes two distinct points that are not each other's negation. Those cases have to be caught before the formula runs, and <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Point.swift#L56-L77">the code</a> does it in the open:</p>
-<pre><code class="language-swift">func adding(_ other: AffinePoint) -&gt; JacobianPoint {
-    guard !isInfinity else { return JacobianPoint(other) }
-    let z1z1 = z.squared()
-    let u2 = other.x * z1z1
-    let s2 = other.y * z * z1z1
-    let h = u2 - x
-    let r = (s2 - y).doubled()
-    if h.isZero {
-        return r.isZero ? doubled() : .infinity
-    }
-    // … the madd-2007-bl formula
-</code></pre>
-<p>If the accumulator is the point at infinity, the sum is the other point. If the x coordinates match (h = 0), the two points are equal or opposite: equal y means doubling, opposite y means infinity. These are the cases a careless implementation gets wrong only on rare inputs, so they have <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Tests/BitcoinCoreTests/NativeSecp256k1CurveTests.swift#L219">tests of their own</a>.</p>
-<p>Multiplying the generator is the operation a wallet repeats most: deriving each address adds a multiple of G at least once, in the BIP32 child step or the Taproot tweak. <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/GeneratorTable.swift"><code>GeneratorTable</code></a> splits the scalar into 64 four-bit windows and precomputes, for each window w, the points j·2^(4w)·G for j from 1 to 15. That is 960 affine points, 61 KB, built once on first use in about a millisecond. Turning that many Jacobian points into affine ones would cost one field inversion each, so the table uses Montgomery's trick: one inversion per batch, two in all. After that, k·G costs at most 64 mixed additions and no doublings. A test checks the table against plain double-and-add on <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Tests/BitcoinCoreTests/NativeSecp256k1CurveTests.swift#L191-L217">a thousand scalars</a>.</p>
-<p>At the top is the public face. <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Secp256k1Keys.swift"><code>Secp256k1Keys.swift</code></a> defines private keys, compressed public keys and x-only keys. They follow the validation rules, tweak semantics and parity behaviour of the libsecp256k1 calls they replace: <code>ec_seckey_tweak_add</code>, <code>ec_pubkey_tweak_add</code>, <code>keypair_xonly_tweak_add</code> and <code>xonly_pubkey_tweak_add</code>. That is why nothing in the wallet above them had to change. Every operation rejects malformed input by throwing or returning nil, and none of them traps. That matters more than it sounds, because the Taproot tweak also runs on control blocks taken from other people's transactions.</p>
-<p>The signer in <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Secp256k1Schnorr.swift#L13-L36"><code>Secp256k1Schnorr.swift</code></a> follows BIP340's reference algorithm step for step. It ends the same way the reference does, by verifying its own signature before returning it:</p>
+<p>The <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/FieldElement.swift#L106-L130">full function</a> explains, in a comment, why a few folds and one conditional subtraction always land below p. Inversion is Fermat's little theorem. Square roots work because p ≡ 3 (mod 4), and the code squares the answer to check it.</p>
+<p><a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Scalar.swift"><code>Scalar</code></a> is the same idea modulo the group order, and it's what private keys, nonces and tweaks are. It multiplies the slow, simple way, because the wallet does that once per signature.</p>
+<p><a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Point.swift"><code>Point.swift</code></a> uses Jacobian coordinates and the a = 0 formulas from the Explicit-Formulas Database.<sup class="cite">[<a id="cite-18" href="#ref-18">18</a>]</sup> The addition formula breaks when the two points are equal or opposite, so <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Point.swift#L56-L77">the code</a> checks for those cases first, and they have <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Tests/BitcoinCoreTests/NativeSecp256k1CurveTests.swift#L219">tests of their own</a>. <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/GeneratorTable.swift"><code>GeneratorTable</code></a> precomputes 960 multiples of G, 61 KB built in about a millisecond, so any multiple of G costs at most 64 additions and no doublings.</p>
+<p>On top, <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Secp256k1Keys.swift"><code>Secp256k1Keys.swift</code></a> copies the validation rules and parity behaviour of the four libsecp256k1 tweak calls it replaces. That's why nothing above it had to change. Nothing in it traps on bad input, which matters because the Taproot tweak also runs on control blocks from other people's transactions. And <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Secp256k1Schnorr.swift#L13-L36">the signer</a> ends the way BIP340's reference does, by verifying its own signature before handing it back:</p>
 <pre><code class="language-swift">let k = r.hasOddY ? nonce.negated() : nonce
 let rX = r.x.bigEndian
 
@@ -134,46 +95,9 @@ guard verify(signature: signature, message: message, publicKey: publicX) else {
 }
 return signature
 </code></pre>
-<p><a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340.mediawiki">BIP340</a> recommends that check, because an invalid signature produced by a computation error can leak information about the secret key.<sup class="cite">[<a href="#ref-31">31</a>]</sup> It is not free, because signing then does a full verification as well. It also cannot catch a mistake that the signer and verifier share, so the module needs checking against a different implementation too.</p>
-<p>The last file, <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/TaggedSHA256.swift"><code>TaggedSHA256.swift</code></a>, is eighteen lines: BIP340's SHA256(SHA256(tag) ‖ SHA256(tag) ‖ message) on CryptoKit's SHA-256.</p>
-<h2 id="where-the-lines-are-now">Where the lines are now</h2>
-<p>This is a specialized Winnow: a single-key build with the vaults removed. Shared accounts (the 2-of-3 vaults, cosigner cards and shared savings) need MuSig2 key aggregation and nonce sessions, which is more of the curve than an ordinary payment needs, and script-path threshold spends, so this experiment drops them. Measured on commit <a href="https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8"><code>3794057</code></a><sup class="cite">[<a href="#ref-27">27</a>]</sup> against current main (<a href="https://github.com/winnowwallet/winnow/compare/6566871db0a40be481dd63b7960790ef4de9192e...3794057eae11a18e33af2ffba76d91dce71b5da8">the whole difference</a><sup class="cite">[<a id="cite-34" href="#ref-34">34</a>]</sup>), the removal deletes 12,601 lines: 6,053 of production Swift, 4,178 of tests and the UI journey, 1,848 of BIP specification texts and test vectors, 410 of docs, and 112 of tools, scripts and CI. The whole difference is 191 files, 4,803 lines added and 12,601 deleted. Counting non-blank lines of production Swift only:</p>
-<table>
-<thead>
-<tr>
-<th>Module</th>
-<th>main</th>
-<th>single-key branch</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>WalletCore</td>
-<td>16,921</td>
-<td>15,901</td>
-</tr>
-<tr>
-<td>WinnowApp</td>
-<td>10,478</td>
-<td>7,794</td>
-</tr>
-<tr>
-<td>VaultKit</td>
-<td>1,654</td>
-<td>none</td>
-</tr>
-<tr>
-<td>NativeSecp256k1</td>
-<td>none</td>
-<td>781</td>
-</tr>
-<tr>
-<td><strong>Total</strong></td>
-<td><strong>29,053</strong></td>
-<td><strong>24,476</strong></td>
-</tr>
-</tbody></table>
-<p>The app lost the most, about a quarter of its code: the shared-savings screens, the MuSig2 signing exchange, the vault store and AppModel's vault flows. WalletCore lost MuSig2, multisig scripts, script-path signing, the descriptor tree and <code>musig()</code> grammar, and the vault fields in PSBTs.</p>
-<p>Here are the 24,476 lines that remain, by what they do, at the same commit:</p>
+<p>BIP340 recommends that, because a signature broken by a computation error can leak the key.<sup class="cite">[<a href="#ref-16">16</a>]</sup> It can't catch a bug the signer and verifier share, though. That takes a second implementation.</p>
+<h2 id="the-curve-is-the-small-part">The curve is the small part</h2>
+<p>At commit <a href="https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8"><code>3794057</code></a>, the single-key build has 24,476 non-blank lines of production Swift:</p>
 <table>
 <thead>
 <tr>
@@ -182,94 +106,28 @@ return signature
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>Networking and sync</strong></td>
-<td><strong>8,749</strong></td>
+<td>Networking and sync</td>
+<td>8,749</td>
 </tr>
 <tr>
-<td>Compact-filter sync and range scanning</td>
-<td>2,328</td>
+<td>The app</td>
+<td>7,794</td>
 </tr>
 <tr>
-<td>Peers and the census list</td>
-<td>1,657</td>
+<td>Wallet and spending</td>
+<td>5,659</td>
 </tr>
 <tr>
-<td>Bitcoin wire protocol</td>
-<td>1,317</td>
-</tr>
-<tr>
-<td>Peer connections and SOCKS routing</td>
-<td>1,150</td>
-</tr>
-<tr>
-<td>Broadcasting</td>
-<td>1,092</td>
-</tr>
-<tr>
-<td>Header chain</td>
-<td>904</td>
-</tr>
-<tr>
-<td>Mempool windows</td>
-<td>301</td>
-</tr>
-<tr>
-<td><strong>The app</strong></td>
-<td><strong>7,794</strong></td>
-</tr>
-<tr>
-<td><strong>Wallet and spending</strong></td>
-<td><strong>5,659</strong></td>
-</tr>
-<tr>
-<td>Wallet state, imports, coin selection, fees, people</td>
-<td>3,249</td>
-</tr>
-<tr>
-<td>PSBTs</td>
-<td>906</td>
-</tr>
-<tr>
-<td>Transaction building, signing and sighash</td>
-<td>769</td>
-</tr>
-<tr>
-<td>Descriptors</td>
-<td>482</td>
-</tr>
-<tr>
-<td>Taproot scripts</td>
-<td>253</td>
-</tr>
-<tr>
-<td><strong>Keys and crypto</strong></td>
-<td><strong>2,274</strong></td>
-</tr>
-<tr>
-<td>BIP32, BIP39, BIP86 and the Keychain</td>
-<td>875</td>
-</tr>
-<tr>
-<td>The Swift curve module</td>
-<td>781</td>
-</tr>
-<tr>
-<td>Encodings and hashes</td>
-<td>618</td>
+<td>Keys and crypto, including the 781-line curve</td>
+<td>2,274</td>
 </tr>
 </tbody></table>
-<p>5,517 of those lines are comments. The largest part is not keys or signing. It is the part that learns about the chain without trusting a server: the compact-filter client and its peer handling outweigh the whole wallet core. The curve module that replaced libsecp256k1 is about 3% of the total.</p>
-<h2 id="shipping-it">Shipping it</h2>
-<p>The <a href="https://github.com/winnowwallet/winnow/actions/runs/39419425172">release run</a> started at 12:03 UTC on 20 October from tag v0.8.7. Its TestFlight job stamped the build as 0.8.7 (97) and uploaded it to App Store Connect. It finished adding the build to the internal testing group at 12:16 UTC. A <a href="https://github.com/winnowwallet/winnow/releases/tag/v0.8.7">GitHub pre-release</a> followed a few seconds later with its SBOM and build provenance. The build went to internal testers only, under Winnow's own app identity. That choice has consequences I would rather state than discover:</p>
-<ul>
-<li>It replaces the App Store Winnow on a tester's phone.</li>
-<li>It cannot see shared-account funds, and creating or deleting a wallet inside it removes their records.</li>
-<li>Its automatic iCloud backup has no shared accounts in it, so it overwrites the backup the production app made.</li>
-</ul>
-<p>The <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/docs/testflight-what-to-test.txt">notes in TestFlight</a> say not to install it over a phone that holds shared-account funds.</p>
-<p>Then I installed it on my own phone, over the App Store Winnow and a live wallet. It upgraded the wallet in place, and the wallet went on receiving and sending as before. One of those sends is <a href="https://blockstream.info/tx/ad627d565202df6e644af195fd2ba9a1908631999ec55ae12a36ce5e784b5d6e">ad627d56…5d6e</a> on Bitcoin mainnet. Here is what its 193 bytes say, read with the wallet's own inspector (<code>winnow-debug inspect tx</code>) and checked against Blockstream's API<sup class="cite">[<a id="cite-35" href="#ref-35">35</a>]</sup>:</p>
+<p>The biggest part is the one that learns about the chain without trusting a server. The compact-filter client and its peers outweigh the whole wallet core, and the curve is 3% of the total.</p>
+<h2 id="paying-kraken">Paying Kraken</h2>
+<p>Build 97 went to internal TestFlight testers on 20 October, from tag <a href="https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d">v0.8.7</a> and its <a href="https://github.com/winnowwallet/winnow/actions/runs/39419425172">release run</a>. It replaces the App Store Winnow on a tester's phone, it can't see shared-account funds, and its iCloud backup overwrites one that has them. <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/docs/testflight-what-to-test.txt">Its notes</a> say not to install it over any.</p>
+<p>Then I installed it on my own phone, over the App Store Winnow and a live wallet. It upgraded in place and kept receiving and sending. One of those sends is <a href="https://blockstream.info/tx/ad627d565202df6e644af195fd2ba9a1908631999ec55ae12a36ce5e784b5d6e">ad627d56…5d6e</a>:</p>
 <p><img src="/images/blog/native-swift-secp256k1/advanced-transactions.png" alt="Winnow's Advanced Wallet tab on build 97: the filter scan at block 972,361 of 972,361 with two peers, and the transactions Sent 13,060 sats in block 972,351 with a 715-sat fee, Sent to Kraken 1,710 sats in block 972,342 with a 710-sat fee, Received from Kraken 100,000 sats in block 972,325, and the two older transactions from before the upgrade" /></p>
-<p><em>The wallet after the upgrade. The two bottom rows predate build 97; the top three are the funding coin and the two sends described below.</em></p>
+<p><em>The wallet after the upgrade. The two bottom rows predate build 97; the top three are the funding coin and the two sends below.</em></p>
 <table>
 <thead>
 <tr>
@@ -278,16 +136,12 @@ return signature
 </tr>
 </thead>
 <tbody><tr>
-<td>Version</td>
-<td>2</td>
-</tr>
-<tr>
 <td>Size</td>
-<td>193 bytes, weight 568, virtual size 142 vbytes</td>
+<td>193 bytes, 142 vbytes</td>
 </tr>
 <tr>
 <td>Input</td>
-<td>output 1 of <code>deeeaa2b…9d6a</code>: 100,000 sats locked to a Taproot (P2TR) output key, <code>22e48712…9950d</code>; sequence <code>0xfffffffd</code></td>
+<td>output 1 of <code>deeeaa2b…9d6a</code>: 100,000 sats locked to a Taproot output key</td>
 </tr>
 <tr>
 <td>Witness</td>
@@ -295,7 +149,7 @@ return signature
 </tr>
 <tr>
 <td>Outputs</td>
-<td>98,290 sats to a P2TR address (the change); 1,000 sats to a P2WPKH deposit address at Kraken (the payment)</td>
+<td>98,290 sats of change; 1,000 sats to a Kraken deposit address</td>
 </tr>
 <tr>
 <td>Fee</td>
@@ -307,117 +161,25 @@ return signature
 </tr>
 <tr>
 <td>Mined</td>
-<td><a href="https://blockstream.info/block/000000000000000000003524d2ae7205c8ac854deb3d9afe5c3e8f8a5296e352">block 972,342</a>, timestamp 15:03:42 UTC on 20 October</td>
-</tr>
-<tr>
-<td>Confirmations</td>
-<td>9 when I checked, at block 972,350 (15:45 UTC)</td>
+<td><a href="https://blockstream.info/block/000000000000000000003524d2ae7205c8ac854deb3d9afe5c3e8f8a5296e352">block 972,342</a>, 15:03:42 UTC on 20 October</td>
 </tr>
 </tbody></table>
-<p>A single 64-byte witness item is what a Taproot key-path spend looks like. BIP341 lets a signature omit its sighash byte, and 64 bytes means it did: the hash type is <code>SIGHASH_DEFAULT</code>, which commits to every input and output.<sup class="cite">[<a href="#ref-30">30</a>]</sup> The signer <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/WalletCore/Transactions/Signer.swift#L33-L35">appends a byte</a> only for other hash types. The sequence number signals BIP125 replaceability,<sup class="cite">[<a id="cite-36" href="#ref-36">36</a>]</sup> which is the wallet's <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/WalletCore/Transactions/TransactionBuilder.swift#L50-L51">default</a>. The locktime is the wallet's <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/WalletCore/Transactions/TransactionBuilder.swift#L53-L81">anti-fee-sniping</a> height, as Bitcoin Core sets it. The wallet uses either its tip or a height up to 99 blocks below it, never a height above. The transaction was mined in block 972,342, so the wallet's tip cannot have been higher than 972,341 when it built the transaction. It was therefore built and signed after the wallet had block 972,341 and before 972,342 was mined: by their timestamps, between 14:16:35 and 15:03:42 UTC. Miners set those timestamps, so the window is approximate.</p>
-<p>I checked the signature myself, two ways. First with the wallet's own code: WalletCore's <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/WalletCore/Transactions/SighashBIP341.swift#L221-L228">BIP341 sighash</a> over the transaction and the coin it spends gives <code>248a5ec2…5779</code>. <a href="https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Secp256k1Schnorr.swift#L40-L54"><code>Secp256k1.Schnorr.verify</code></a> accepts the witness signature for that message under the output key, and so does libsecp256k1 through the pinned P256K. Then without any of it: a short Python script rebuilds the sighash from the raw bytes and gets the same 32 bytes. BIP340's own <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340/reference.py"><code>reference.py</code></a> accepts the signature too.<sup class="cite">[<a id="cite-37" href="#ref-37">37</a>]</sup> Both checks reject it if one bit of the signature is flipped, or if the spent amount is changed by one satoshi. The appendix has both programs.</p>
-<p>What the chain cannot tell you is which code made that signature. libsecp256k1 would have produced a signature that verifies the same way. Because the auxiliary randomness was fresh, nobody can reproduce these exact bytes. The evidence that the Swift module signed is the build: build 97's TestFlight job (see the <a href="https://github.com/winnowwallet/winnow/actions/runs/39419425172">release run</a>) never compiled libsecp256k1, and the phone that sent this payment was running build 97. The verified signature adds one thing the build alone does not show. To sign, build 97 had to derive the private key itself, through BIP32 and the BIP86 tweak,<sup class="cite">[<a href="#ref-29">29</a>, <a id="cite-38" href="#ref-38">38</a>]</sup> and it arrived at exactly the key the spent output commits to.</p>
-<p>The timing deserves care too. The coin this transaction spends arrived in block 972,325, whose timestamp is 12:34:00 UTC, about eighteen minutes after the build reached the internal group. So I make no claim that this payment spent a coin the C-backed build had derived. One coin from before the upgrade is still unspent: the 4,230 sats left over from the send in block 970,649, the second row from the bottom above. Spending it is the test that would show the Swift module signing for a key the C library derived. It shows something narrower: a wallet created under the C library, upgraded in place, derived its keys and signed with the Swift module, and Bitcoin mainnet accepted the result less than three hours after the build reached TestFlight.</p>
+<p>One 64-byte witness item is a Taproot key-path spend with the default sighash, which commits to every input and output.<sup class="cite">[<a href="#ref-15">15</a>]</sup> The locktime tells you when it was signed. Winnow sets it the way Bitcoin Core does, never above its own tip, so the phone signed after it saw block 972,341 and before 972,342 was mined: between 14:16 and 15:03 UTC, by the miners' timestamps.</p>
+<p>I checked the signature two ways. Winnow's own sighash code and Swift verifier accept it, and so does libsecp256k1. Then, with nothing from the wallet, a short Python script rebuilt the sighash from the raw bytes, and BIP340's <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340/reference.py"><code>reference.py</code></a> accepted the signature too. Flip one bit, or change the amount by one satoshi, and both reject it. The appendix has both programs.</p>
+<p>The chain can't say which code signed. libsecp256k1 would have made a signature that verifies the same way. The evidence is the build: build 97's job never compiled libsecp256k1, and that's what the phone was running. The signature adds one thing. To make it, the Swift code had to derive the private key through BIP32 and BIP86,<sup class="cite">[<a href="#ref-14">14</a>, <a id="cite-19" href="#ref-19">19</a>]</sup> and it arrived at exactly the key the coin was locked to.</p>
 <p><img src="/images/blog/native-swift-secp256k1/funding-coin.png" alt="The payment detail for the funding coin: Received from Kraken, 100,000 sats, confirmed, with the receive address labelled Kraken" /></p>
-<p><em>The coin the first send spent; the second spent that send's change. The label is my own note on the address; the screen says it does not verify who sent the payment.</em></p>
-<p>The payment itself was too small for where it went. It went to a deposit address at Kraken, and Kraken's <a href="https://support.kraken.com/articles/360000292886-cryptocurrency-deposit-fees-and-minimums">minimum Bitcoin deposit</a> on the Bitcoin network is 0.0001 BTC: 10,000 sats, ten times what I sent. Kraken's page says a deposit below the minimum is marked failed and the funds are lost.<sup class="cite">[<a id="cite-39" href="#ref-39">39</a>]</sup> Those 1,000 sats paid for the lesson rather than reaching the account.</p>
-<p>So I sent it again. The second transaction, <a href="https://blockstream.info/tx/3e28224cb67f95a1909a34b7bfceca5c10305d94a031fdc34b374007bc0ae7a6">3e28224c…a7a6</a>, pays 12,345 sats to a Kraken deposit address, and that one went through. It has the same shape: one input, one 64-byte signature, and 715 sats in fees on 143 vbytes, again 5.0 sat/vbyte. It was mined in block 972,351, whose timestamp is 16:07:23 UTC. Its locktime, 972,271, is below the height the wallet had already reached when it signed the first payment, so this is the one-in-ten case where the wallet picks a height up to 99 blocks back. Its signature passes the same checks against its own sighash, <code>a715126d…5380</code>. Its input is the 98,290-sat change output of the first transaction, and that closes the question the timing left open. This coin was created by a transaction that build 97 built and signed, and build 97 spent it.</p>
-<h2 id="since-build-97-internal-only">Since build 97 (internal only)</h2>
-<p>The branch kept moving after build 97, and <a href="https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8"><code>native-secp256k1-kernel</code></a> became one commit, <code>3794057</code>, on top of current main. Every later internal build starts from it. Three things changed.</p>
-<p><strong>No third-party package at all.</strong> The test suite was the last thing that linked libsecp256k1, as the native module's differential oracle and as the signet miner's ECDSA signer. The live comparisons became recorded answers, and the <a href="https://github.com/winnowwallet/winnow/blob/3794057eae11a18e33af2ffba76d91dce71b5da8/Tests/Support/Node/SignetMiner.swift">signet miner</a> now has the node's own wallet sign the block challenges, through <code>signrawtransactionwithwallet</code>, the way Bitcoin Core's reference signet miner has its wallet sign them.<sup class="cite">[<a id="cite-40" href="#ref-40">40</a>]</sup> <code>Package.swift</code> declares no dependencies, so there is no <code>Package.resolved</code>, and <a href="https://github.com/winnowwallet/winnow/blob/3794057eae11a18e33af2ffba76d91dce71b5da8/scripts/check-dependencies"><code>check-dependencies</code></a> fails if Xcode resolves any package beyond the local one.</p>
-<p><strong>Smaller fixtures, more fuzzing.</strong> The recorded answers started at 2.2 MB and 49,000 lines of JSON, most of it seeded random inputs checked against libsecp256k1. Those answers cannot come from the code under test, and generating them while the tests run would mean running libsecp256k1 or Python inside the test suite. So I kept what earns its place: hand-picked edge cases plus eight seeded samples per file, 261 KB and 769 lines, one case per line. They are still computed by the BIP340 reference<sup class="cite">[<a href="#ref-37">37</a>]</sup> and a C probe over libsecp256k1 v0.7.1<sup class="cite">[<a id="cite-41" href="#ref-41">41</a>]</sup> that have to agree, and they regenerate byte for byte (<a href="https://github.com/winnowwallet/winnow/blob/3794057eae11a18e33af2ffba76d91dce71b5da8/Tests/BitcoinCoreTests/Vectors/native-secp256k1/README.md">fixture guide</a>). Random inputs went where random inputs belong: the fuzz harness's <a href="https://github.com/winnowwallet/winnow/blob/3794057eae11a18e33af2ffba76d91dce71b5da8/Tools/Fuzz/Sources/WinnowFuzzCore/NativeSecp256k1Exercise.swift"><code>native-secp256k1</code> target</a> checks the module's own algebra on every CI run. The private and public forms of each operation must agree, fresh signatures must verify, and altered ones must not.</p>
-<p><strong>Rebased onto current main.</strong> Main had moved fourteen commits, including moving vaults into a VaultKit package, new library APIs for account-key signing and range recovery, and shipping the peer census with each build. The rebase removes VaultKit again, moves the people and contact-card code back into WalletCore, and leaves main's newer code byte for byte as it was. The <a href="https://github.com/winnowwallet/winnow/compare/6566871db0a40be481dd63b7960790ef4de9192e...3794057eae11a18e33af2ffba76d91dce71b5da8">whole difference from main</a> is 4,803 lines added and 12,601 deleted.</p>
-<p>On that commit, 598 + 23 + 77 package tests pass, as do 216 + 19 app tests, 15,000 fuzz cases across the harness's fifteen targets, lint, the dependency and test-gate checks, the warnings gates, and the signet journey with its payment mined. The builds after it are in the next section.</p>
-<h2 id="multisig-without-new-curve-code">Multisig without new curve code</h2>
-<p>Four internal builds followed build 97, all built on that commit and all for internal testers only:</p>
-<table>
-<thead>
-<tr>
-<th>Build</th>
-<th>Commit</th>
-<th>What it added</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><a href="https://github.com/winnowwallet/winnow/releases/tag/v0.8.8">0.8.8 (99)</a></td>
-<td><code>dae4b74</code></td>
-<td>MuSig2 n-of-n accounts, since parked</td>
-</tr>
-<tr>
-<td><a href="https://github.com/winnowwallet/winnow/releases/tag/v0.8.9">0.8.9 (100)</a></td>
-<td><code>cbe9a97</code></td>
-<td>Taproot k-of-n multisig, with a Ledger as one signer</td>
-</tr>
-<tr>
-<td><a href="https://github.com/winnowwallet/winnow/releases/tag/v0.8.10">0.8.10 (101)</a></td>
-<td><code>5074341</code></td>
-<td>2-of-3 accounts and timelocked recovery paths</td>
-</tr>
-<tr>
-<td><a href="https://github.com/winnowwallet/winnow/releases/tag/v0.8.11">0.8.11 (103)</a></td>
-<td><code>7b7ff30</code></td>
-<td>Four fixes to how accounts track their coins</td>
-</tr>
-</tbody></table>
-<p>Build 97 left shared accounts out because I expected them to need much more of the curve. That turned out to be true of one kind of shared account and not the other.</p>
-<p><strong>MuSig2 needs more of the curve.</strong> Several signers combine their keys into one key and their partial signatures into one signature, so a spend looks on-chain like any single-key payment. Getting there takes key aggregation, a nonce from each signer that must never be used twice, and two rounds of messages. On the <a href="https://github.com/winnowwallet/winnow/tree/dae4b74576d0c5aa179c90c9c71a677c95b06bde">MuSig2 branch</a>,<sup class="cite">[<a id="cite-42" href="#ref-42">42</a>]</sup> the curve module grew from 781 lines to 843. I have parked that branch. Two rounds and a nonce that must never repeat are a lot to carry between a phone and a hardware signer, and the hardware below has supported the other kind for almost two years longer.</p>
-<p><strong>Script-path multisig needs none.</strong> An account is <code>tr(NUMS, sortedmulti_a(k, …))</code>: an internal key nobody can sign for, and one script leaf that lists the signers' keys and asks for k signatures. Each signer makes an ordinary BIP340 signature with their untweaked key over the BIP342 script-path message,<sup class="cite">[<a id="cite-43" href="#ref-43">43</a>]</sup> independently and in any order. The single-key wallet already makes that signature; only the message differs. Between <code>3794057</code> and <a href="https://github.com/winnowwallet/winnow/tree/7b7ff30db3156224e2cf1da3d93b591a59c88844"><code>7b7ff30</code></a>,<sup class="cite">[<a href="#ref-28">28</a>]</sup> the curve module's nine Swift files are byte for byte the same. The cost moves on-chain instead. A spend reveals the leaf and carries every signature, about 42 more virtual bytes per input than a single signature for a 2-of-2, and anyone can see that it is multisig.</p>
-<p><strong>Why a Ledger.</strong> The point of a second signer is that taking the money needs two devices, not one phone. I wanted hardware people already own, and looked first at SeedSigner and Satochip. Neither can sign this account today. SeedSigner 0.8.7 refuses any input whose key sits inside a Taproot script tree,<sup class="cite">[<a id="cite-44" href="#ref-44">44</a>]</sup> and its PSBT trim keeps only finished witnesses and ECDSA partial signatures, so a script-path signature would not survive the trip back to the phone.<sup class="cite">[<a id="cite-45" href="#ref-45">45</a>]</sup> The SeedSigner fork that signs with a Satochip card looks only at an input's non-Taproot key derivations and returns DER-encoded ECDSA signatures.<sup class="cite">[<a id="cite-46" href="#ref-46">46</a>]</sup> Ledger's Bitcoin app has signed <code>multi_a</code> and <code>sortedmulti_a</code> leaves since version 2.1.2, in April 2023.<sup class="cite">[<a id="cite-47" href="#ref-47">47</a>]</sup></p>
-<p><strong>The Ledger client</strong> is 723 lines of Swift in WalletCore, plus 352 in the app for Bluetooth and its screens. I wrote it from the Bitcoin app's documentation and its open-source Python client,<sup class="cite">[<a id="cite-48" href="#ref-48">48</a>]</sup> and it links no Ledger code. The phone never hands the device a whole transaction. It sends Merkle roots, and the device asks for each piece it needs, a preimage, a proof or a list element, and checks it against the root.<sup class="cite">[<a id="cite-49" href="#ref-49">49</a>]</sup> An account is registered once as a BIP388 wallet policy,<sup class="cite">[<a id="cite-50" href="#ref-50">50</a>]</sup> approved on the device's screen. BIP388 accepts only extended keys, so the unspendable internal key has to be an xpub. I build it the way Liana does: BIP341's NUMS point as the public key and, as the chain code, the SHA-256 of the signers' keys.<sup class="cite">[<a id="cite-51" href="#ref-51">51</a>]</sup> Every child of that point is still unspendable, and recent versions of the app label the key as a dummy when they register the policy.<sup class="cite">[<a href="#ref-47">47</a>]</sup> A Ledger signature is kept only after it verifies against the sighash the phone computes itself.</p>
-<p><strong>A way back.</strong> Build 0.8.10 lets an account have a second leaf: <code>and_v(v:pk(K),older(N))</code> or <code>and_v(v:multi_a(m,…),older(N))</code>. Once a coin has not moved for N blocks, from 1 to 65,535, fewer of the same signers can spend it, or a separate recovery key can. BIP388 does not allow the same derived key twice, so a signer reused for recovery signs that leaf from its own branch, <code>/&lt;2;3&gt;/*</code>. A spend chooses its path through each input's sequence number, which BIP68 and BIP112 turn into a relative lock,<sup class="cite">[<a id="cite-52" href="#ref-52">52</a>, <a id="cite-53" href="#ref-53">53</a>]</sup> and a recovery spend picks only coins that are old enough. On a Ledger, these leaves need version 2.2.0, the first with miniscript, and a recovery path that reuses signers needs 2.2.1: earlier versions return wrong leaf hashes for a key on any branch other than <code>/&lt;0;1&gt;/*</code>.<sup class="cite">[<a href="#ref-47">47</a>]</sup> Winnow's own check would catch such a signature and drop it.</p>
-<p><strong>Bitcoin Core disagreed once.</strong> Core writes a two-leaf tree into a PSBT output in the reverse of the descriptor's leaf order. Both orders are valid, but Winnow's combiner refuses a field that arrives with two different values, so a PSBT that Core had touched could not be combined. Winnow now writes Core's order, and the combiner stays strict.</p>
-<p><strong>What the tests show, and what they do not.</strong> For multisig and recovery, Bitcoin Core is the independent check. Core 31.1 produced the checksums and addresses that the tests compare four timelocked descriptors against. In the signet journey of the <a href="https://github.com/winnowwallet/winnow/actions/runs/39619097421">release run</a> that shipped 0.8.10,<sup class="cite">[<a id="cite-54" href="#ref-54">54</a>]</sup> Core cosigns a 2-of-2 spend, and after a three-block delay it accepts and mines a spend the phone signs alone through the recovery leaf. For the Ledger, the tests use Ledger's published policy and address vectors and a device simulator that I wrote from the same documentation as the client, so agreeing with it proves little. No physical Ledger result is recorded yet. That is the next test, with a Nano X on signet.</p>
-<p><strong>Four bugs in account sync.</strong> Planning for several accounts in Advanced mode, I went back over how account coins are tracked and found four defects in 0.8.10, all fixed in 0.8.11:<sup class="cite">[<a id="cite-55" href="#ref-55">55</a>]</sup></p>
-<ul>
-<li>A zero-value output to an account address stalled the whole wallet's sync, so anyone who knew one account address could stop it.</li>
-<li>A spend that lost to a confirmed conflict kept its change in the balance and its other coins reserved.</li>
-<li>Accounts watched only two addresses ahead. Every signer's phone hands out addresses, so a payment to a later one went unseen.</li>
-<li>After a reorg, a spend whose block fell away released its coins, though the spend was back in every node's mempool.</li>
-</ul>
-<p><strong>Where it stands.</strong> By the same count as above, the line now has 28,788 lines of production Swift, 4,312 more than the single-key build:</p>
-<table>
-<thead>
-<tr>
-<th>Module</th>
-<th><code>3794057</code></th>
-<th><code>7b7ff30</code></th>
-</tr>
-</thead>
-<tbody><tr>
-<td>WalletCore</td>
-<td>15,901</td>
-<td>18,176</td>
-</tr>
-<tr>
-<td>WinnowApp</td>
-<td>7,794</td>
-<td>9,831</td>
-</tr>
-<tr>
-<td>NativeSecp256k1</td>
-<td>781</td>
-<td>781</td>
-</tr>
-<tr>
-<td><strong>Total</strong></td>
-<td><strong>24,476</strong></td>
-<td><strong>28,788</strong></td>
-</tr>
-</tbody></table>
-<p>The whole line, from the curve module to the sync fixes, is now one proposed change to Winnow's main branch, <a href="https://github.com/winnowwallet/winnow/pull/241">draft pull request #241</a>.<sup class="cite">[<a id="cite-56" href="#ref-56">56</a>]</sup> Merging it would put this line on the way to the App Store and take MuSig2 savings, the 2-of-3 vaults and cosigner cards out of the shipping app. It stays a draft until a physical Ledger has signed and that trade is decided.</p>
-<h2 id="summary">Summary</h2>
-<p>The short version, with the evidence in the sections above:</p>
-<ul>
-<li><strong>The NIST seeds have an explanation, and it was not the one everyone had been told.</strong> They are outputs of the C library's <code>lrand48</code>, seeded with timestamps from 1997 and 1998, not hashes of a joke phrase. <a href="https://www.anthropic.com/research/ecdsa-curve-origins">Anthropic's write-up</a> has the method and the code to rerun it.<sup class="cite">[<a href="#ref-5">5</a>]</sup></li>
-<li><strong>Bitcoin's curve has no seed to explain, and one loose end.</strong> Its generator is twice a point with a 166-bit x-coordinate, which nobody has explained and which does not matter for security.</li>
-<li><strong>Having its own curve costs Bitcoin compatibility.</strong> Platform key stores and browser cryptography speak the NIST curves, so wallets bring their own secp256k1, and one C library sits under many of them.</li>
-<li><strong>Trust in a hash is built from specific claims.</strong> Constants with a recipe, public competitions and attacks like the SHA-1 collision are evidence anyone can inspect. "Industry standard" is not.</li>
-<li><strong>Winnow's build 97 replaced libsecp256k1 with 894 lines of Swift.</strong> That is about 3% of the single-key build's 24,476 lines. It is variable-time and not hardened, and it is an internal test build.</li>
-<li><strong>That build signed two mainnet payments to Kraken.</strong> The first can be checked with two short programs, in the appendix.</li>
-<li><strong>Multisig came back without new curve code.</strong> Taproot script-path accounts, a Ledger signer and timelocked recovery added 4,312 lines, and the 781-line curve module did not change. MuSig2 needed 62 more lines and is parked. Nothing in it has signed on a physical Ledger yet.</li>
-</ul>
-<p>I wrote recently that a payment arriving is evidence about the path it took. This payment took a path I can read all the way down, and that was the point. Whether it is a path the shipping wallet should take is the question draft pull request #241 now asks.</p>
-<p>The NIST seeds waited almost thirty years for <a href="https://www.anthropic.com/research/ecdsa-curve-origins">an explanation</a>, and the story everyone had been told about them turned out to be wrong. What settled it was evidence anyone can rerun. Confidence in a curve, a hash or a wallet is built the same way: specific claims, checks other people can repeat, and a willingness to be told no.</p>
+<p><em>The coin the first send spent. The label is my own note on the address; the screen says it doesn't verify who sent the payment.</em></p>
+<p>That first payment didn't reach my account. Kraken's <a href="https://support.kraken.com/articles/360000292886-cryptocurrency-deposit-fees-and-minimums">minimum Bitcoin deposit</a> is 10,000 sats, ten times what I sent, and smaller deposits are marked failed and lost. A 1,000-sat lesson.</p>
+<p>So I sent <a href="https://blockstream.info/tx/3e28224cb67f95a1909a34b7bfceca5c10305d94a031fdc34b374007bc0ae7a6">another</a>: 12,345 sats, the same shape, one 64-byte signature at 5.0 sat/vbyte, mined in block 972,351. That one went through. Its input was the first payment's change, so build 97 signed the transaction that made the coin and then spent it. Both coins arrived after the upgrade. A 4,230-sat coin from before it was still unspent when I wrote this, and spending it would show the Swift code signing for a coin the C build received.</p>
+<h2 id="multisig-needed-no-new-curve-code">Multisig needed no new curve code</h2>
+<p>I left shared accounts out of build 97 because I expected them to need much more of the curve. Only one kind did.</p>
+<p>MuSig2 merges several signers' keys and signatures into one, so a spend looks like any single-key payment. It needs key aggregation, nonces that must never repeat and two rounds of messages. On <a href="https://github.com/winnowwallet/winnow/tree/dae4b74576d0c5aa179c90c9c71a677c95b06bde">the MuSig2 branch</a>, the curve module grew from 781 lines to 843. I've parked it.</p>
+<p>Script-path multisig needed nothing. Each signer makes an ordinary BIP340 signature over a different message,<sup class="cite">[<a id="cite-20" href="#ref-20">20</a>]</sup> and between <code>3794057</code> and <a href="https://github.com/winnowwallet/winnow/tree/7b7ff30db3156224e2cf1da3d93b591a59c88844"><code>7b7ff30</code></a>, the v0.8.11 build, the curve module's Swift files didn't change at all. The price is paid on-chain: a 2-of-2 spend is about 42 vbytes bigger per input than a single signature, and anyone can see it's multisig.</p>
+<p>That opened the door to a hardware signer. SeedSigner can't sign these accounts: version 0.8.7 refuses keys inside a Taproot script tree<sup class="cite">[<a id="cite-21" href="#ref-21">21</a>]</sup> and drops script-path signatures on the way back to the phone.<sup class="cite">[<a id="cite-22" href="#ref-22">22</a>]</sup> The SeedSigner fork that drives a Satochip card signs ECDSA only.<sup class="cite">[<a id="cite-23" href="#ref-23">23</a>]</sup> Ledger's Bitcoin app has signed these multisig leaves since version 2.1.2, in April 2023,<sup class="cite">[<a id="cite-24" href="#ref-24">24</a>]</sup> so a Ledger is the second signer. Later builds added 2-of-3 accounts and a recovery path that opens after a delay.</p>
+<p>None of it has signed on a physical Ledger yet. That's the next test. The <a href="/research/#thresholds">research page</a> has the builds, the tests and the four sync bugs I fixed along the way, and the whole line is now <a href="https://github.com/winnowwallet/winnow/pull/241">draft pull request #241</a>.</p>
+<h2 id="the-bar">The bar</h2>
+<p>I <a href="/blog/why-lightning-is-leaving-winnow/">wrote recently</a> that a payment arriving is evidence about the path it took. These payments took a path I can read all the way down, and that was the point.</p>
+<p>The NIST seeds waited 29 years for an explanation, and the story everyone told turned out to be wrong. What settled it was evidence anyone can rerun. That's the bar for a curve, a hash or a wallet: claims you can check, checks other people can repeat, and a willingness to be told no.</p>
 <h2 id="appendix-checking-it-yourself">Appendix: checking it yourself</h2>
 <h3 id="halving-the-generator">Halving the generator</h3>
 <p>Python's integers are enough. Halving a point means multiplying it by (n + 1) / 2, where n is the group order:</p>
@@ -460,7 +222,7 @@ for rev in 6566871 3794057; do
   done
 done
 </code></pre>
-<p>The later table runs the same loop over <code>3794057 7b7ff30</code> and the three modules that remain.</p>
+<p>For the multisig line, run the same loop over <code>3794057 7b7ff30</code>: the curve module stays at 781 lines.</p>
 <h3 id="the-first-payments-signature">The first payment's signature</h3>
 <p>Fetch the transaction and its context from a public explorer:</p>
 <pre><code class="language-bash">curl -s https://blockstream.info/api/tx/ad627d565202df6e644af195fd2ba9a1908631999ec55ae12a36ce5e784b5d6e/hex &gt; tx.hex
@@ -597,62 +359,30 @@ valid if the spent amount were 1 sat more False
 <p>The same two programs check the second transaction, <code>3e28224c…a7a6</code>. Fetch its hex the same way, and change the spent output to output 0 of the first transaction: 98,290 sats locked by <code>512039e8fb58bce093e6eb458807f25b5b8c1732e66a41b694519a8e4521f69b4bea</code>. Both then print the sighash <code>a715126d3d57c8f7f97ca5a021348af22a00ec9f43925250876e10233d6b5380</code> and accept the signature.</p>
 <h2 id="references">References</h2>
 <ol class="references">
-<li id="ref-1">National Institute of Standards and Technology, “Digital Signature Standard (DSS)”, FIPS 186-4, July 2013 (withdrawn 3 February 2024 and superseded by <a href="https://csrc.nist.gov/pubs/fips/186-5/final">FIPS 186-5</a>). <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf">https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf</a> <a class="backref" href="#cite-1" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-2">Filippo Valsorda, “Announcing the $12k NIST Elliptic Curves Seeds Bounty”, 5 October 2023. <a href="https://words.filippo.io/dispatches/seeds-bounty/">https://words.filippo.io/dispatches/seeds-bounty/</a> Accessed 20 October 2026. <a class="backref" href="#cite-2" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-3">National Institute of Standards and Technology, “NIST Removes Cryptography Algorithm from Random Number Generator Recommendations”, 21 April 2014. <a href="https://www.nist.gov/news-events/news/2014/04/nist-removes-cryptography-algorithm-random-number-generator-recommendations">https://www.nist.gov/news-events/news/2014/04/nist-removes-cryptography-algorithm-random-number-generator-recommendations</a> <a class="backref" href="#cite-3" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-4">Stephen A. Weis, “How were the NIST ECDSA curve parameters generated?”, September 2023, updated since. The account of Solinas's phrase is second-hand there too. <a href="https://saweis.net/posts/nist-curve-seed-origins.html">https://saweis.net/posts/nist-curve-seed-origins.html</a> Accessed 20 October 2026. <a class="backref" href="#cite-4" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-5">John Wood, Henry de Valence, Ava Howell, Zack Voase, Lucy Sweet, Amir Omidi, Paul Crowley, Iain McGinniss, Nicholas Carlini and Steve Weis (Anthropic Frontier Red Team), “Claude reveals ECDSA curve origins”, Anthropic, 16 October 2026. <a href="https://www.anthropic.com/research/ecdsa-curve-origins">https://www.anthropic.com/research/ecdsa-curve-origins</a> Accessed 20 October 2026. <a class="backref" href="#cite-5" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-6">Certicom Research (contact: Daniel R. L. Brown), “SEC 2: Recommended Elliptic Curve Domain Parameters”, version 2.0, Standards for Efficient Cryptography Group, 27 January 2010; secp256k1 is in section 2.4.1. <a href="https://www.secg.org/sec2-v2.pdf">https://www.secg.org/sec2-v2.pdf</a> <a class="backref" href="#cite-6" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-7">Apple, “Protecting keys with the Secure Enclave”, Apple Developer Documentation. <a href="https://developer.apple.com/documentation/security/protecting-keys-with-the-secure-enclave">https://developer.apple.com/documentation/security/protecting-keys-with-the-secure-enclave</a> Accessed 20 October 2026. <a class="backref" href="#cite-7" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-8">Android Developers, “Android Keystore system”. <a href="https://developer.android.com/privacy-and-security/keystore">https://developer.android.com/privacy-and-security/keystore</a> Accessed 20 October 2026. <a class="backref" href="#cite-8" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-9">MDN Web Docs, “EcKeyGenParams”. <a href="https://developer.mozilla.org/en-US/docs/Web/API/EcKeyGenParams">https://developer.mozilla.org/en-US/docs/Web/API/EcKeyGenParams</a> Accessed 20 October 2026. <a class="backref" href="#cite-9" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-10">Decred developers, dcrd, package dcrec/secp256k1 (README). <a href="https://github.com/decred/dcrd/tree/master/dcrec/secp256k1">https://github.com/decred/dcrd/tree/master/dcrec/secp256k1</a> Accessed 20 October 2026. <a class="backref" href="#cite-10" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-11">RustCrypto, k256, “secp256k1 (K-256) elliptic curve” (README). <a href="https://github.com/RustCrypto/elliptic-curves/tree/master/k256">https://github.com/RustCrypto/elliptic-curves/tree/master/k256</a> Accessed 20 October 2026. <a class="backref" href="#cite-11" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-12">Paul Miller, noble-secp256k1 (README). <a href="https://github.com/paulmillr/noble-secp256k1">https://github.com/paulmillr/noble-secp256k1</a> Accessed 20 October 2026. <a class="backref" href="#cite-12" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-13">Bitcoin Core developers, libsecp256k1 (README). <a href="https://github.com/bitcoin-core/secp256k1">https://github.com/bitcoin-core/secp256k1</a> Accessed 20 October 2026. <a class="backref" href="#cite-13" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-14">Bitcoin Core, source tree, src/secp256k1. <a href="https://github.com/bitcoin/bitcoin/tree/master/src/secp256k1">https://github.com/bitcoin/bitcoin/tree/master/src/secp256k1</a> Accessed 20 October 2026. <a class="backref" href="#cite-14" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-15">rust-bitcoin developers, rust-secp256k1, a wrapper around libsecp256k1 (README). <a href="https://github.com/rust-bitcoin/rust-secp256k1">https://github.com/rust-bitcoin/rust-secp256k1</a> Accessed 20 October 2026. <a class="backref" href="#cite-15" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-16">Ofek Lev, coincurve, Python bindings for libsecp256k1 (README). <a href="https://github.com/ofek/coincurve">https://github.com/ofek/coincurve</a> Accessed 20 October 2026. <a class="backref" href="#cite-16" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-17">21.dev, swift-secp256k1, whose P256K module wraps libsecp256k1; the README notes that secp256k1 is not Apple's P256 curve (README). <a href="https://github.com/21-DOT-DEV/swift-secp256k1">https://github.com/21-DOT-DEV/swift-secp256k1</a> Accessed 20 October 2026. <a class="backref" href="#cite-17" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-18">go-ethereum developers, crypto/secp256k1/secp256.go, whose package comment says it wraps the Bitcoin secp256k1 C library, built when cgo is enabled. <a href="https://github.com/ethereum/go-ethereum/blob/master/crypto/secp256k1/secp256.go">https://github.com/ethereum/go-ethereum/blob/master/crypto/secp256k1/secp256.go</a> Accessed 20 October 2026. <a class="backref" href="#cite-18" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-19">National Institute of Standards and Technology, “Secure Hash Standard (SHS)”, FIPS 180-4, August 2015. <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf">https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf</a> <a class="backref" href="#cite-19" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-20">Marc Stevens, Elie Bursztein, Pierre Karpman, Ange Albertini and Yarik Markov, “The first collision for full SHA-1”, IACR Cryptology ePrint Archive, report 2017/190, 2017. <a href="https://eprint.iacr.org/2017/190">https://eprint.iacr.org/2017/190</a> <a class="backref" href="#cite-20" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-21">NIST Computer Security Resource Center, “Hash Functions”, SHA-3 Project page. <a href="https://csrc.nist.gov/Projects/hash-functions/sha-3-project">https://csrc.nist.gov/Projects/hash-functions/sha-3-project</a> Accessed 20 October 2026. <a class="backref" href="#cite-21" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-22">Shu-jen Chang, Ray Perlner, William Burr, Meltem Sönmez Turan, John Kelsey, Souradyuti Paul and Lawrence Bassham, “Third-Round Report of the SHA-3 Cryptographic Hash Algorithm Competition”, NIST IR 7896, November 2012. <a href="https://nvlpubs.nist.gov/nistpubs/ir/2012/NIST.IR.7896.pdf">https://nvlpubs.nist.gov/nistpubs/ir/2012/NIST.IR.7896.pdf</a> <a class="backref" href="#cite-22" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-23">National Institute of Standards and Technology, “SHA-3 Standard: Permutation-Based Hash and Extendable-Output Functions”, FIPS 202, August 2015. <a href="https://csrc.nist.gov/pubs/fips/202/final">https://csrc.nist.gov/pubs/fips/202/final</a> <a class="backref" href="#cite-23" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-24">Apple, “P256”, CryptoKit, Apple Developer Documentation. <a href="https://developer.apple.com/documentation/cryptokit/p256">https://developer.apple.com/documentation/cryptokit/p256</a> Accessed 20 October 2026. <a class="backref" href="#cite-24" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-25">Winnow wallet repository, tag v0.8.7 (commit <code>ff892b9</code>). <a href="https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d">https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d</a> <a class="backref" href="#cite-25" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-26">Winnow, GitHub Actions release run 39419425172 for tag v0.8.7, 20 October 2026. <a href="https://github.com/winnowwallet/winnow/actions/runs/39419425172">https://github.com/winnowwallet/winnow/actions/runs/39419425172</a> <a class="backref" href="#cite-26" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-27">Winnow wallet repository, commit <code>3794057</code> on the <code>native-secp256k1-kernel</code> branch. <a href="https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8">https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8</a> <a class="backref" href="#cite-27" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-28">Winnow wallet repository, commit <code>7b7ff30</code>, the single commit of draft pull request #241. <a href="https://github.com/winnowwallet/winnow/tree/7b7ff30db3156224e2cf1da3d93b591a59c88844">https://github.com/winnowwallet/winnow/tree/7b7ff30db3156224e2cf1da3d93b591a59c88844</a> <a class="backref" href="#cite-28" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-29">Pieter Wuille, “BIP 32: Hierarchical Deterministic Wallets”. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0032.mediawiki">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0032.mediawiki</a> <a class="backref" href="#cite-29" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-30">Pieter Wuille, Jonas Nick and Anthony Towns, “BIP 341: Taproot: SegWit version 1 spending rules”. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0341.mediawiki">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0341.mediawiki</a> <a class="backref" href="#cite-30" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-31">Pieter Wuille, Jonas Nick and Tim Ruffing, “BIP 340: Schnorr Signatures for secp256k1”. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340.mediawiki">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340.mediawiki</a> <a class="backref" href="#cite-31" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-32">Apple, “UInt128”, Swift standard library documentation; available from iOS 18.0. <a href="https://developer.apple.com/documentation/swift/uint128">https://developer.apple.com/documentation/swift/uint128</a> Accessed 20 October 2026. <a class="backref" href="#cite-32" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-33">Daniel J. Bernstein and Tanja Lange, Explicit-Formulas Database, “Jacobian coordinates with a4=0 for short Weierstrass curves” (doubling <code>dbl-2009-l</code>, mixed addition <code>madd-2007-bl</code>). <a href="https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html">https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html</a> Accessed 20 October 2026. <a class="backref" href="#cite-33" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-34">Winnow wallet repository, comparison of main (<code>6566871</code>) with commit <code>3794057</code>. <a href="https://github.com/winnowwallet/winnow/compare/6566871db0a40be481dd63b7960790ef4de9192e...3794057eae11a18e33af2ffba76d91dce71b5da8">https://github.com/winnowwallet/winnow/compare/6566871db0a40be481dd63b7960790ef4de9192e...3794057eae11a18e33af2ffba76d91dce71b5da8</a> <a class="backref" href="#cite-34" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-35">Blockstream, Esplora HTTP API. <a href="https://github.com/Blockstream/esplora/blob/master/API.md">https://github.com/Blockstream/esplora/blob/master/API.md</a> Accessed 20 October 2026. <a class="backref" href="#cite-35" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-36">David A. Harding and Peter Todd, “BIP 125: Opt-in Full Replace-by-Fee Signaling”. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0125.mediawiki">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0125.mediawiki</a> <a class="backref" href="#cite-36" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-37">The BIP 340 reference implementation, <code>bip-0340/reference.py</code>, at the pinned commit. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340/reference.py">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340/reference.py</a> <a class="backref" href="#cite-37" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-38">Ava Chow, “BIP 86: Key Derivation for Single Key P2TR Outputs”. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0086.mediawiki">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0086.mediawiki</a> <a class="backref" href="#cite-38" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-39">Kraken Support, “Cryptocurrency deposit fees and minimums” (page last updated 3 September 2026). <a href="https://support.kraken.com/articles/360000292886-cryptocurrency-deposit-fees-and-minimums">https://support.kraken.com/articles/360000292886-cryptocurrency-deposit-fees-and-minimums</a> Accessed 20 October 2026. <a class="backref" href="#cite-39" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-40">Bitcoin Core, contrib/signet/miner, the reference signet miner. <a href="https://github.com/bitcoin/bitcoin/blob/master/contrib/signet/miner">https://github.com/bitcoin/bitcoin/blob/master/contrib/signet/miner</a> Accessed 20 October 2026. <a class="backref" href="#cite-40" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-41">libsecp256k1 release v0.7.1, 26 January 2026. <a href="https://github.com/bitcoin-core/secp256k1/releases/tag/v0.7.1">https://github.com/bitcoin-core/secp256k1/releases/tag/v0.7.1</a> Accessed 20 October 2026. <a class="backref" href="#cite-41" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-42">Winnow wallet repository, commit <code>dae4b74</code> on the <code>native-secp256k1-musig2</code> branch, pull request #235. <a href="https://github.com/winnowwallet/winnow/tree/dae4b74576d0c5aa179c90c9c71a677c95b06bde">https://github.com/winnowwallet/winnow/tree/dae4b74576d0c5aa179c90c9c71a677c95b06bde</a> <a class="backref" href="#cite-42" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-43">Pieter Wuille, Jonas Nick and Anthony Towns, “BIP 342: Validation of Taproot Scripts”. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0342.mediawiki">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0342.mediawiki</a> <a class="backref" href="#cite-43" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-44">SeedSigner, release 0.8.7, src/seedsigner/models/psbt_parser.py, lines 364–367: an input key with leaf hashes raises “Signing keyspends from within a taptree not yet implemented”. <a href="https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L364-L367">https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L364-L367</a> Accessed 22 October 2026. <a class="backref" href="#cite-44" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-45">SeedSigner, release 0.8.7, src/seedsigner/models/psbt_parser.py, lines 231–242, <code>PSBTParser.trim</code>. <a href="https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L231-L242">https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L231-L242</a> Accessed 22 October 2026. <a class="backref" href="#cite-45" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-46">3rdIteration/seedsigner, release SeSi-0.8.7+ShSi-B13, src/seedsigner/helpers/satochip_signer.py, lines 306–410, <code>sign_psbt_with_satochip</code>. <a href="https://github.com/3rdIteration/seedsigner/blob/efdd1cfd14e80a076a7e1ae91e9f2270ecbcd44f/src/seedsigner/helpers/satochip_signer.py#L306-L410">https://github.com/3rdIteration/seedsigner/blob/efdd1cfd14e80a076a7e1ae91e9f2270ecbcd44f/src/seedsigner/helpers/satochip_signer.py#L306-L410</a> Accessed 22 October 2026. <a class="backref" href="#cite-46" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-47">Ledger, app-bitcoin-new, CHANGELOG.md at commit <code>92d330c</code>: versions 2.1.2 (Taproot script leaves), 2.2.0 (miniscript), 2.2.1 (leaf hashes for keys on other derivation paths) and 2.2.2 (the NUMS key labelled as a dummy). <a href="https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/CHANGELOG.md">https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/CHANGELOG.md</a> <a class="backref" href="#cite-47" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-48">Ledger, app-bitcoin-new, doc/bitcoin.md, the Bitcoin app's command protocol, at commit <code>92d330c</code>. <a href="https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/doc/bitcoin.md">https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/doc/bitcoin.md</a> <a class="backref" href="#cite-48" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-49">Ledger, app-bitcoin-new, doc/merkle.md, the Merkle commitments the client sends, at commit <code>92d330c</code>. <a href="https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/doc/merkle.md">https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/doc/merkle.md</a> <a class="backref" href="#cite-49" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-50">Salvatore Ingala, “BIP 388: Wallet Policies for Descriptor Wallets”. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0388.mediawiki">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0388.mediawiki</a> <a class="backref" href="#cite-50" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-51">Wizardsardine, Liana, liana/src/descriptors/analysis.rs, <code>unspendable_internal_xpub</code>, at commit <code>7b4d1fe</code>. <a href="https://github.com/wizardsardine/liana/blob/7b4d1fec78e5f7ab371ad81c3fcab64f31a3ec89/liana/src/descriptors/analysis.rs#L404-L444">https://github.com/wizardsardine/liana/blob/7b4d1fec78e5f7ab371ad81c3fcab64f31a3ec89/liana/src/descriptors/analysis.rs#L404-L444</a> <a class="backref" href="#cite-51" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-52">Mark Friedenbach, BtcDrak and Nicolas Dorier, “BIP 68: Relative lock-time using consensus-enforced sequence numbers”. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0068.mediawiki">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0068.mediawiki</a> <a class="backref" href="#cite-52" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-53">BtcDrak, Mark Friedenbach and Eric Lombrozo, “BIP 112: CHECKSEQUENCEVERIFY”. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0112.mediawiki">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0112.mediawiki</a> <a class="backref" href="#cite-53" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-54">Winnow, GitHub Actions release run 39619097421 for tag v0.8.10, 21 October 2026. <a href="https://github.com/winnowwallet/winnow/actions/runs/39619097421">https://github.com/winnowwallet/winnow/actions/runs/39619097421</a> <a class="backref" href="#cite-54" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-55">Winnow wallet repository, docs/security/findings.md at commit <code>7b7ff30</code>, entries SEC-030 to SEC-033. <a href="https://github.com/winnowwallet/winnow/blob/7b7ff30db3156224e2cf1da3d93b591a59c88844/docs/security/findings.md">https://github.com/winnowwallet/winnow/blob/7b7ff30db3156224e2cf1da3d93b591a59c88844/docs/security/findings.md</a> <a class="backref" href="#cite-55" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
-<li id="ref-56">Winnow, draft pull request #241, “Native Swift secp256k1 Winnow with Taproot multisig, a Ledger signer and recovery paths”. <a href="https://github.com/winnowwallet/winnow/pull/241">https://github.com/winnowwallet/winnow/pull/241</a> Accessed 22 October 2026. <a class="backref" href="#cite-56" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-1">Stephen A. Weis, “How were the NIST ECDSA curve parameters generated?”, September 2023, updated since. The account of Solinas's phrase is second-hand there too. <a href="https://saweis.net/posts/nist-curve-seed-origins.html">https://saweis.net/posts/nist-curve-seed-origins.html</a> Accessed 20 October 2026. <a class="backref" href="#cite-1" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-2">Apple, “Protecting keys with the Secure Enclave”, Apple Developer Documentation. <a href="https://developer.apple.com/documentation/security/protecting-keys-with-the-secure-enclave">https://developer.apple.com/documentation/security/protecting-keys-with-the-secure-enclave</a> Accessed 20 October 2026. <a class="backref" href="#cite-2" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-3">Android Developers, “Android Keystore system”. <a href="https://developer.android.com/privacy-and-security/keystore">https://developer.android.com/privacy-and-security/keystore</a> Accessed 20 October 2026. <a class="backref" href="#cite-3" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-4">MDN Web Docs, “EcKeyGenParams”. <a href="https://developer.mozilla.org/en-US/docs/Web/API/EcKeyGenParams">https://developer.mozilla.org/en-US/docs/Web/API/EcKeyGenParams</a> Accessed 20 October 2026. <a class="backref" href="#cite-4" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-5">Decred developers, dcrd, package dcrec/secp256k1 (README). <a href="https://github.com/decred/dcrd/tree/master/dcrec/secp256k1">https://github.com/decred/dcrd/tree/master/dcrec/secp256k1</a> Accessed 20 October 2026. <a class="backref" href="#cite-5" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-6">RustCrypto, k256, “secp256k1 (K-256) elliptic curve” (README). <a href="https://github.com/RustCrypto/elliptic-curves/tree/master/k256">https://github.com/RustCrypto/elliptic-curves/tree/master/k256</a> Accessed 20 October 2026. <a class="backref" href="#cite-6" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-7">Paul Miller, noble-secp256k1 (README). <a href="https://github.com/paulmillr/noble-secp256k1">https://github.com/paulmillr/noble-secp256k1</a> Accessed 20 October 2026. <a class="backref" href="#cite-7" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-8">Bitcoin Core developers, libsecp256k1 (README). <a href="https://github.com/bitcoin-core/secp256k1">https://github.com/bitcoin-core/secp256k1</a> Accessed 20 October 2026. <a class="backref" href="#cite-8" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-9">Bitcoin Core, source tree, src/secp256k1. <a href="https://github.com/bitcoin/bitcoin/tree/master/src/secp256k1">https://github.com/bitcoin/bitcoin/tree/master/src/secp256k1</a> Accessed 20 October 2026. <a class="backref" href="#cite-9" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-10">rust-bitcoin developers, rust-secp256k1, a wrapper around libsecp256k1 (README). <a href="https://github.com/rust-bitcoin/rust-secp256k1">https://github.com/rust-bitcoin/rust-secp256k1</a> Accessed 20 October 2026. <a class="backref" href="#cite-10" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-11">Ofek Lev, coincurve, Python bindings for libsecp256k1 (README). <a href="https://github.com/ofek/coincurve">https://github.com/ofek/coincurve</a> Accessed 20 October 2026. <a class="backref" href="#cite-11" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-12">21.dev, swift-secp256k1, whose P256K module wraps libsecp256k1; the README notes that secp256k1 is not Apple's P256 curve (README). <a href="https://github.com/21-DOT-DEV/swift-secp256k1">https://github.com/21-DOT-DEV/swift-secp256k1</a> Accessed 20 October 2026. <a class="backref" href="#cite-12" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-13">go-ethereum developers, crypto/secp256k1/secp256.go, whose package comment says it wraps the Bitcoin secp256k1 C library, built when cgo is enabled. <a href="https://github.com/ethereum/go-ethereum/blob/master/crypto/secp256k1/secp256.go">https://github.com/ethereum/go-ethereum/blob/master/crypto/secp256k1/secp256.go</a> Accessed 20 October 2026. <a class="backref" href="#cite-13" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-14">Pieter Wuille, “BIP 32: Hierarchical Deterministic Wallets”. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0032.mediawiki">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0032.mediawiki</a> <a class="backref" href="#cite-14" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-15">Pieter Wuille, Jonas Nick and Anthony Towns, “BIP 341: Taproot: SegWit version 1 spending rules”. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0341.mediawiki">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0341.mediawiki</a> <a class="backref" href="#cite-15" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-16">Pieter Wuille, Jonas Nick and Tim Ruffing, “BIP 340: Schnorr Signatures for secp256k1”. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340.mediawiki">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340.mediawiki</a> <a class="backref" href="#cite-16" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-17">Apple, “UInt128”, Swift standard library documentation; available from iOS 18.0. <a href="https://developer.apple.com/documentation/swift/uint128">https://developer.apple.com/documentation/swift/uint128</a> Accessed 20 October 2026. <a class="backref" href="#cite-17" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-18">Daniel J. Bernstein and Tanja Lange, Explicit-Formulas Database, “Jacobian coordinates with a4=0 for short Weierstrass curves” (doubling <code>dbl-2009-l</code>, mixed addition <code>madd-2007-bl</code>). <a href="https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html">https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html</a> Accessed 20 October 2026. <a class="backref" href="#cite-18" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-19">Ava Chow, “BIP 86: Key Derivation for Single Key P2TR Outputs”. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0086.mediawiki">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0086.mediawiki</a> <a class="backref" href="#cite-19" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-20">Pieter Wuille, Jonas Nick and Anthony Towns, “BIP 342: Validation of Taproot Scripts”. <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0342.mediawiki">https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0342.mediawiki</a> <a class="backref" href="#cite-20" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-21">SeedSigner, release 0.8.7, src/seedsigner/models/psbt_parser.py, lines 364–367: an input key with leaf hashes raises “Signing keyspends from within a taptree not yet implemented”. <a href="https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L364-L367">https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L364-L367</a> Accessed 22 October 2026. <a class="backref" href="#cite-21" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-22">SeedSigner, release 0.8.7, src/seedsigner/models/psbt_parser.py, lines 231–242, <code>PSBTParser.trim</code>. <a href="https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L231-L242">https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L231-L242</a> Accessed 22 October 2026. <a class="backref" href="#cite-22" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-23">3rdIteration/seedsigner, release SeSi-0.8.7+ShSi-B13, src/seedsigner/helpers/satochip_signer.py, lines 306–410, <code>sign_psbt_with_satochip</code>. <a href="https://github.com/3rdIteration/seedsigner/blob/efdd1cfd14e80a076a7e1ae91e9f2270ecbcd44f/src/seedsigner/helpers/satochip_signer.py#L306-L410">https://github.com/3rdIteration/seedsigner/blob/efdd1cfd14e80a076a7e1ae91e9f2270ecbcd44f/src/seedsigner/helpers/satochip_signer.py#L306-L410</a> Accessed 22 October 2026. <a class="backref" href="#cite-23" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
+<li id="ref-24">Ledger, app-bitcoin-new, CHANGELOG.md at commit <code>92d330c</code>: versions 2.1.2 (Taproot script leaves), 2.2.0 (miniscript), 2.2.1 (leaf hashes for keys on other derivation paths) and 2.2.2 (the NUMS key labelled as a dummy). <a href="https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/CHANGELOG.md">https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/CHANGELOG.md</a> <a class="backref" href="#cite-24" aria-label="Back to the text">&#8617;&#xFE0E;</a></li>
 </ol>
 
             </div>
