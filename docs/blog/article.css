@@ -768,6 +768,20 @@ footer {
     overflow-wrap: anywhere;
 }
 
+.article-content pre {
+    background: var(--light-gray);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 1.45rem;
+    overflow-x: auto;
+    padding: 1rem;
+}
+
+.article-content :not(pre) > code {
+    overflow-wrap: break-word;
+}
+
 .article-content img {
     border-radius: 6px;
     display: block;

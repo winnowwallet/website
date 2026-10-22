@@ -1,6 +1,6 @@
 # Bitcoin Beyond Conspiracy Theories
 
-*The NIST seeds' real origin, the odd thing about Bitcoin's generator, what it costs Bitcoin to have its own curve, and the Swift curve code that signed my first mainnet payments.*
+*The NIST seeds' real origin, the odd thing about Bitcoin's generator, what it costs Bitcoin to have its own curve, and the Swift curve code behind my first mainnet payments and the multisig accounts that followed.*
 
 **Contents**
 
@@ -13,6 +13,7 @@
 - [Where the lines are now](#where-the-lines-are-now)
 - [Shipping it](#shipping-it)
 - [Since build 97 (internal only)](#since-build-97-internal-only)
+- [Multisig without new curve code](#multisig-without-new-curve-code)
 - [Summary](#summary)
 - [Appendix: checking it yourself](#appendix-checking-it-yourself)
 - [References](#references)
@@ -69,7 +70,7 @@ Owning that boundary means writing the curve, because the platform will not supp
 
 I had a [proof of concept](https://github.com/posix4e/native-secp256k1-swift-test) to start from. It did field arithmetic modulo the curve prime and the `lift_x` operation from BIP340, with expected answers produced outside Swift, and nothing else. It could not derive a key or sign a message. The distance from there to a wallet that pays is the interesting part.
 
-The rest of this post describes the code, where its lines are, and the first payments it signed on mainnet. The experiment is a specialized Winnow: a single-key build with shared accounts removed, because those need far more of the curve than an ordinary payment does. Numbers about what shipped come from the wallet repository at tag [v0.8.7](https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d)[^winnow-tag] and the [release run](https://github.com/winnowwallet/winnow/actions/runs/39419425172)[^winnow-run] that built it. Numbers about the code since then come from commit [`3794057`](https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8).[^winnow-branch] The rest come from the block chain, and the appendix gives the commands to check them yourself.
+The rest of this post describes the code, where its lines are, and the first payments it signed on mainnet. The experiment is a specialized Winnow: a single-key build with shared accounts removed, because I expected them to need far more of the curve than an ordinary payment does. [Only one kind did](#multisig-without-new-curve-code). Numbers about what shipped come from the wallet repository at tag [v0.8.7](https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d)[^winnow-tag] and the [release run](https://github.com/winnowwallet/winnow/actions/runs/39419425172)[^winnow-run] that built it. Numbers about the code since then come from commits [`3794057`](https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8)[^winnow-branch] and [`7b7ff30`](https://github.com/winnowwallet/winnow/tree/7b7ff30db3156224e2cf1da3d93b591a59c88844).[^winnow-head] The rest come from the block chain, and the appendix gives the commands to check them yourself.
 
 ## The shape of the code
 
@@ -151,7 +152,7 @@ The last file, [`TaggedSHA256.swift`](https://github.com/winnowwallet/winnow/blo
 
 ## Where the lines are now
 
-This is a specialized Winnow: a single-key build with the vaults removed. Shared accounts (the 2-of-3 vaults, cosigner cards and shared savings) need MuSig2 key aggregation, nonce sessions and script-path threshold spends, which is far more of the curve than an ordinary payment does, so this experiment drops them. Measured on commit [`3794057`](https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8)[^winnow-branch] against current main ([the whole difference](https://github.com/winnowwallet/winnow/compare/6566871db0a40be481dd63b7960790ef4de9192e...3794057eae11a18e33af2ffba76d91dce71b5da8)[^winnow-diff]), the removal deletes 12,601 lines: 6,053 of production Swift, 4,178 of tests and the UI journey, 1,848 of BIP specification texts and test vectors, 410 of docs, and 112 of tools, scripts and CI. The whole difference is 191 files, 4,803 lines added and 12,601 deleted. Counting non-blank lines of production Swift only:
+This is a specialized Winnow: a single-key build with the vaults removed. Shared accounts (the 2-of-3 vaults, cosigner cards and shared savings) need MuSig2 key aggregation and nonce sessions, which is more of the curve than an ordinary payment needs, and script-path threshold spends, so this experiment drops them. Measured on commit [`3794057`](https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8)[^winnow-branch] against current main ([the whole difference](https://github.com/winnowwallet/winnow/compare/6566871db0a40be481dd63b7960790ef4de9192e...3794057eae11a18e33af2ffba76d91dce71b5da8)[^winnow-diff]), the removal deletes 12,601 lines: 6,053 of production Swift, 4,178 of tests and the UI journey, 1,848 of BIP specification texts and test vectors, 410 of docs, and 112 of tools, scripts and CI. The whole difference is 191 files, 4,803 lines added and 12,601 deleted. Counting non-blank lines of production Swift only:
 
 | Module | main | single-key branch |
 |---|---|---|
@@ -235,7 +236,7 @@ So I sent it again. The second transaction, [3e28224c…a7a6](https://blockstrea
 
 ## Since build 97 (internal only)
 
-Build 97 is still what testers run. The branch kept moving, and [`native-secp256k1-kernel`](https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8) is now one commit, `3794057`, on top of current main. Three things changed.
+The branch kept moving after build 97, and [`native-secp256k1-kernel`](https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8) became one commit, `3794057`, on top of current main. Every later internal build starts from it. Three things changed.
 
 **No third-party package at all.** The test suite was the last thing that linked libsecp256k1, as the native module's differential oracle and as the signet miner's ECDSA signer. The live comparisons became recorded answers, and the [signet miner](https://github.com/winnowwallet/winnow/blob/3794057eae11a18e33af2ffba76d91dce71b5da8/Tests/Support/Node/SignetMiner.swift) now has the node's own wallet sign the block challenges, through `signrawtransactionwithwallet`, the way Bitcoin Core's reference signet miner has its wallet sign them.[^core-miner] `Package.swift` declares no dependencies, so there is no `Package.resolved`, and [`check-dependencies`](https://github.com/winnowwallet/winnow/blob/3794057eae11a18e33af2ffba76d91dce71b5da8/scripts/check-dependencies) fails if Xcode resolves any package beyond the local one.
 
@@ -243,7 +244,52 @@ Build 97 is still what testers run. The branch kept moving, and [`native-secp256
 
 **Rebased onto current main.** Main had moved fourteen commits, including moving vaults into a VaultKit package, new library APIs for account-key signing and range recovery, and shipping the peer census with each build. The rebase removes VaultKit again, moves the people and contact-card code back into WalletCore, and leaves main's newer code byte for byte as it was. The [whole difference from main](https://github.com/winnowwallet/winnow/compare/6566871db0a40be481dd63b7960790ef4de9192e...3794057eae11a18e33af2ffba76d91dce71b5da8) is 4,803 lines added and 12,601 deleted.
 
-On that commit, 598 + 23 + 77 package tests pass, as do 216 + 19 app tests, 15,000 fuzz cases across the harness's fifteen targets, lint, the dependency and test-gate checks, the warnings gates, and the signet journey with its payment mined. None of it is released yet. The next internal build needs a version above 0.8.7.
+On that commit, 598 + 23 + 77 package tests pass, as do 216 + 19 app tests, 15,000 fuzz cases across the harness's fifteen targets, lint, the dependency and test-gate checks, the warnings gates, and the signet journey with its payment mined. The builds after it are in the next section.
+
+## Multisig without new curve code
+
+Four internal builds followed build 97, all built on that commit and all for internal testers only:
+
+| Build | Commit | What it added |
+|---|---|---|
+| [0.8.8 (99)](https://github.com/winnowwallet/winnow/releases/tag/v0.8.8) | `dae4b74` | MuSig2 n-of-n accounts, since parked |
+| [0.8.9 (100)](https://github.com/winnowwallet/winnow/releases/tag/v0.8.9) | `cbe9a97` | Taproot k-of-n multisig, with a Ledger as one signer |
+| [0.8.10 (101)](https://github.com/winnowwallet/winnow/releases/tag/v0.8.10) | `5074341` | 2-of-3 accounts and timelocked recovery paths |
+| [0.8.11 (103)](https://github.com/winnowwallet/winnow/releases/tag/v0.8.11) | `7b7ff30` | Four fixes to how accounts track their coins |
+
+Build 97 left shared accounts out because I expected them to need much more of the curve. That turned out to be true of one kind of shared account and not the other.
+
+**MuSig2 needs more of the curve.** Several signers combine their keys into one key and their partial signatures into one signature, so a spend looks on-chain like any single-key payment. Getting there takes key aggregation, a nonce from each signer that must never be used twice, and two rounds of messages. On the [MuSig2 branch](https://github.com/winnowwallet/winnow/tree/dae4b74576d0c5aa179c90c9c71a677c95b06bde),[^winnow-musig2] the curve module grew from 781 lines to 843. I have parked that branch. Two rounds and a nonce that must never repeat are a lot to carry between a phone and a hardware signer, and the hardware below has supported the other kind for almost two years longer.
+
+**Script-path multisig needs none.** An account is `tr(NUMS, sortedmulti_a(k, …))`: an internal key nobody can sign for, and one script leaf that lists the signers' keys and asks for k signatures. Each signer makes an ordinary BIP340 signature with their untweaked key over the BIP342 script-path message,[^bip342] independently and in any order. The single-key wallet already makes that signature; only the message differs. Between `3794057` and [`7b7ff30`](https://github.com/winnowwallet/winnow/tree/7b7ff30db3156224e2cf1da3d93b591a59c88844),[^winnow-head] the curve module's nine Swift files are byte for byte the same. The cost moves on-chain instead. A spend reveals the leaf and carries every signature, about 42 more virtual bytes per input than a single signature for a 2-of-2, and anyone can see that it is multisig.
+
+**Why a Ledger.** The point of a second signer is that taking the money needs two devices, not one phone. I wanted hardware people already own, and looked first at SeedSigner and Satochip. Neither can sign this account today. SeedSigner 0.8.7 refuses any input whose key sits inside a Taproot script tree,[^seedsigner-leaf] and its PSBT trim keeps only finished witnesses and ECDSA partial signatures, so a script-path signature would not survive the trip back to the phone.[^seedsigner-trim] The SeedSigner fork that signs with a Satochip card looks only at an input's non-Taproot key derivations and returns DER-encoded ECDSA signatures.[^satochip-signer] Ledger's Bitcoin app has signed `multi_a` and `sortedmulti_a` leaves since version 2.1.2, in April 2023.[^ledger-changelog]
+
+**The Ledger client** is 723 lines of Swift in WalletCore, plus 352 in the app for Bluetooth and its screens. I wrote it from the Bitcoin app's documentation and its open-source Python client,[^ledger-protocol] and it links no Ledger code. The phone never hands the device a whole transaction. It sends Merkle roots, and the device asks for each piece it needs, a preimage, a proof or a list element, and checks it against the root.[^ledger-merkle] An account is registered once as a BIP388 wallet policy,[^bip388] approved on the device's screen. BIP388 accepts only extended keys, so the unspendable internal key has to be an xpub. I build it the way Liana does: BIP341's NUMS point as the public key and, as the chain code, the SHA-256 of the signers' keys.[^liana-nums] Every child of that point is still unspendable, and recent versions of the app label the key as a dummy when they register the policy.[^ledger-changelog] A Ledger signature is kept only after it verifies against the sighash the phone computes itself.
+
+**A way back.** Build 0.8.10 lets an account have a second leaf: `and_v(v:pk(K),older(N))` or `and_v(v:multi_a(m,…),older(N))`. Once a coin has not moved for N blocks, from 1 to 65,535, fewer of the same signers can spend it, or a separate recovery key can. BIP388 does not allow the same derived key twice, so a signer reused for recovery signs that leaf from its own branch, `/<2;3>/*`. A spend chooses its path through each input's sequence number, which BIP68 and BIP112 turn into a relative lock,[^bip68,bip112] and a recovery spend picks only coins that are old enough. On a Ledger, these leaves need version 2.2.0, the first with miniscript, and a recovery path that reuses signers needs 2.2.1: earlier versions return wrong leaf hashes for a key on any branch other than `/<0;1>/*`.[^ledger-changelog] Winnow's own check would catch such a signature and drop it.
+
+**Bitcoin Core disagreed once.** Core writes a two-leaf tree into a PSBT output in the reverse of the descriptor's leaf order. Both orders are valid, but Winnow's combiner refuses a field that arrives with two different values, so a PSBT that Core had touched could not be combined. Winnow now writes Core's order, and the combiner stays strict.
+
+**What the tests show, and what they do not.** For multisig and recovery, Bitcoin Core is the independent check. Core 31.1 produced the checksums and addresses that the tests compare four timelocked descriptors against. In the signet journey of the [release run](https://github.com/winnowwallet/winnow/actions/runs/39619097421) that shipped 0.8.10,[^winnow-0810-run] Core cosigns a 2-of-2 spend, and after a three-block delay it accepts and mines a spend the phone signs alone through the recovery leaf. For the Ledger, the tests use Ledger's published policy and address vectors and a device simulator that I wrote from the same documentation as the client, so agreeing with it proves little. No physical Ledger result is recorded yet. That is the next test, with a Nano X on signet.
+
+**Four bugs in account sync.** Planning for several accounts in Advanced mode, I went back over how account coins are tracked and found four defects in 0.8.10, all fixed in 0.8.11:[^winnow-findings]
+
+- A zero-value output to an account address stalled the whole wallet's sync, so anyone who knew one account address could stop it.
+- A spend that lost to a confirmed conflict kept its change in the balance and its other coins reserved.
+- Accounts watched only two addresses ahead. Every signer's phone hands out addresses, so a payment to a later one went unseen.
+- After a reorg, a spend whose block fell away released its coins, though the spend was back in every node's mempool.
+
+**Where it stands.** By the same count as above, the line now has 28,788 lines of production Swift, 4,312 more than the single-key build:
+
+| Module | `3794057` | `7b7ff30` |
+|---|---|---|
+| WalletCore | 15,901 | 18,176 |
+| WinnowApp | 7,794 | 9,831 |
+| NativeSecp256k1 | 781 | 781 |
+| **Total** | **24,476** | **28,788** |
+
+The whole line, from the curve module to the sync fixes, is now one proposed change to Winnow's main branch, [draft pull request #241](https://github.com/winnowwallet/winnow/pull/241).[^winnow-pr241] Merging it would put this line on the way to the App Store and take MuSig2 savings, the 2-of-3 vaults and cosigner cards out of the shipping app. It stays a draft until a physical Ledger has signed and that trade is decided.
 
 ## Summary
 
@@ -255,8 +301,9 @@ The short version, with the evidence in the sections above:
 - **Trust in a hash is built from specific claims.** Constants with a recipe, public competitions and attacks like the SHA-1 collision are evidence anyone can inspect. "Industry standard" is not.
 - **Winnow's build 97 replaced libsecp256k1 with 894 lines of Swift.** That is about 3% of the single-key build's 24,476 lines. It is variable-time and not hardened, and it is an internal test build.
 - **That build signed two mainnet payments to Kraken.** The first can be checked with two short programs, in the appendix.
+- **Multisig came back without new curve code.** Taproot script-path accounts, a Ledger signer and timelocked recovery added 4,312 lines, and the 781-line curve module did not change. MuSig2 needed 62 more lines and is parked. Nothing in it has signed on a physical Ledger yet.
 
-I wrote recently that a payment arriving is evidence about the path it took. This payment took a path I can read all the way down, and that was the point. Whether it is a path the shipping wallet should take is a question the next experiments have to answer.
+I wrote recently that a payment arriving is evidence about the path it took. This payment took a path I can read all the way down, and that was the point. Whether it is a path the shipping wallet should take is the question draft pull request #241 now asks.
 
 The NIST seeds waited almost thirty years for [an explanation](https://www.anthropic.com/research/ecdsa-curve-origins), and the story everyone had been told about them turned out to be wrong. What settled it was evidence anyone can rerun. Confidence in a curve, a hash or a wallet is built the same way: specific claims, checks other people can repeat, and a willingness to be told no.
 
@@ -312,6 +359,8 @@ for rev in 6566871 3794057; do
   done
 done
 ```
+
+The later table runs the same loop over `3794057 7b7ff30` and the three modules that remain.
 
 ### The first payment's signature
 
@@ -507,6 +556,7 @@ The same two programs check the second transaction, `3e28224c…a7a6`. Fetch its
 [^winnow-tag]: Winnow wallet repository, tag v0.8.7 (commit `ff892b9`). [https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d](https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d)
 [^winnow-run]: Winnow, GitHub Actions release run 39419425172 for tag v0.8.7, 20 October 2026. [https://github.com/winnowwallet/winnow/actions/runs/39419425172](https://github.com/winnowwallet/winnow/actions/runs/39419425172)
 [^winnow-branch]: Winnow wallet repository, commit `3794057` on the `native-secp256k1-kernel` branch. [https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8](https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8)
+[^winnow-head]: Winnow wallet repository, commit `7b7ff30`, the single commit of draft pull request #241. [https://github.com/winnowwallet/winnow/tree/7b7ff30db3156224e2cf1da3d93b591a59c88844](https://github.com/winnowwallet/winnow/tree/7b7ff30db3156224e2cf1da3d93b591a59c88844)
 [^bip32]: Pieter Wuille, “BIP 32: Hierarchical Deterministic Wallets”. [https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0032.mediawiki](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0032.mediawiki)
 [^bip341]: Pieter Wuille, Jonas Nick and Anthony Towns, “BIP 341: Taproot: SegWit version 1 spending rules”. [https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0341.mediawiki](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0341.mediawiki)
 [^bip340]: Pieter Wuille, Jonas Nick and Tim Ruffing, “BIP 340: Schnorr Signatures for secp256k1”. [https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340.mediawiki](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340.mediawiki)
@@ -520,3 +570,18 @@ The same two programs check the second transaction, `3e28224c…a7a6`. Fetch its
 [^kraken]: Kraken Support, “Cryptocurrency deposit fees and minimums” (page last updated 3 September 2026). [https://support.kraken.com/articles/360000292886-cryptocurrency-deposit-fees-and-minimums](https://support.kraken.com/articles/360000292886-cryptocurrency-deposit-fees-and-minimums) Accessed 20 October 2026.
 [^core-miner]: Bitcoin Core, contrib/signet/miner, the reference signet miner. [https://github.com/bitcoin/bitcoin/blob/master/contrib/signet/miner](https://github.com/bitcoin/bitcoin/blob/master/contrib/signet/miner) Accessed 20 October 2026.
 [^libsecp-071]: libsecp256k1 release v0.7.1, 26 January 2026. [https://github.com/bitcoin-core/secp256k1/releases/tag/v0.7.1](https://github.com/bitcoin-core/secp256k1/releases/tag/v0.7.1) Accessed 20 October 2026.
+[^winnow-musig2]: Winnow wallet repository, commit `dae4b74` on the `native-secp256k1-musig2` branch, pull request #235. [https://github.com/winnowwallet/winnow/tree/dae4b74576d0c5aa179c90c9c71a677c95b06bde](https://github.com/winnowwallet/winnow/tree/dae4b74576d0c5aa179c90c9c71a677c95b06bde)
+[^bip342]: Pieter Wuille, Jonas Nick and Anthony Towns, “BIP 342: Validation of Taproot Scripts”. [https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0342.mediawiki](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0342.mediawiki)
+[^seedsigner-leaf]: SeedSigner, release 0.8.7, src/seedsigner/models/psbt_parser.py, lines 364–367: an input key with leaf hashes raises “Signing keyspends from within a taptree not yet implemented”. [https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L364-L367](https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L364-L367) Accessed 22 October 2026.
+[^seedsigner-trim]: SeedSigner, release 0.8.7, src/seedsigner/models/psbt_parser.py, lines 231–242, `PSBTParser.trim`. [https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L231-L242](https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L231-L242) Accessed 22 October 2026.
+[^satochip-signer]: 3rdIteration/seedsigner, release SeSi-0.8.7+ShSi-B13, src/seedsigner/helpers/satochip_signer.py, lines 306–410, `sign_psbt_with_satochip`. [https://github.com/3rdIteration/seedsigner/blob/efdd1cfd14e80a076a7e1ae91e9f2270ecbcd44f/src/seedsigner/helpers/satochip_signer.py#L306-L410](https://github.com/3rdIteration/seedsigner/blob/efdd1cfd14e80a076a7e1ae91e9f2270ecbcd44f/src/seedsigner/helpers/satochip_signer.py#L306-L410) Accessed 22 October 2026.
+[^ledger-changelog]: Ledger, app-bitcoin-new, CHANGELOG.md at commit `92d330c`: versions 2.1.2 (Taproot script leaves), 2.2.0 (miniscript), 2.2.1 (leaf hashes for keys on other derivation paths) and 2.2.2 (the NUMS key labelled as a dummy). [https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/CHANGELOG.md](https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/CHANGELOG.md)
+[^ledger-protocol]: Ledger, app-bitcoin-new, doc/bitcoin.md, the Bitcoin app's command protocol, at commit `92d330c`. [https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/doc/bitcoin.md](https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/doc/bitcoin.md)
+[^ledger-merkle]: Ledger, app-bitcoin-new, doc/merkle.md, the Merkle commitments the client sends, at commit `92d330c`. [https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/doc/merkle.md](https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/doc/merkle.md)
+[^bip388]: Salvatore Ingala, “BIP 388: Wallet Policies for Descriptor Wallets”. [https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0388.mediawiki](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0388.mediawiki)
+[^liana-nums]: Wizardsardine, Liana, liana/src/descriptors/analysis.rs, `unspendable_internal_xpub`, at commit `7b4d1fe`. [https://github.com/wizardsardine/liana/blob/7b4d1fec78e5f7ab371ad81c3fcab64f31a3ec89/liana/src/descriptors/analysis.rs#L404-L444](https://github.com/wizardsardine/liana/blob/7b4d1fec78e5f7ab371ad81c3fcab64f31a3ec89/liana/src/descriptors/analysis.rs#L404-L444)
+[^bip68]: Mark Friedenbach, BtcDrak and Nicolas Dorier, “BIP 68: Relative lock-time using consensus-enforced sequence numbers”. [https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0068.mediawiki](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0068.mediawiki)
+[^bip112]: BtcDrak, Mark Friedenbach and Eric Lombrozo, “BIP 112: CHECKSEQUENCEVERIFY”. [https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0112.mediawiki](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0112.mediawiki)
+[^winnow-0810-run]: Winnow, GitHub Actions release run 39619097421 for tag v0.8.10, 21 October 2026. [https://github.com/winnowwallet/winnow/actions/runs/39619097421](https://github.com/winnowwallet/winnow/actions/runs/39619097421)
+[^winnow-findings]: Winnow wallet repository, docs/security/findings.md at commit `7b7ff30`, entries SEC-030 to SEC-033. [https://github.com/winnowwallet/winnow/blob/7b7ff30db3156224e2cf1da3d93b591a59c88844/docs/security/findings.md](https://github.com/winnowwallet/winnow/blob/7b7ff30db3156224e2cf1da3d93b591a59c88844/docs/security/findings.md)
+[^winnow-pr241]: Winnow, draft pull request #241, “Native Swift secp256k1 Winnow with Taproot multisig, a Ledger signer and recovery paths”. [https://github.com/winnowwallet/winnow/pull/241](https://github.com/winnowwallet/winnow/pull/241) Accessed 22 October 2026.
