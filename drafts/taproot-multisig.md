@@ -2,7 +2,7 @@
 
 Draft — Alex Newman · October 23, 2026
 
-*Taproot multisig in Winnow's Advanced mode, a Ledger as the second signer, and a way back for coins that sit still. The curve code didn't have to grow.*
+*Taproot multisig in Winnow's Advanced mode: your phone, a Ledger and a trustee's phone, a way back for coins that sit still, and the recovery wallet that could help. The curve code didn't have to grow.*
 
 **Shelved 23 October 2026.** This replaces the MuSig2 draft. Keep it shelved until a physical Ledger has signed.
 
@@ -30,6 +30,14 @@ Two version numbers matter here. Version 2.1.2 signs `multi_a` leaves. A recover
 
 The internal key has to be an xpub, because BIP388 wallet policies accept only extended keys. I build it the way Liana does: BIP341's NUMS point, with the SHA-256 of the signers' keys as the chain code. Every child of that point is still unspendable.
 
+## Who holds the third key
+
+A 2-of-3 needs three keys, and the interesting question is whose. The second phone doesn't have to be yours. It can belong to a trustee, someone you trust to help and not to spend: a relative, a friend, a lawyer.
+
+Day to day you sign with your phone and your Ledger, and the trustee's phone sits idle. If you lose the Ledger, your phone and the trustee's sign together. If you lose your phone, the Ledger and the trustee sign. The trustee alone can't spend, and neither can a thief with one device. The trustee joins the way the second phone does in the test notes: their phone shows its key, you build the account with it, and the descriptor goes back to them.
+
+The recovery path in the next section can change that. If it lets any one of the same three signers spend alone after the delay, the trustee can spend alone after the delay too. That's a choice to make on purpose. The other mode, a separate recovery key that you keep somewhere else, gives the trustee nothing extra.
+
 ## A way back for coins that sit still
 
 Version 0.8.10 adds a second leaf. It's either `and_v(v:pk(K),older(N))` or `and_v(v:multi_a(m,…),older(N))`, with N from 1 to 65,535 blocks.
@@ -37,6 +45,24 @@ Version 0.8.10 adds a second leaf. It's either `and_v(v:pk(K),older(N))` or `and
 Once a coin has sat still for N blocks, fewer of the same signers can move it, or a separate recovery key can. A reused signer signs that leaf from its own `/<2;3>/*` branch, because BIP388 doesn't let one derived key appear in two leaves. The input's sequence number picks the path. A recovery spend only selects coins that are at least N blocks deep.
 
 Testing against Bitcoin Core turned up one disagreement. Core writes a two-leaf tree into the PSBT in reverse order. Both orders are valid, but Winnow's combiner refused the two values. Winnow now writes Core's order, and the combiner stays strict.
+
+## A recovery wallet
+
+[Winnow Rescue](https://github.com/winnowwallet/winnowrescue) is a separate project, and the other half of this story. It's a rescue-only tool that gets coins out of any old wallet, from recovery words, a single key or another wallet's export, and sweeps them into a taproot account you already own. That account can be one of these. Its core is a Rust library that wallets are meant to embed, and the standalone tool is a command line and a desktop window. It's open source under the MIT license.
+
+It's early. Only the core exists, about 11,800 lines that read words and keys, plan which derivation paths to check, verify header chains and coin proofs, and work through discovery in tiers. The command line, the window and the Electrum client are stubs, and signing and sweeping come in a later milestone. It can't move a coin yet.
+
+Its [plan](https://github.com/winnowwallet/winnowrescue/blob/2ee03b5/docs/plan.md) has a later step that matters here: descriptors and wallets made elsewhere. It would discover the coins, sign where it holds a key, and otherwise build a PSBT for the device that can. For a multisig account that's the lost-phone story. Your Ledger and the trustee sign a PSBT that the recovery tool built, and the coins move to a new account. None of that is built.
+
+Rescue takes its curve from libsecp256k1, and that's on purpose. If the Swift curve in Winnow ever has a bug nobody's found, the tool that rescues coins shouldn't share it. [Part 2](/blog/two-implementations/) is about why.
+
+## An exchange as a signer
+
+Picture the third key sitting with an exchange instead of with a person. You sign with your phone and your Ledger. If you lose one, the exchange co-signs, after it checks that it's you. And if the exchange embeds Rescue's core, it could also take in coins from a customer's old wallets and sweep them straight into that account.
+
+Nothing like this exists, in Winnow or in Rescue, and I haven't discussed it with an exchange. The pieces it would need are small. The exchange makes an ordinary BIP340 signature over a spend it can read, and it has to show the payment to a person or a rule, the way a Ledger shows it on a screen. A button that signs whatever it's given isn't enough.
+
+The harder parts are about trust. Rescue's [own design](https://github.com/winnowwallet/winnowrescue/blob/2ee03b5/docs/design.md) leaves service-cosigned wallets out, and two-factor seeds too, since a service holds a key. Its exchange check only asks whether an address is in your deposit list, refuses a login that can trade or withdraw, and never supplies a deposit address. An exchange that signs is a different relationship. In a 2-of-3 it can't spend alone, but anyone who can talk it into signing becomes the second factor, so the exchange's own login becomes part of the wallet's security. That's the design question, more than the code.
 
 ## What's tested, and what isn't
 
