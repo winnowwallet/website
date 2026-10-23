@@ -16,7 +16,7 @@ An Anthropic employee asked Claude how the seeds were made, without pointing it 
 
 Bitcoin doesn't use P-256. It uses secp256k1, from Certicom's [SEC 2](https://www.secg.org/sec2-v2.pdf): y² = x³ + 7 over the prime p = 2²⁵⁶ − 2³² − 977. Nothing in it is random. The prime is shaped to make arithmetic cheap, and 0 and 7 are about as small as constants get. There's no seed to explain.
 
-There is one loose end. Halve Bitcoin's generator G and the x-coordinate of the result is `0x3b78ce563f89a0ed9414f5aa28ad0d96d6795f9c63`. That's 166 bits, where a random point's would have about 256. So G is twice a point somebody picked for its small x-coordinate, and nobody has said why. The appendix to [Two Implementations Are Better Than One](/blog/two-implementations/#appendix-checking-it-yourself) has the twenty lines of Python that show it.
+There is one loose end. Halve Bitcoin's generator G and the x-coordinate of the result is `0x3b78ce563f89a0ed9414f5aa28ad0d96d6795f9c63`. That's 166 bits, where a random point's would have about 256. So G is twice a point somebody picked for its small x-coordinate, and nobody has said why. It takes about twenty lines of Python to show it.
 
 It doesn't matter for security. Every point except infinity generates the same group, and a discrete log with respect to one generator converts to any other for free. A chosen generator can't hide a weakness the way a chosen curve could.
 
@@ -39,7 +39,7 @@ Software that needs secp256k1 ends up in one of three places. It wraps libsecp25
 | [trezor-crypto](https://github.com/trezor/trezor-firmware/tree/main/crypto) (C) | Trezor | its own, for embedded devices |
 | NativeSecp256k1 (Swift) | Winnow, from build 97 | its own |
 
-I filled that in from each project's own pages. Wrappers share libsecp256k1's code and the port shares its design, so none of them can disagree with it. Only the ones that wrote their own can. One library means one thing to review very well. It also means one mistake lands everywhere at once, and you'd only notice with an independent implementation. [Part 2](/blog/two-implementations/) goes through how the independent ones differ.
+I filled that in from each project's own pages. Wrappers share libsecp256k1's code and the port shares its design, so none of them can disagree with it. Only the ones that wrote their own can. One library means one thing to review very well. It also means one mistake lands everywhere at once, and you'd only notice with an independent implementation.
 
 ## Why I trust SHA-256
 
@@ -174,7 +174,7 @@ Then I installed it on my own phone, over the App Store Winnow and a live wallet
 
 One 64-byte witness item is a Taproot key-path spend with the [default sighash](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0341.mediawiki), which commits to every input and output. The locktime tells you when it was signed. Winnow sets it the way Bitcoin Core does, never above its own tip, so the phone signed after it saw block 972,341 and before 972,342 was mined: between 14:16 and 15:03 UTC, by the miners' timestamps.
 
-I checked the signature two ways. Winnow's own sighash code and Swift verifier accept it, and so does libsecp256k1. Then, with nothing from the wallet, a short Python script rebuilt the sighash from the raw bytes, and BIP340's [`reference.py`](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340/reference.py) accepted the signature too. Flip one bit, or change the amount by one satoshi, and both reject it. The appendix to [Two Implementations Are Better Than One](/blog/two-implementations/#appendix-checking-it-yourself) has both programs.
+I checked the signature two ways. Winnow's own sighash code and Swift verifier accept it, and so does libsecp256k1. Then, with nothing from the wallet, a short Python script rebuilt the sighash from the raw bytes, and BIP340's [`reference.py`](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340/reference.py) accepted the signature too. Flip one bit, or change the amount by one satoshi, and both reject it.
 
 The chain can't say which code signed. libsecp256k1 would have made a signature that verifies the same way. The evidence is the build: build 97's job never compiled libsecp256k1, and that's what the phone was running. The signature adds one thing. To make it, the Swift code had to derive the private key through [BIP32](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0032.mediawiki) and [BIP86](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0086.mediawiki), and it arrived at exactly the key the coin was locked to.
 
