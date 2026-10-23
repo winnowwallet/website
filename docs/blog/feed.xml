@@ -5,13 +5,6 @@
     <link>https://winnowwallet.com/blog/</link>
     <description>Wallet engineering and field reports by Alex Newman.</description>
     <item>
-      <title>Bitcoin Beyond Conspiracy Theories</title>
-      <link>https://winnowwallet.com/blog/bitcoin-beyond-conspiracy-theories/</link>
-      <guid>https://winnowwallet.com/blog/bitcoin-beyond-conspiracy-theories/</guid>
-      <description>The NIST curve seeds had no secret and no lost phrase. Bitcoin's curve has no seed at all. And 894 lines of my own Swift signed a payment to Kraken.</description>
-      <pubDate>Tue, 20 Oct 2026 21:57:26 +0000</pubDate>
-    </item>
-    <item>
       <title>Why Lightning Is Leaving Winnow</title>
       <link>https://winnowwallet.com/blog/why-lightning-is-leaving-winnow/</link>
       <guid>https://winnowwallet.com/blog/why-lightning-is-leaving-winnow/</guid>
