@@ -46,7 +46,7 @@ I started from a [proof of concept](https://github.com/posix4e/native-secp256k1-
 
 The result is [`NativeSecp256k1`](https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1): nine files, 894 lines of Swift, 781 of them not blank, importing Foundation and CryptoKit and nothing else. It does what a single-key wallet needs and no more: field and scalar arithmetic, point addition and multiplication, compressed and x-only keys, the BIP32[^bip32] and Taproot[^bip341] tweaks, BIP340 signing and verification,[^bip340] and the tagged hash. I shipped it in a single-key build of Winnow with shared accounts taken out.
 
-It isn't hardened. Every operation is variable-time, so how long it takes depends on the secrets it handles, and secrets aren't wiped from memory afterwards. libsecp256k1 has had years of work on both. This module has had none yet. Winnow's docs used to say all secret-key math ran in constant-time C, and [the commit that switched backends](https://github.com/winnowwallet/winnow/compare/0348a9cc8c5a3c7e72cb7b3d3c94a993e3b2de66...8718dc554b3d4dc7fa895697c58a6b65d8947e01) took that sentence out. That's fine for a test build on my own phone. It's not a claim about what the shipping wallet should do.
+It's variable-time, and it doesn't wipe secrets from memory; libsecp256k1 guards against both. On a phone, neither is the worry yet. Exploiting them takes code running on the device or a way to time thousands of my signatures. The worry is whether the math is right.
 
 ## Four layers
 
@@ -100,6 +100,18 @@ return signature
 
 BIP340 recommends that, because a signature broken by a computation error can leak the key.[^bip340] It can't catch a bug the signer and verifier share, though. That takes a second implementation.
 
+## Is the math right?
+
+A broken signer usually fails loudly: its signatures don't verify. The dangerous bugs are quiet. Some live on rare paths, like a carry out of the top limb that ordinary inputs never reach. Others are consistent: a wrong constant or a wrong hash that signing and verifying share, so every signature still checks out against the same wrong code.
+
+Three things check the module. Recorded answers from libsecp256k1 and BIP340's reference code cover hand-picked edge cases. The official BIP32, BIP86, BIP340 and BIP341 vectors cover the specs. And a fuzzer throws mutated inputs at it on every pull request.
+
+I wanted to know whether the fuzzer was doing its job, so I planted 21 realistic bugs in the curve code, one at a time, and ran the pull-request fuzz job against each. It caught 13. It missed three of the five consistent bugs, because it only checked the module against itself, and five of the seven rare-path ones, because random bytes never got there. Running it 25 times longer caught nothing more. The unit tests did better, at 20, and the one they missed, a lost carry in the multiplier, got past everything.
+
+So the fuzzer now has something to argue with: [a second implementation](https://github.com/winnowwallet/winnow/blob/d47ba8335e58a3125c830f6065520f5b89bfd20e/Tools/Fuzz/Sources/WinnowFuzzCore/ReferenceSecp256k1.swift), about 300 lines of deliberately plain Swift that shares none of the module's algorithms. It uses 32-bit limbs instead of 64, Montgomery multiplication instead of p's special form, affine points instead of Jacobian, and BIP340 written straight from the spec. It has to reproduce BIP340's own vectors before it's trusted. The fuzzer demands byte-for-byte agreement between the two and pushes half its inputs to the edges: around the group order and p, or long runs of ones. A new test feeds both implementations operands built from awkward limbs, all ones or the top bit alone, which is what it takes to reach that carry.
+
+Against the same 21 bugs, the fuzzer now catches 19, and with the new test the unit tests catch all 21. The two the fuzzer still misses sit deep in field arithmetic that keys and points can't steer, which is what that test is for.
+
 ## The curve is the small part
 
 At commit [`3794057`](https://github.com/winnowwallet/winnow/commit/3794057eae11a18e33af2ffba76d91dce71b5da8), the single-key build has 24,476 non-blank lines of production Swift:
@@ -149,21 +161,13 @@ So I sent [another](https://blockstream.info/tx/3e28224cb67f95a1909a34b7bfceca5c
 
 ## Multisig needed no new curve code
 
-I left shared accounts out of build 97 because I expected them to need much more of the curve. Only one kind did.
+The latest internal build, [0.8.11](https://github.com/winnowwallet/winnow/releases/tag/v0.8.11), adds Taproot multisig in Advanced mode: two phones and a Ledger in a 2-of-3, say, with an optional recovery path that lets fewer signers move a coin that has sat still for a while. Each signer makes an ordinary BIP340 signature over a different message,[^bip342] so between `3794057` and [`7b7ff30`](https://github.com/winnowwallet/winnow/tree/7b7ff30db3156224e2cf1da3d93b591a59c88844), the curve module's Swift files didn't change at all. The price is paid on-chain: a 2-of-2 spend is about 42 vbytes bigger per input than a single signature, and anyone can see it's multisig.
 
-MuSig2 merges several signers' keys and signatures into one, so a spend looks like any single-key payment. It needs key aggregation, nonces that must never repeat and two rounds of messages. On [the MuSig2 branch](https://github.com/winnowwallet/winnow/tree/dae4b74576d0c5aa179c90c9c71a677c95b06bde), the curve module grew from 781 lines to 843. I've parked it.
-
-Script-path multisig needed nothing. Each signer makes an ordinary BIP340 signature over a different message,[^bip342] and between `3794057` and [`7b7ff30`](https://github.com/winnowwallet/winnow/tree/7b7ff30db3156224e2cf1da3d93b591a59c88844), the v0.8.11 build, the curve module's Swift files didn't change at all. The price is paid on-chain: a 2-of-2 spend is about 42 vbytes bigger per input than a single signature, and anyone can see it's multisig.
-
-That opened the door to a hardware signer. SeedSigner can't sign these accounts: version 0.8.7 refuses keys inside a Taproot script tree[^seedsigner-leaf] and drops script-path signatures on the way back to the phone.[^seedsigner-trim] The SeedSigner fork that drives a Satochip card signs ECDSA only.[^satochip-signer] Ledger's Bitcoin app has signed these multisig leaves since version 2.1.2, in April 2023,[^ledger-changelog] so a Ledger is the second signer. Later builds added 2-of-3 accounts and a recovery path that opens after a delay.
-
-None of it has signed on a physical Ledger yet. That's the next test. The [research page](/research/#thresholds) has the builds, the tests and the four sync bugs I fixed along the way, and the whole line is now [draft pull request #241](https://github.com/winnowwallet/winnow/pull/241).
+None of it has signed on a physical Ledger yet. That's the next test. The [research page](/research/#thresholds) has the details, and the whole line is [draft pull request #241](https://github.com/winnowwallet/winnow/pull/241).
 
 ## The bar
 
-I [wrote recently](/blog/why-lightning-is-leaving-winnow/) that a payment arriving is evidence about the path it took. These payments took a path I can read all the way down, and that was the point.
-
-The NIST seeds waited 29 years for an explanation, and the story everyone told turned out to be wrong. What settled it was evidence anyone can rerun. That's the bar for a curve, a hash or a wallet: claims you can check, checks other people can repeat, and a willingness to be told no.
+The NIST seeds waited 29 years for an explanation, and the story everyone told turned out to be wrong. What settled it was evidence anyone can rerun, and that's the bar for a wallet too.
 
 ## Appendix: checking it yourself
 
@@ -407,7 +411,3 @@ The same two programs check the second transaction, `3e28224c…a7a6`. Fetch its
 [^efd]: Daniel J. Bernstein and Tanja Lange, Explicit-Formulas Database, “Jacobian coordinates with a4=0 for short Weierstrass curves” (doubling `dbl-2009-l`, mixed addition `madd-2007-bl`). [https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html](https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html) Accessed 20 October 2026.
 [^bip86]: Ava Chow, “BIP 86: Key Derivation for Single Key P2TR Outputs”. [https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0086.mediawiki](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0086.mediawiki)
 [^bip342]: Pieter Wuille, Jonas Nick and Anthony Towns, “BIP 342: Validation of Taproot Scripts”. [https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0342.mediawiki](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0342.mediawiki)
-[^seedsigner-leaf]: SeedSigner, release 0.8.7, src/seedsigner/models/psbt_parser.py, lines 364–367: an input key with leaf hashes raises “Signing keyspends from within a taptree not yet implemented”. [https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L364-L367](https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L364-L367) Accessed 22 October 2026.
-[^seedsigner-trim]: SeedSigner, release 0.8.7, src/seedsigner/models/psbt_parser.py, lines 231–242, `PSBTParser.trim`. [https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L231-L242](https://github.com/SeedSigner/seedsigner/blob/e0a80d4b33b8eb7fb1e9fd14a27b7cd11c7d2cd6/src/seedsigner/models/psbt_parser.py#L231-L242) Accessed 22 October 2026.
-[^satochip-signer]: 3rdIteration/seedsigner, release SeSi-0.8.7+ShSi-B13, src/seedsigner/helpers/satochip_signer.py, lines 306–410, `sign_psbt_with_satochip`. [https://github.com/3rdIteration/seedsigner/blob/efdd1cfd14e80a076a7e1ae91e9f2270ecbcd44f/src/seedsigner/helpers/satochip_signer.py#L306-L410](https://github.com/3rdIteration/seedsigner/blob/efdd1cfd14e80a076a7e1ae91e9f2270ecbcd44f/src/seedsigner/helpers/satochip_signer.py#L306-L410) Accessed 22 October 2026.
-[^ledger-changelog]: Ledger, app-bitcoin-new, CHANGELOG.md at commit `92d330c`: versions 2.1.2 (Taproot script leaves), 2.2.0 (miniscript), 2.2.1 (leaf hashes for keys on other derivation paths) and 2.2.2 (the NUMS key labelled as a dummy). [https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/CHANGELOG.md](https://github.com/LedgerHQ/app-bitcoin-new/blob/92d330c20f19185ca2f55970331516a19c9c43b5/CHANGELOG.md)
