@@ -14,7 +14,7 @@ A wallet's signing code isn't consensus code. It doesn't decide which blocks are
 
 ## Who else wrote their own
 
-The [curves post](/blog/bitcoin-beyond-conspiracy-theories/) lists ten implementations. Five are independent: [decred's](https://github.com/decred/dcrd/tree/master/dcrec/secp256k1) in Go, [Bouncy Castle's](https://github.com/bcgit/bc-java) in Java, [noble-curves](https://github.com/paulmillr/noble-curves) in JavaScript, [Trezor's](https://github.com/trezor/trezor-firmware/tree/main/crypto) in C, and Winnow's. I read each project's own pages to see what it chose and how it checks itself, and where the pages are silent, the table says so.
+The [curves post](/blog/bitcoin-beyond-conspiracy-theories/) lists ten implementations. Four are independent: [decred's](https://github.com/decred/dcrd/tree/master/dcrec/secp256k1) in Go, [Bouncy Castle's](https://github.com/bcgit/bc-java) in Java, [noble-curves](https://github.com/paulmillr/noble-curves) in JavaScript, and Winnow's. Trezor wrote one too, [trezor-crypto](https://github.com/trezor/trezor-firmware/tree/main/crypto) in C, but its firmware doesn't sign Bitcoin with it. Both the Trezor One build and the newer firmware turn libsecp256k1 on by default, and trezor-crypto hands every secp256k1 ECDSA and BIP340 signature to it. [NBitcoin](https://github.com/MetacoSA/NBitcoin/blob/master/NBitcoin.Secp256k1/README.md) ports libsecp256k1 to C#, so it shares the design but not the code. I read each project's own pages and source to see what it chose and how it checks itself. Where they're silent, the table says so.
 
 | | Field numbers | Constant time | How it checks itself |
 |---|---|---|---|
@@ -23,7 +23,7 @@ The [curves post](/blog/bitcoin-beyond-conspiracy-theories/) lists ten implement
 | [NBitcoin.Secp256k1](https://github.com/MetacoSA/NBitcoin/blob/master/NBitcoin.Secp256k1/README.md) (C#), a port | Not in its README | Not claimed | Ports libsecp256k1's unit tests along with its code. The maintainers say they're "unable to review the underlying mathematical soundness" |
 | Bouncy Castle (Java) | 8 limbs of 32 bits | Not in the source I read | I didn't look |
 | noble-curves (JavaScript) | JavaScript BigInts, in projective coordinates | "Algorithmic constant time", with caveats about JIT compilers and garbage collection | Property-based, cross-library and Wycheproof vectors, fuzzing in CI, and four audits listed between 2023 and 2026 |
-| trezor-crypto (C) | 9 limbs of 29 bits | Not in the header I read | I didn't look |
+| trezor-crypto (C), a fallback in Trezor's firmware | 9 limbs of 29 bits | Not in the header I read | I didn't look |
 | Winnow (Swift) | 4 limbs of 64 bits, kept fully reduced | No. It's variable-time, which [Part 1](/blog/fuzzing-and-timing-two-wallets/) measures | Recorded vectors, a second implementation, a fuzzer, and 21 planted bugs |
 | Winnow Rescue (Rust) | libsecp256k1's, through rust-bitcoin | libsecp256k1's | libsecp256k1's own tests. Its nine fuzz targets don't test curve arithmetic |
 
@@ -36,6 +36,28 @@ Two of them agree on one trick. Bouncy Castle and Winnow both reduce a product b
 And the checks differ in where they come from. Decred compares itself with other implementations. NBitcoin ports libsecp256k1's own tests, so its checks come from the same place as its code. Noble borrows vectors from other libraries and from Wycheproof, and pays for audits. Winnow started with recorded answers, and only got a second implementation after the planted bugs showed what it was missing.
 
 [Winnow Rescue](https://github.com/winnowwallet/winnowrescue), my recovery tool, is on the other side of the line. It takes its curve from libsecp256k1, and I want it to stay there. If Winnow's curve has a bug I haven't found, the tool that rescues coins shouldn't share it. Between them the two projects have no curve code in common. The Swift module signs payments in the app, and libsecp256k1 derives the keys when Rescue reads an old wallet. Both do the same job for the same kinds of keys, so a disagreement between them would be a finding. I haven't built that comparison yet. Rescue's core doesn't sign anything until its sweep milestone.
+
+## How much code it takes
+
+Winnow's curve is purpose-built: one wallet, one kind of signature. I wanted to know how much that saves, so I counted each project's curve code with [tokei](https://github.com/XAMPPRocky/tokei). That's lines of code without comments, blank lines or tests, on each project's main branch on 23 October 2026. Curve code here means the arithmetic, the keys and the signatures, including nonce generation, but not general-purpose hash functions.
+
+| | Lines | Signatures | Also carries |
+|---|---|---|---|
+| Winnow (Swift) | 604 | BIP340 | BIP32 and Taproot tweaks |
+| noble-curves (JavaScript) | 392 for secp256k1, on 2,337 shared with its other curves | ECDSA, BIP340 | hash-to-curve, FROST, and Ed25519, the NIST curves and BLS12-381 in the same library |
+| trezor-crypto (C) | 1,894, plus a 1,664-line table of precomputed points | ECDSA | NIST P-256 on the same code. Another 701 lines wrap libsecp256k1, which does the signing |
+| decred secp256k1 (Go) | 3,531 | ECDSA with key recovery, and Decred's own Schnorr | ECDH. btcec adds BIP340 in 260 lines and MuSig2 in 1,279 |
+| NBitcoin.Secp256k1 (C#) | 8,184 | ECDSA with key recovery, BIP340 | MuSig2, adaptor signatures, batch multiplication |
+| Bouncy Castle (Java) | 720 for secp256k1, on a 10,754-line framework shared with its other curves | ECDSA, in another part of the library | custom code for 29 other SEC curves |
+| libsecp256k1 (C), for reference | 8,955, plus modules and 18,229 lines of generated tables | ECDSA, BIP340 | MuSig2 (1,133), ElligatorSwift, ECDH, key recovery, Silent Payments (5,101) |
+
+So yes, being purpose-built buys a lot. Winnow's is the smallest that stands alone. Noble's secp256k1 file is shorter, but it leans on 2,337 lines it shares with its other curves.
+
+The savings come from features, not from the math. Winnow makes one kind of signature, BIP340, for one kind of output, Taproot. It has no ECDSA, so it can't sign for older address types at all. It has no MuSig2, no ECDH, no key recovery and no batch verification. It doesn't use the curve's endomorphism, its general multiplication is plain double-and-add, and its one table of multiples of G is built when the app starts, in about a millisecond.
+
+The parts every implementation needs don't shrink: arithmetic modulo p and modulo n, adding and doubling points with their edge cases, and the rules for which keys and tweaks are valid. That's most of Winnow's 604 lines, and it's where the planted bugs went.
+
+Doing less costs something too. On a Mac, Winnow takes 160 to 280 microseconds to derive a key and sign with it, where libsecp256k1 takes 17, and Winnow isn't constant-time, which [Part 1](/blog/fuzzing-and-timing-two-wallets/) measures. Neither matters much on a phone that signs a few times a day. Both would matter on a server.
 
 ## What the first oracle caught
 
@@ -89,6 +111,32 @@ For the carry, a new unit test feeds both implementations operands built from aw
 Against the same 21 bugs, the fuzzer now catches 19. The two it misses sit deep in field arithmetic that keys and points can't steer, and the new test catches both, so the unit tests catch all 21.
 
 The real module passes all of it. No real bug turned up this time. The [code is in draft pull request #242](https://github.com/winnowwallet/winnow/pull/242).
+
+## The state I don't keep
+
+There's one more thing a purpose-built signer can leave out, and it matters more than any feature in that table: state.
+
+Winnow's signer remembers nothing between signatures. BIP340 makes each nonce from the private key, the message and 32 fresh random bytes, so there's no counter to advance and no session to finish later. Nothing the signer needs is in a file.
+
+That's what makes the iCloud backup safe to restore. Winnow uploads an encrypted backup by default. It holds the recovery phrase, sealed with AES-256-GCM, and the public state of the wallet: its descriptor, coins, history and address counters. The signing key itself lives in the phone's keychain, set to this device only and never synced, and the app's own files are excluded from device backups. Restore an old backup on a new phone and you get the phrase back and a slightly stale view of the coins, which the next scan fixes. You can't get a signer that repeats itself, because there's nothing for it to repeat.
+
+Stateful protocols are different. [MuSig2](https://github.com/bitcoin/bips/blob/master/bip-0327.mediawiki) says it plainly: its signers "are stateful", and the same secret nonce must never sign twice, because two partial signatures made with one nonce give away the key. Picture a MuSig2 signing session that started before a backup. Restore that backup and run the session again, and the restored phone can sign with a nonce it has already used. NBitcoin and btcec ship MuSig2, and noble ships FROST, which keeps the same kind of nonce. Each leaves that bookkeeping to the app. Winnow's multisig is the script-path kind, where each signer makes an ordinary BIP340 signature, so none of this applies to it.
+
+### SHRINCS
+
+[SHRINCS](https://delvingbitcoin.org/t/shrincs-324-byte-stateful-post-quantum-signatures-with-static-backups/2158) is where state stops being optional. It's a post-quantum signature scheme for Bitcoin, built only from hash functions, from Jonas Nick and Mikhail Kudinov at Blockstream Research and now a working group. It's prototype cryptography: the [draft BIP](https://groups.google.com/g/bitcoindev/c/HbVboXIFiG8) says not to use it in production.
+
+Its small signatures come from one-time keys, so the signer keeps a counter of how many it has made. Reuse a count, and anyone who sees both signatures can forge a new one. In the August 2026 draft, the smallest stateful signature is 548 bytes. Every key also has a stateless fallback, and that signature is 5,777 bytes.
+
+Its answer to backups is the part that matters for Winnow. The seed is a static backup. A device restored from it marks its state as lost and signs only on the stateless path from then on, and "if in doubt", any signer can fall back to it.
+
+For Winnow that would mean three things:
+
+- The counter would have to live where the signing key lives, on the phone and nowhere else.
+- It could never go in the iCloud backup. Restoring an old copy, or the same copy on two phones, would hand out the same count twice.
+- Every phone restored from the backup would sign stateless, about ten times larger and costlier, until its coins move to a fresh key.
+
+Today a purpose-built wallet can simply choose stateless signing. If Bitcoin moves to something like SHRINCS, that choice goes away, and the backup has to be designed around a counter it can't carry.
 
 ## Who wrote both?
 
