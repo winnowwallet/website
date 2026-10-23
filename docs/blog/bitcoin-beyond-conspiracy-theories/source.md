@@ -44,7 +44,7 @@ Software that needs secp256k1 ends up in one of three places. It wraps libsecp25
 | [decred secp256k1](https://github.com/decred/dcrd/tree/master/dcrec/secp256k1) (Go) | btcd, lnd | its own, pure Go |
 | [Bouncy Castle](https://github.com/bcgit/bc-java) (Java) | bitcoinj | its own |
 | [noble-curves](https://github.com/paulmillr/noble-curves) (JavaScript) | bitcoinerlab's secp256k1 package | its own |
-| [trezor-crypto](https://github.com/trezor/trezor-firmware/tree/main/crypto) (C) | Trezor | its own, for embedded devices |
+| [trezor-crypto](https://github.com/trezor/trezor-firmware/tree/main/crypto) (C) | Trezor | its own, but Trezor's firmware hands secp256k1 signing to libsecp256k1 |
 | NativeSecp256k1 (Swift) | Winnow, from build 97 | its own |
 
 I filled that in from each project's own pages. Wrappers share libsecp256k1's code and the port shares its design, so none of them can disagree with it. Only the ones that wrote their own can. One library means one thing to review very well. It also means one mistake lands everywhere at once, and you'd only notice with an independent implementation.
