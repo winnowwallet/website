@@ -12,6 +12,31 @@ Bitcoin learned to be wary of second implementations the hard way. In March 2013
 
 A wallet's signing code isn't consensus code. It doesn't decide which blocks are valid. It makes signatures the network accepts or rejects. For that job, a second implementation isn't a fork risk. It's an oracle.
 
+## Who else wrote their own
+
+The [curves post](/blog/bitcoin-beyond-conspiracy-theories/) lists ten implementations. Five are independent: [decred's](https://github.com/decred/dcrd/tree/master/dcrec/secp256k1) in Go, [Bouncy Castle's](https://github.com/bcgit/bc-java) in Java, [noble-curves](https://github.com/paulmillr/noble-curves) in JavaScript, [Trezor's](https://github.com/trezor/trezor-firmware/tree/main/crypto) in C, and Winnow's. I read each project's own pages to see what it chose and how it checks itself, and where the pages are silent, the table says so.
+
+| | Field numbers | Constant time | How it checks itself |
+|---|---|---|---|
+| [libsecp256k1](https://github.com/bitcoin-core/secp256k1) (C), for reference | 5 limbs of 52 bits, plus an experimental 10 × 26 build for 32-bit ARM | The goal is to be "completely free of timing sidechannels for secret-key operations", on reasonable hardware and toolchains | "Extensive testing infrastructure", which the README doesn't itemise |
+| decred secp256k1 (Go), under btcec | 10 limbs of 26 bits | Constant-time field and scalar arithmetic for secret-dependent operations | Differential tests against other implementations, libsecp256k1 included |
+| [NBitcoin.Secp256k1](https://github.com/MetacoSA/NBitcoin/blob/master/NBitcoin.Secp256k1/README.md) (C#), a port | Not in its README | Not claimed | Ports libsecp256k1's unit tests along with its code. The maintainers say they're "unable to review the underlying mathematical soundness" |
+| Bouncy Castle (Java) | 8 limbs of 32 bits | Not in the source I read | I didn't look |
+| noble-curves (JavaScript) | JavaScript BigInts, in projective coordinates | "Algorithmic constant time", with caveats about JIT compilers and garbage collection | Property-based, cross-library and Wycheproof vectors, fuzzing in CI, and four audits listed between 2023 and 2026 |
+| trezor-crypto (C) | 9 limbs of 29 bits | Not in the header I read | I didn't look |
+| Winnow (Swift) | 4 limbs of 64 bits, kept fully reduced | No. It's variable-time, which [Part 1](/blog/fuzzing-and-timing-two-wallets/) measures | Recorded vectors, a second implementation, a fuzzer, and 21 planted bugs |
+| Winnow Rescue (Rust) | libsecp256k1's, through rust-bitcoin | libsecp256k1's | libsecp256k1's own tests. Its nine fuzz targets don't test curve arithmetic |
+
+A few things stand out.
+
+The independent implementations disagree about nearly everything. Limbs of 26, 29, 32, 52 and 64 bits are all in use, and nobody seems to think any of them is the obvious choice.
+
+Two of them agree on one trick. Bouncy Castle and Winnow both reduce a product by folding its top half back into the bottom with 2³² + 977, which p's shape allows. If that trick had a flaw, both would share it. That's why my reference implementation uses Montgomery multiplication instead.
+
+And the checks differ in where they come from. Decred compares itself with other implementations. NBitcoin ports libsecp256k1's own tests, so its checks come from the same place as its code. Noble borrows vectors from other libraries and from Wycheproof, and pays for audits. Winnow started with recorded answers, and only got a second implementation after the planted bugs showed what it was missing.
+
+[Winnow Rescue](https://github.com/winnowwallet/winnowrescue), my recovery tool, is on the other side of the line. It takes its curve from libsecp256k1, and I want it to stay there. If Winnow's curve has a bug I haven't found, the tool that rescues coins shouldn't share it. Between them the two projects have no curve code in common. The Swift module signs payments in the app, and libsecp256k1 derives the keys when Rescue reads an old wallet. Both do the same job for the same kinds of keys, so a disagreement between them would be a finding. I haven't built that comparison yet. Rescue's core doesn't sign anything until its sweep milestone.
+
 ## What the first oracle caught
 
 While Winnow still linked libsecp256k1, every operation in the Swift module was compared with it. BIP340 signing is deterministic given its extra randomness, so two correct implementations must produce identical bytes. "It verifies" is a weak test. "It's the same 64 bytes" is a sharp one, and you only get it with a second implementation.

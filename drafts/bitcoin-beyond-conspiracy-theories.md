@@ -24,7 +24,22 @@ It doesn't matter for security. Every point except infinity generates the same g
 
 Bitcoin pays for its own curve in compatibility. [Apple's Secure Enclave](https://developer.apple.com/documentation/security/protecting-keys-with-the-secure-enclave) only does P-256. [Android's StrongBox documentation](https://developer.android.com/privacy-and-security/keystore) lists P-256, and secp256k1 isn't on the page. Browsers' [Web Crypto](https://developer.mozilla.org/en-US/docs/Web/API/EcKeyGenParams) offers P-256, P-384 and P-521. So a Bitcoin wallet can't hand its keys to the phone's secure hardware or use the platform's signatures. It brings its own curve, and it has to keep it right everywhere it runs.
 
-There are plenty of implementations, in [Go](https://github.com/decred/dcrd/tree/master/dcrec/secp256k1), [Rust](https://github.com/RustCrypto/elliptic-curves/tree/master/k256) and [JavaScript](https://github.com/paulmillr/noble-secp256k1). But one is everywhere: [libsecp256k1](https://github.com/bitcoin-core/secp256k1), the C library inside [Bitcoin Core](https://github.com/bitcoin/bitcoin/tree/master/src/secp256k1). [Rust's `secp256k1` crate](https://github.com/rust-bitcoin/rust-secp256k1) wraps it, and so do [Python's coincurve](https://github.com/ofek/coincurve), the Swift package [P256K](https://github.com/21-DOT-DEV/swift-secp256k1) and [go-ethereum's cgo build](https://github.com/ethereum/go-ethereum/blob/master/crypto/secp256k1/secp256.go). Winnow was one of those wrappers. One library means one thing to review very well. It also means one mistake lands everywhere at once, and you'd only notice with an independent implementation.
+Software that needs secp256k1 ends up in one of three places. It wraps libsecp256k1, the C library inside [Bitcoin Core](https://github.com/bitcoin/bitcoin/tree/master/src/secp256k1). It ports it. Or it writes its own.
+
+| Implementation | Where you meet it | Relation to libsecp256k1 |
+|---|---|---|
+| [libsecp256k1](https://github.com/bitcoin-core/secp256k1) (C) | Bitcoin Core | the reference |
+| [rust-secp256k1](https://github.com/rust-bitcoin/rust-secp256k1) (Rust) | rust-bitcoin, Winnow Rescue | bindings to it |
+| [electrum-ecc](https://github.com/spesmilo/electrum-ecc) (Python) | Electrum | a ctypes wrapper around it |
+| [P256K](https://github.com/21-DOT-DEV/swift-secp256k1) (Swift) | Winnow, until build 97 | a wrapper around it |
+| [NBitcoin.Secp256k1](https://github.com/MetacoSA/NBitcoin/blob/master/NBitcoin.Secp256k1/README.md) (C#) | NBitcoin, Wasabi | a managed port: the same algorithms, rewritten |
+| [decred secp256k1](https://github.com/decred/dcrd/tree/master/dcrec/secp256k1) (Go) | btcd, lnd | its own, pure Go |
+| [Bouncy Castle](https://github.com/bcgit/bc-java) (Java) | bitcoinj | its own |
+| [noble-curves](https://github.com/paulmillr/noble-curves) (JavaScript) | bitcoinerlab's secp256k1 package | its own |
+| [trezor-crypto](https://github.com/trezor/trezor-firmware/tree/main/crypto) (C) | Trezor | its own, for embedded devices |
+| NativeSecp256k1 (Swift) | Winnow, from build 97 | its own |
+
+I filled that in from each project's own pages. Wrappers share libsecp256k1's code and the port shares its design, so none of them can disagree with it. Only the ones that wrote their own can. One library means one thing to review very well. It also means one mistake lands everywhere at once, and you'd only notice with an independent implementation. [Part 2](/blog/two-implementations/) goes through how the independent ones differ.
 
 ## Why I trust SHA-256
 
@@ -46,15 +61,27 @@ I started from a [proof of concept](https://github.com/posix4e/native-secp256k1-
 
 The result is [`NativeSecp256k1`](https://github.com/winnowwallet/winnow/tree/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1): nine files, 894 lines of Swift, 781 of them not blank, importing Foundation and CryptoKit and nothing else. It does what a single-key wallet needs and no more: field and scalar arithmetic, point addition and multiplication, compressed and x-only keys, the [BIP32](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0032.mediawiki) and [Taproot](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0341.mediawiki) tweaks, [BIP340](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340.mediawiki) signing and verification, and the tagged hash. I shipped it in a single-key build of Winnow with shared accounts taken out.
 
+| File | What it does | Lines |
+|---|---|---|
+| `Integer256` | 256-bit numbers in four 64-bit limbs | 235 |
+| `FieldElement` | arithmetic modulo p | 131 |
+| `Scalar` | arithmetic modulo the group order | 67 |
+| `Point` | Jacobian points | 138 |
+| `GeneratorTable` | precomputed multiples of G | 76 |
+| `Secp256k1Keys` | private, public and x-only keys, and tweaks | 140 |
+| `Secp256k1Schnorr` | BIP340 signing and verification | 68 |
+| `Secp256k1Error`, `TaggedSHA256` | errors, and the tagged hash | 39 |
+| **Total** | | **894** (781 not blank) |
+
 It's variable-time, and it doesn't wipe secrets from memory; libsecp256k1 guards against both. On a phone, neither is the worry yet. Exploiting them takes code running on the device or a way to time thousands of my signatures. The worry is whether the math is right.
 
 ## Four layers
 
 Each layer only uses the one below it.
 
-[`Integer256`](https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Integer256.swift) is a 256-bit number in four 64-bit limbs, because Swift's [`UInt128`](https://developer.apple.com/documentation/swift/uint128) needs iOS 18 and the app supports [iOS 17](https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/project.yml#L21). Squaring computes each cross product once and adds it twice, so it takes ten 64-bit multiplications instead of sixteen.
+`Integer256` is a 256-bit number in four 64-bit limbs, because Swift's [`UInt128`](https://developer.apple.com/documentation/swift/uint128) needs iOS 18 and the app supports iOS 17. Squaring computes each cross product once and adds it twice, so it takes ten 64-bit multiplications instead of sixteen.
 
-[`FieldElement`](https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/FieldElement.swift) works modulo p, and p's shape is the trick. Because p is 2²⁵⁶ minus a small constant, 2²⁵⁶ is congruent to that constant, 2³² + 977. Anything that spills past 256 bits gets multiplied by the constant and added back in:
+`FieldElement` works modulo p, and p's shape is the trick. Because p is 2²⁵⁶ minus a small constant, 2²⁵⁶ is congruent to that constant, 2³² + 977. Anything that spills past 256 bits gets multiplied by the constant and added back in:
 
 ```swift
 // fold = 0x1_0000_03D1 = 2^32 + 977 = 2^256 − p
@@ -77,13 +104,13 @@ private static func reduce(high: Integer256, low: Integer256) -> FieldElement {
 }
 ```
 
-The [full function](https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/FieldElement.swift#L106-L130) explains, in a comment, why a few folds and one conditional subtraction always land below p. Inversion is Fermat's little theorem. Square roots work because p ≡ 3 (mod 4), and the code squares the answer to check it.
+The full function explains, in a comment, why a few folds and one conditional subtraction always land below p. Inversion is Fermat's little theorem. Square roots work because p ≡ 3 (mod 4), and the code squares the answer to check it.
 
-[`Scalar`](https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Scalar.swift) is the same idea modulo the group order, and it's what private keys, nonces and tweaks are. It multiplies the slow, simple way, because the wallet does that once per signature.
+`Scalar` is the same idea modulo the group order, and it's what private keys, nonces and tweaks are. It multiplies the slow, simple way, because the wallet does that once per signature.
 
-[`Point.swift`](https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Point.swift) uses Jacobian coordinates and the a = 0 formulas from the [Explicit-Formulas Database](https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html). The addition formula breaks when the two points are equal or opposite, so [the code](https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Point.swift#L56-L77) checks for those cases first, and they have [tests of their own](https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Tests/BitcoinCoreTests/NativeSecp256k1CurveTests.swift#L219). [`GeneratorTable`](https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/GeneratorTable.swift) precomputes 960 multiples of G, 61 KB built in about a millisecond, so any multiple of G costs at most 64 additions and no doublings.
+`Point.swift` uses Jacobian coordinates and the a = 0 formulas from the [Explicit-Formulas Database](https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html). The addition formula breaks when the two points are equal or opposite, so the code checks for those cases first, and they have tests of their own. `GeneratorTable` precomputes 960 multiples of G, 61 KB built in about a millisecond, so any multiple of G costs at most 64 additions and no doublings.
 
-On top, [`Secp256k1Keys.swift`](https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Secp256k1Keys.swift) copies the validation rules and parity behaviour of the four libsecp256k1 tweak calls it replaces. That's why nothing above it had to change. Nothing in it traps on bad input, which matters because the Taproot tweak also runs on control blocks from other people's transactions. And [the signer](https://github.com/winnowwallet/winnow/blob/ff892b9039fe2bc5beae08d992dfd6f3057bfb6d/Sources/NativeSecp256k1/Secp256k1Schnorr.swift#L13-L36) ends the way BIP340's reference does, by verifying its own signature before handing it back:
+On top, `Secp256k1Keys.swift` copies the validation rules and parity behaviour of the four libsecp256k1 tweak calls it replaces. That's why nothing above it had to change. Nothing in it traps on bad input, which matters because the Taproot tweak also runs on control blocks from other people's transactions. And the signer ends the way BIP340's reference does, by verifying its own signature before handing it back:
 
 ```swift
 let k = r.hasOddY ? nonce.negated() : nonce
@@ -108,7 +135,7 @@ Three things check the module. Recorded answers from libsecp256k1 and BIP340's r
 
 I wanted to know whether the fuzzer was doing its job, so I planted 21 realistic bugs in the curve code, one at a time, and ran the pull-request fuzz job against each. It caught 13. It missed three of the five consistent bugs, because it only checked the module against itself, and five of the seven rare-path ones, because random bytes never got there. Running it 25 times longer caught nothing more. The unit tests did better, at 20, and the one they missed, a lost carry in the multiplier, got past everything.
 
-So the fuzzer now has something to argue with: [a second implementation](https://github.com/winnowwallet/winnow/blob/d47ba8335e58a3125c830f6065520f5b89bfd20e/Tools/Fuzz/Sources/WinnowFuzzCore/ReferenceSecp256k1.swift), about 300 lines of deliberately plain Swift that shares none of the module's algorithms. It uses 32-bit limbs instead of 64, Montgomery multiplication instead of p's special form, affine points instead of Jacobian, and BIP340 written straight from the spec. It has to reproduce BIP340's own vectors before it's trusted. The fuzzer demands byte-for-byte agreement between the two and pushes half its inputs to the edges: around the group order and p, or long runs of ones. A new test feeds both implementations operands built from awkward limbs, all ones or the top bit alone, which is what it takes to reach that carry.
+So the fuzzer now has something to argue with: [a second implementation](https://github.com/winnowwallet/winnow/pull/242), about 300 lines of deliberately plain Swift that shares none of the module's algorithms. It uses 32-bit limbs instead of 64, Montgomery multiplication instead of p's special form, affine points instead of Jacobian, and BIP340 written straight from the spec. It has to reproduce BIP340's own vectors before it's trusted. The fuzzer demands byte-for-byte agreement between the two and pushes half its inputs to the edges: around the group order and p, or long runs of ones. A new test feeds both implementations operands built from awkward limbs, all ones or the top bit alone, which is what it takes to reach that carry.
 
 Against the same 21 bugs, the fuzzer now catches 19, and with the new test the unit tests catch all 21. The two the fuzzer still misses sit deep in field arithmetic that keys and points can't steer, which is what that test is for. None of it turned up a bug in the real module: it passes every check, old and new.
 
