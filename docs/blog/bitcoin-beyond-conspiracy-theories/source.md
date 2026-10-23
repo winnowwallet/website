@@ -16,9 +16,17 @@ An Anthropic employee asked Claude how the seeds were made, without pointing it 
 
 Bitcoin doesn't use P-256. It uses secp256k1, from Certicom's [SEC 2](https://www.secg.org/sec2-v2.pdf): y² = x³ + 7 over the prime p = 2²⁵⁶ − 2³² − 977. Nothing in it is random. The prime is shaped to make arithmetic cheap, and 0 and 7 are about as small as constants get. There's no seed to explain.
 
+![Two cards, one for each curve. secp256r1, NIST P-256, whose coefficient comes from the SHA-1 hash of a published seed, and secp256k1, Bitcoin's curve, whose constants are a = 0 and b = 7 with no seed](/images/blog/bitcoin-beyond-conspiracy-theories/r1-vs-k1.png)
+
+*The r in secp256r1 is for "verifiably random", the k in secp256k1 for Koblitz.*
+
 There is one loose end. Halve Bitcoin's generator G and the x-coordinate of the result is `0x3b78ce563f89a0ed9414f5aa28ad0d96d6795f9c63`. That's 166 bits, where a random point's would have about 256. So G is twice a point somebody picked for its small x-coordinate, and nobody has said why. It takes about twenty lines of Python to show it.
 
 It doesn't matter for security. Every point except infinity generates the same group, and a discrete log with respect to one generator converts to any other for free. A chosen generator can't hide a weakness the way a chosen curve could.
+
+![Two recipes. For secp256r1: a seed, run through SHA-1, gives the coefficient b. For secp256k1: pick a = 0 and b = 7, then pick a prime that is cheap to reduce](/images/blog/bitcoin-beyond-conspiracy-theories/two-recipes.png)
+
+*P-256's seed was the mystery, solved in October 2026. Bitcoin's curve has no seed. Its one loose end is the generator.*
 
 ## Every wallet brings its own curve
 
