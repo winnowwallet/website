@@ -74,3 +74,225 @@ So the rules matter more, not less. The expected answer never comes from the cod
 Proofs beat all of it. [Verified Garbage](https://github.com/pyca/verified-garbage/tree/2fa57c651a97a18e3e1c03503b583f62db9d9e2a), an experimental library under the pyca organization, has language models write assembly and prove it correct and constant-time in Lean. My tests show agreement on the inputs I chose. A machine-checked proof covers every input, within the model it trusts.
 
 Two implementations don't make either one trustworthy. They make disagreements visible. The planted bugs are how I check that the disagreements actually get looked for.
+
+## Appendix: checking it yourself
+
+These programs check three claims in [the curves post](/blog/bitcoin-beyond-conspiracy-theories/): the halved generator, the line counts, and the signature on the first mainnet payment.
+
+### Halving the generator
+
+Python's integers are enough. Halving a point means multiplying it by (n + 1) / 2, where n is the group order:
+
+```python
+p = 2**256 - 2**32 - 977
+n = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
+G = (0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798,
+     0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8)
+
+def add(P, Q):
+    if P is None: return Q
+    if Q is None: return P
+    if P[0] == Q[0] and (P[1] + Q[1]) % p == 0: return None
+    if P == Q: slope = 3 * P[0] * P[0] * pow(2 * P[1], -1, p) % p
+    else: slope = (Q[1] - P[1]) * pow(Q[0] - P[0], -1, p) % p
+    x = (slope * slope - P[0] - Q[0]) % p
+    return (x, (slope * (P[0] - x) - P[1]) % p)
+
+def mul(k, P):
+    R = None
+    while k:
+        if k & 1: R = add(R, P)
+        P, k = add(P, P), k >> 1
+    return R
+
+half = mul((n + 1) // 2, G)
+assert add(half, half) == G
+print(hex(half[0]), half[0].bit_length())
+```
+
+```text
+0x3b78ce563f89a0ed9414f5aa28ad0d96d6795f9c63 166
+```
+
+### Counting the lines
+
+From a clone of the wallet repository, the size of the removal and the non-blank lines per module at both commits:
+
+```bash
+git clone https://github.com/winnowwallet/winnow && cd winnow
+git diff --shortstat 6566871 3794057
+for rev in 6566871 3794057; do
+  for m in WalletCore WinnowApp VaultKit NativeSecp256k1; do
+    printf '%s %s ' "$rev" "$m"
+    git ls-tree -r --name-only "$rev" -- "Sources/$m" | grep '\.swift$' |
+      while read -r f; do git show "$rev:$f"; done | grep -c -v '^[[:space:]]*$'
+  done
+done
+```
+
+For the multisig line, run the same loop over `3794057 7b7ff30`: the curve module stays at 781 lines.
+
+### The first payment's signature
+
+Fetch the transaction and its context from a public explorer:
+
+```bash
+curl -s https://blockstream.info/api/tx/ad627d565202df6e644af195fd2ba9a1908631999ec55ae12a36ce5e784b5d6e/hex > tx.hex
+curl -s https://blockstream.info/api/tx/ad627d565202df6e644af195fd2ba9a1908631999ec55ae12a36ce5e784b5d6e
+curl -s https://blockstream.info/api/blocks/tip/height
+```
+
+The JSON gives the spent output (`prevout`), the fee, the weight and the block. Confirmations are the tip height minus 972,342, plus one.
+
+Read the bytes with the wallet's inspector from a checkout of the tag. It parses with the same WalletCore code the app uses and is offline:
+
+```bash
+git clone https://github.com/winnowwallet/winnow && cd winnow && git checkout v0.8.7
+scripts/winnow-debug inspect tx "$(cat ../tx.hex)"
+```
+
+```json
+{
+  "inputs" : [
+    {
+      "sequence" : 4294967293,
+      "txid" : "deeeaa2bd9f5636cdc76bd7e352fd96d01e22952e72694a36058af8d19c79d6a",
+      "vout" : 1,
+      "witnessItems" : 1
+    }
+  ],
+  "locktime" : 972341,
+  "outputs" : [
+    {
+      "scriptPubKey" : "512039e8fb58bce093e6eb458807f25b5b8c1732e66a41b694519a8e4521f69b4bea",
+      "value" : 98290
+    },
+    {
+      "scriptPubKey" : "00143238aa2652dcdc128c4a378d9d7f7c2d98334a00",
+      "value" : 1000
+    }
+  ],
+  "txid" : "ad627d565202df6e644af195fd2ba9a1908631999ec55ae12a36ce5e784b5d6e",
+  "version" : 2,
+  "vsize" : 142
+}
+```
+
+`5120` followed by 32 bytes is a version 1 witness program (P2TR), and `0014` followed by 20 bytes is version 0 (P2WPKH).
+
+To check the signature with the wallet's code, add an executable target to the checkout's `Package.swift`:
+
+```swift
+.executableTarget(
+    name: "VerifySpend",
+    dependencies: ["WalletCore", "NativeSecp256k1",
+                   .product(name: "P256K", package: "swift-secp256k1")],
+    path: "Tools/VerifySpend"
+),
+```
+
+and put this in `Tools/VerifySpend/main.swift`:
+
+```swift
+import Foundation
+import NativeSecp256k1
+import P256K
+import WalletCore
+
+// usage: VerifySpend <raw transaction hex>
+let tx = try Transaction.decode(Data(hex: CommandLine.arguments[1])!)
+let spent = SighashBIP341.SpentOutput(   // deeeaa2b…9d6a output 1
+    amount: 100_000,
+    scriptPubKey: Data(hex: "512022e487129a0d2d5bdf02617c0fb7a8b59767d1d886498c7d3ca648337679950d")!)
+let outputKey = spent.scriptPubKey.suffix(32)
+let signature = tx.inputs[0].witness[0]
+precondition(tx.inputs.count == 1 && tx.inputs[0].witness.count == 1 && signature.count == 64)
+
+let sighash = try SighashBIP341.sighash(tx: tx, inputIndex: 0, spentOutputs: [spent], hashType: .default)
+print("sighash", sighash.hex)
+print("NativeSecp256k1", Secp256k1.Schnorr.verify(signature: signature, message: sighash,
+                                                    publicKey: Data(outputKey)))
+var flipped = Data(signature)
+flipped[63] ^= 1
+print("one bit flipped", Secp256k1.Schnorr.verify(signature: flipped, message: sighash,
+                                                    publicKey: Data(outputKey)))
+var message = [UInt8](sighash)
+print("libsecp256k1", P256K.Schnorr.XonlyKey(dataRepresentation: Data(outputKey))
+    .isValid(try P256K.Schnorr.SchnorrSignature(dataRepresentation: signature), for: &message))
+```
+
+```bash
+swift run VerifySpend "$(cat ../tx.hex)"
+```
+
+```text
+sighash 248a5ec225bb0b1fad54d82fcbbd673c247200c93fe39e31eb5bf01b06515779
+NativeSecp256k1 true
+one bit flipped false
+libsecp256k1 true
+```
+
+To check it with nothing from the wallet, use Python 3 and BIP340's reference implementation. I used the same pinned copy the fixtures use, whose SHA-256 is `4b1d4ad9e60820df4a6d239733d52b014bc03e4c47afd757a2fe4d3b586d892c`:
+
+```bash
+curl -sO https://raw.githubusercontent.com/bitcoin/bips/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340/reference.py
+python3 check_spend.py reference.py tx.hex
+```
+
+with this saved as `check_spend.py` next to `tx.hex`:
+
+```python
+# usage: python3 check_spend.py reference.py tx.hex
+# reference.py is bip-0340/reference.py from bitcoin/bips.
+import hashlib, importlib.util, struct, sys
+
+spec = importlib.util.spec_from_file_location("bip340", sys.argv[1])
+bip340 = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(bip340)
+raw = bytes.fromhex(open(sys.argv[2]).read().strip())
+
+# The coin being spent: deeeaa2b…9d6a output 1.
+spent_spk = bytes.fromhex("5120" "22e487129a0d2d5bdf02617c0fb7a8b5"
+                          "9767d1d886498c7d3ca648337679950d")
+spent_amount = 100_000
+sha = lambda b: hashlib.sha256(b).digest()
+
+# This parser assumes what the transaction has: one input, an empty
+# scriptSig, two outputs, one witness item, all lengths below 0xfd.
+version, rest = raw[:4], raw[4:]
+assert rest[:3] == b"\x00\x01\x01"            # segwit marker, flag, 1 input
+outpoint, rest = rest[3:39], rest[39:]
+assert rest[0] == 0                           # empty scriptSig
+sequence, rest = rest[1:5], rest[5:]
+count, rest, outputs = rest[0], rest[1:], []
+for _ in range(count):
+    n = rest[8]
+    outputs.append(rest[:9 + n])              # value || len || script
+    rest = rest[9 + n:]
+assert rest[:2] == b"\x01\x40"                # one witness item, 64 bytes
+signature, locktime = rest[2:66], rest[66:70]
+assert len(rest) == 70
+
+def sighash(amount):                          # BIP341, SIGHASH_DEFAULT, key path
+    msg = (b"\x00" + b"\x00" + version + locktime
+           + sha(outpoint) + sha(struct.pack("<q", amount))
+           + sha(bytes([len(spent_spk)]) + spent_spk) + sha(sequence)
+           + sha(b"".join(outputs)) + b"\x00" + struct.pack("<I", 0))
+    return bip340.tagged_hash("TapSighash", msg)
+
+key = spent_spk[2:]
+print("sighash", sighash(spent_amount).hex())
+print("valid", bip340.schnorr_verify(sighash(spent_amount), key, signature))
+print("valid if the spent amount were 1 sat more",
+      bip340.schnorr_verify(sighash(spent_amount + 1), key, signature))
+```
+
+```text
+sighash 248a5ec225bb0b1fad54d82fcbbd673c247200c93fe39e31eb5bf01b06515779
+valid True
+valid if the spent amount were 1 sat more False
+```
+
+The message is BIP341's: the epoch byte, the hash type, version and locktime, then hashes of the prevouts, the spent amounts, the spent scripts, the sequences and the outputs, then the spend type and the input index. That message is hashed with the `TapSighash` tag. The Python and the Swift agree on all 32 bytes of it.
+
+The same two programs check the second transaction, `3e28224c…a7a6`. Fetch its hex the same way, and change the spent output to output 0 of the first transaction: 98,290 sats locked by `512039e8fb58bce093e6eb458807f25b5b8c1732e66a41b694519a8e4521f69b4bea`. Both then print the sighash `a715126d3d57c8f7f97ca5a021348af22a00ec9f43925250876e10233d6b5380` and accept the signature.
