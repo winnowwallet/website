@@ -2,6 +2,8 @@
 
 Draft — Alex Newman · October 20, 2026
 
+**Shelved 23 October 2026.** Timing leaks and unwiped secrets aren't the worry on a phone yet; whether the math is right is, and that story is in `two-implementations.md`. Revisit before the native curve ships outside internal TestFlight.
+
 *Part 1 of the series that starts with [Bitcoin Beyond Conspiracy Theories](/blog/bitcoin-beyond-conspiracy-theories/): side channels, what Winnow's Swift secp256k1 gives away today, and what it would take to stop.*
 
 The [introduction](/blog/bitcoin-beyond-conspiracy-theories/) ended with a trade-off. Winnow's single-key build does its curve math in its own Swift module, and every operation in it is variable-time: how long it takes depends on the numbers it is working on, including secret ones. Its secrets are not cleared from memory afterwards either. I accepted both for an internal test build on a phone I control. This part is about what that acceptance means.

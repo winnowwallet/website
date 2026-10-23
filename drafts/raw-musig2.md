@@ -2,6 +2,8 @@
 
 Draft — Alex Newman · October 20, 2026
 
+**Shelved 23 October 2026.** MuSig2 (winnow #235) is parked. The multisig that shipped is Taproot script-path accounts with a Ledger signer and recovery paths (0.8.11, winnow #241), so a Part 3 should describe that, after a physical Ledger has signed.
+
 *Part 3 of the series that starts with [Bitcoin Beyond Conspiracy Theories](/blog/bitcoin-beyond-conspiracy-theories/): MuSig2 back on Winnow's native Swift build, as raw as I could make it, with Bitcoin Core as the second signer.*
 
 The single-key build got small by deleting things. Shared accounts went: threshold vaults, recovery paths, people as co-owners, approval wording and the MuSig2 signing underneath them, 12,601 deleted lines by the [introduction's](/blog/bitcoin-beyond-conspiracy-theories/) count. On a [branch](https://github.com/winnowwallet/winnow/commit/dae4b74576d0c5aa179c90c9c71a677c95b06bde), with an [open pull request](https://github.com/winnowwallet/winnow/pull/235), MuSig2 is back. The product around it is not. This part is about what came back, what stayed out, and why the most interesting test of it is run by somebody else's code.
