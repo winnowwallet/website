@@ -24,7 +24,7 @@ Script-path needed none of that. Between `3794057` and `7b7ff30`, the curve modu
 
 I wanted hardware people already own. SeedSigner can't do this. Version 0.8.7 refuses any key inside a Taproot script tree, and it trims script-path signatures away on the way back to the phone. The Satochip fork that drives a card signs ECDSA only.
 
-Ledger's Bitcoin app signs these leaves. The phone pairs with the Ledger over Bluetooth and registers the account on it, and the Ledger shows the policy for approval. "Verify on Ledger" shows a receive address on the device's screen. When you spend, the Ledger shows the payment before it signs. The phone keeps its signature only if it verifies against the sighash the phone computes.
+Ledger's Bitcoin app signs these leaves, and Winnow talks to it without linking any Ledger code. The client is written from the app's protocol: the Bluetooth framing, Merkle proofs and BIP388 wallet policies, in a folder of its own. The phone pairs with the Ledger and registers the account on it, and the Ledger shows the policy for approval. "Pair a Ledger" builds a 2-of-2 between you and the device. For anything bigger, "New multisig account" has an "Include a Ledger" switch, with or without a recovery path. "Verify on Ledger" shows a receive address on the device's screen. When you spend, the Ledger shows the payment before it signs, and the phone adds the signature only after it verifies on the leaf the Ledger says it signed, against the sighash the phone computed. It's all in Advanced mode, and Simple mode refuses it.
 
 Two version numbers matter here. Version 2.1.2 signs `multi_a` leaves. A recovery leaf needs 2.2.0, because it's miniscript. And if the recovery leaf reuses a signer on `/<2;3>/*`, you need 2.2.1, because earlier versions return the wrong leaf hashes for keys on that path.
 
@@ -68,8 +68,8 @@ The harder parts are about trust. Rescue's [own design](https://github.com/winno
 
 Bitcoin Core 31.1 produced the checksums and addresses for four timelocked descriptors, and the tests compare against those. In the signet journey in the 0.8.10 release run, Core cosigns a 2-of-2 spend. After a three-block delay, it accepts and mines a spend that the phone signs alone through the recovery leaf.
 
-Nothing has been signed on a physical Ledger yet. The Ledger tests use Ledger's published vectors and a simulator I wrote from the same documentation. Agreeing with it proves little. The next test is a Nano X on signet.
+Nothing has been signed on a physical Ledger yet. The Ledger tests use Ledger's own policy and address vectors and a software Ledger I wrote from the same documentation, and a fuzz target feeds the client hostile frames, commands and signatures. Agreeing with the simulator proves little: it shows the phone's client is consistent, not that the device agrees. The next test is a Nano X on signet, by hand.
 
 ## Where it stands
 
-[Draft pull request #246](https://github.com/winnowwallet/winnow/pull/246) proposes the whole line to Winnow's main branch as two commits: everything described here, and a fuzz oracle for the curve module. Merging it would make this the App Store build, and it would take MuSig2 savings, vaults and cosigner cards out of the shipping app. It stays a draft until a Ledger has signed and that trade is decided.
+Two draft pull requests carry this. [#246](https://github.com/winnowwallet/winnow/pull/246) is the native curve, the multisig accounts, the recovery leaf and a fuzz oracle, proposed to Winnow's main branch. Merging it would make this the App Store build, and it would take MuSig2 savings, vaults and cosigner cards out of the shipping app, so that trade has to be decided first. [#247](https://github.com/winnowwallet/winnow/pull/247) is the Ledger signer alone, one commit on top of #246 and split out so #246 can be reviewed and landed without it. Merge #246 first. #247 waits for a Nano X to sign.
