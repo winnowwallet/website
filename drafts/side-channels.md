@@ -29,6 +29,10 @@ A side channel is anything a computation reveals besides its answer, like how lo
 
 Elliptic-curve signatures are sensitive to this because of the nonce. Every Schnorr or ECDSA signature uses a fresh secret number, and the equation ties it to the private key. If an attacker learns a few bits of it from each of many signatures, a lattice algorithm can recover the key. [Minerva](https://eprint.iacr.org/2020/728) did that to a smartcard and five libraries from the timing of ECDSA nonces. [TPM-Fail](https://www.usenix.org/conference/usenixsecurity20/presentation/moghimi-tpm) did it to TPM chips, including Schnorr signatures, and [LadderLeak](https://eprint.iacr.org/2020/615) did it with less than one bit of leak per signature.
 
+![A diagram of a Schnorr signature: the private key d, a fresh secret nonce k, the public point R = k times G, the challenge e, and the signature s = k + e times d, with three ways a leaked nonce gives up the key](/images/blog/fuzzing-and-timing-two-wallets/nonce.png)
+
+*The nonce is as secret as the key. Learn it, reuse it, or learn a few bits of it many times over, and the key falls out.*
+
 Winnow's curve is variable-time, and I knew where. Point multiplication skips zero windows and adds only where a scalar has a one. The generator table is indexed by the secret, and signing multiplies the generator by the nonce. Libsecp256k1 is built to avoid all of that. Its README promises it's "completely free of timing sidechannels for secret-key operations", on reasonable hardware and toolchains. I'd never measured either one.
 
 ## The test
