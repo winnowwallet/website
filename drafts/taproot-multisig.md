@@ -72,4 +72,4 @@ Nothing has been signed on a physical Ledger yet. The Ledger tests use Ledger's 
 
 ## Where it stands
 
-[Draft pull request #241](https://github.com/winnowwallet/winnow/pull/241) proposes the whole line as one change to Winnow's main branch. Merging it would make this the App Store build, and it would take MuSig2 savings, vaults and cosigner cards out of the shipping app. It stays a draft until a Ledger has signed and that trade is decided.
+[Draft pull request #246](https://github.com/winnowwallet/winnow/pull/246) proposes the whole line to Winnow's main branch as two commits: everything described here, and a fuzz oracle for the curve module. Merging it would make this the App Store build, and it would take MuSig2 savings, vaults and cosigner cards out of the shipping app. It stays a draft until a Ledger has signed and that trade is decided.

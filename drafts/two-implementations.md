@@ -39,7 +39,7 @@ And the checks differ in where they come from. Decred compares itself with other
 
 ## How much code it takes
 
-Winnow's curve is purpose-built: one wallet, one kind of signature. I wanted to know how much that saves, so I counted each project's curve code with [tokei](https://github.com/XAMPPRocky/tokei). That's lines of code without comments, blank lines or tests, on each project's main branch on 23 October 2026. Curve code here means the arithmetic, the keys and the signatures, including nonce generation, but not general-purpose hash functions.
+Winnow's curve is purpose-built: one wallet, one kind of signature. I wanted to know how much that saves, so I counted each project's curve code with [tokei](https://github.com/XAMPPRocky/tokei). That's lines of code without comments, blank lines or tests, on each project's main branch on 23 October 2026, except Winnow's, which is on the branch that holds its curve. Curve code here means the arithmetic, the keys and the signatures, including nonce generation, but not general-purpose hash functions.
 
 | | Lines | Signatures | Also carries |
 |---|---|---|---|
@@ -96,7 +96,7 @@ The code handles that carry correctly. Until now, no test proved it. A test for 
 
 ## A second implementation, on purpose
 
-So the fuzzer now has [something to argue with](https://github.com/winnowwallet/winnow/blob/d47ba8335e58a3125c830f6065520f5b89bfd20e/Tools/Fuzz/Sources/WinnowFuzzCore/ReferenceSecp256k1.swift): about 300 lines of deliberately plain Swift that shares none of the module's algorithms. The module uses 64-bit limbs, reduces with p's special shape, inverts by exponentiation and keeps points in Jacobian coordinates. The reference uses 32-bit limbs, Montgomery multiplication, the binary extended Euclidean inverse, affine points, and BIP340 written straight from the spec's pseudocode. It's slow, and it's meant to be easy to check by eye.
+So the fuzzer now has [something to argue with](https://github.com/winnowwallet/winnow/blob/49d91de3cc843ae15adc5c742adc695b82d9a311/Tools/Fuzz/Sources/WinnowFuzzCore/ReferenceSecp256k1.swift): about 300 lines of deliberately plain Swift that shares none of the module's algorithms. The module uses 64-bit limbs, reduces with p's special shape, inverts by exponentiation and keeps points in Jacobian coordinates. The reference uses 32-bit limbs, Montgomery multiplication, the binary extended Euclidean inverse, affine points, and BIP340 written straight from the spec's pseudocode. It's slow, and it's meant to be easy to check by eye.
 
 Before it judges anything, it has to reproduce BIP340's own test vectors. My first run of that test passed while checking nothing. The vectors file has Windows line endings, and Swift treats "\r\n" as a single character, so splitting on "\n" found zero vectors, and a loop over zero vectors can't fail. A separate test that the file had actually loaded is what caught it. A test that checks nothing passes.
 
@@ -110,7 +110,7 @@ For the carry, a new unit test feeds both implementations operands built from aw
 
 Against the same 21 bugs, the fuzzer now catches 19. The two it misses sit deep in field arithmetic that keys and points can't steer, and the new test catches both, so the unit tests catch all 21.
 
-The real module passes all of it. No real bug turned up this time. The [code is in draft pull request #242](https://github.com/winnowwallet/winnow/pull/242).
+The real module passes all of it. No real bug turned up this time. The [code is in draft pull request #246](https://github.com/winnowwallet/winnow/pull/246), as its second commit.
 
 ## The state I don't keep
 
