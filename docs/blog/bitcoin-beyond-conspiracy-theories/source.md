@@ -20,13 +20,11 @@ Bitcoin doesn't use P-256. It uses secp256k1, from Certicom's [SEC 2](https://ww
 
 *The r in secp256r1 is for "verifiably random", the k in secp256k1 for Koblitz.*
 
-There is one loose end. Halve Bitcoin's generator G and the x-coordinate of the result is `0x3b78ce563f89a0ed9414f5aa28ad0d96d6795f9c63`. That's 166 bits, where a random point's would have about 256. So G is twice a point somebody picked for its small x-coordinate, and nobody has said why. It takes about twenty lines of Python to show it.
-
-It doesn't matter for security. Every point except infinity generates the same group, and a discrete log with respect to one generator converts to any other for free. A chosen generator can't hide a weakness the way a chosen curve could.
-
 ![Two recipes. For secp256r1: a seed, run through SHA-1, gives the coefficient b. For secp256k1: pick a = 0 and b = 7, then pick a prime that is cheap to reduce](/images/blog/bitcoin-beyond-conspiracy-theories/two-recipes.png)
 
 *P-256's seed was the mystery, solved in October 2026. Bitcoin's curve has no seed. Its one loose end is the generator.*
+
+*One loose end is left: halve Bitcoin's generator G and the x-coordinate has only 166 bits, where a random point's would have about 256, and a later post will look at why.*
 
 ## Every wallet brings its own curve
 
@@ -49,19 +47,9 @@ Software that needs secp256k1 ends up in one of three places. It wraps libsecp25
 
 I filled that in from each project's own pages. Wrappers share libsecp256k1's code and the port shares its design, so none of them can disagree with it. Only the ones that wrote their own can. One library means one thing to review very well. It also means one mistake lands everywhere at once, and you'd only notice with an independent implementation.
 
-## Why I trust SHA-256
-
-Bitcoin also leans on SHA-256, another NSA design. I trust it, but not because it's a standard. I trust it because the evidence can be checked.
-
-Its constants have a recipe. The eight initial values are the fractional parts of the square roots of the first eight primes, and the 64 round constants come from the cube roots of the first 64 primes ([FIPS 180-4](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf), sections 4.2.2 and 5.3.3). Anyone can reproduce them, so nobody tuned those numbers. That doesn't prove the design is secure. That part comes from people attacking it in public.
-
-And public attacks work. In 2017, researchers produced [two different PDFs with the same SHA-1 digest](https://eprint.iacr.org/2017/190). That broke SHA-1's collision resistance, and it's why "industry standard" never means "secure forever". It says nothing about SHA-256. SHA-3 came out of an [open competition](https://csrc.nist.gov/Projects/hash-functions/sha-3-project), with public submissions, public comments and a [final report](https://nvlpubs.nist.gov/nistpubs/ir/2012/NIST.IR.7896.pdf) on why Keccak won. It's a different design alongside SHA-2, not a sign that SHA-2 failed.
-
-So when someone claims a break, I ask four things. The full algorithm, or fewer rounds? A collision, or a preimage? What did it cost? Has anyone reproduced it? Those answers make even bad news useful.
-
 ## So I wrote the curve
 
-That's the kind of trust I want Winnow to earn: publish the design, show the assumptions, and change course when the evidence does. A Swift rewrite doesn't inherit anyone's correctness. Passing known-answer tests proves agreement on those answers and nothing more. It says nothing about timing leaks, bad randomness or malformed input, which is why the [native Swift research](/research/#native-swift) tracks those separately.
+I want Winnow to earn trust by publishing the design, showing the assumptions and changing course when the evidence does. A Swift rewrite doesn't inherit anyone's correctness. Passing known-answer tests proves agreement on those answers and nothing more. It says nothing about timing leaks, bad randomness or malformed input, which is why the [native Swift research](/research/#native-swift) tracks those separately.
 
 Winnow has been a Bitcoin wallet written in Swift for a while, with one exception. Every key, tweak and signature went through P256K, a Swift wrapper around libsecp256k1. That library is excellent. It was also the one part of the wallet I couldn't read end to end, from the screen down to the arithmetic. Owning it meant writing the curve, because Apple won't: CryptoKit's [`P256`](https://developer.apple.com/documentation/cryptokit/p256) is NIST's curve, and there's no system secp256k1.
 
@@ -81,59 +69,11 @@ The result is [`NativeSecp256k1`](https://github.com/winnowwallet/winnow/tree/ff
 | `Secp256k1Error`, `TaggedSHA256` | errors, and the tagged hash | 39 |
 | **Total** | | **894** (781 not blank) |
 
+![An infographic of Winnow's own secp256k1 code. The repository winnowwallet/winnow, the branch native-secp256k1-main and the folder Sources/NativeSecp256k1, then five steps from 256-bit integers up to keys and signing, with their line counts: 235, 131, 67, 214 and 208, and 39 more for errors and the tagged hash](/images/blog/bitcoin-beyond-conspiracy-theories/native-module-map.png)
+
+*Winnow's own curve code is one short folder on a branch of the Winnow repo.*
+
 It's variable-time, and it doesn't wipe secrets from memory; libsecp256k1 guards against both. On a phone, neither is the worry yet. Exploiting them takes code running on the device or a way to time thousands of my signatures. The worry is whether the math is right.
-
-## Four layers
-
-Each layer only uses the one below it.
-
-`Integer256` is a 256-bit number in four 64-bit limbs, because Swift's [`UInt128`](https://developer.apple.com/documentation/swift/uint128) needs iOS 18 and the app supports iOS 17. Squaring computes each cross product once and adds it twice, so it takes ten 64-bit multiplications instead of sixteen.
-
-`FieldElement` works modulo p, and p's shape is the trick. Because p is 2²⁵⁶ minus a small constant, 2²⁵⁶ is congruent to that constant, 2³² + 977. Anything that spills past 256 bits gets multiplied by the constant and added back in:
-
-```swift
-// fold = 0x1_0000_03D1 = 2^32 + 977 = 2^256 − p
-private static func reduce(high: Integer256, low: Integer256) -> FieldElement {
-    let (highFold, lowFold) = high.multipliedFullWidth(by: fold)
-    let (total, overflow) = low.addingReportingOverflow(lowFold)
-    let extra = highFold &+ (overflow ? 1 : 0)
-
-    let (extraHigh, extraLow) = extra.multipliedFullWidth(by: fold)
-    var carry: UInt64 = 0
-    let r0 = Integer256.addLimb(total.l0, extraLow, &carry)
-    let r1 = Integer256.addLimb(total.l1, extraHigh, &carry)
-    let r2 = Integer256.addLimb(total.l2, 0, &carry)
-    let r3 = Integer256.addLimb(total.l3, 0, &carry)
-    var result = Integer256(l0: r0, l1: r1, l2: r2, l3: r3)
-    if carry != 0 {
-        result = result.addingReportingOverflow(foldValue).partialValue
-    }
-    return FieldElement(reducing: result)
-}
-```
-
-The full function explains, in a comment, why a few folds and one conditional subtraction always land below p. Inversion is Fermat's little theorem. Square roots work because p ≡ 3 (mod 4), and the code squares the answer to check it.
-
-`Scalar` is the same idea modulo the group order, and it's what private keys, nonces and tweaks are. It multiplies the slow, simple way, because the wallet does that once per signature.
-
-`Point.swift` uses Jacobian coordinates and the a = 0 formulas from the [Explicit-Formulas Database](https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html). The addition formula breaks when the two points are equal or opposite, so the code checks for those cases first, and they have tests of their own. `GeneratorTable` precomputes 960 multiples of G, 61 KB built in about a millisecond, so any multiple of G costs at most 64 additions and no doublings.
-
-On top, `Secp256k1Keys.swift` copies the validation rules and parity behaviour of the four libsecp256k1 tweak calls it replaces. That's why nothing above it had to change. Nothing in it traps on bad input, which matters because the Taproot tweak also runs on control blocks from other people's transactions. And the signer ends the way BIP340's reference does, by verifying its own signature before handing it back:
-
-```swift
-let k = r.hasOddY ? nonce.negated() : nonce
-let rX = r.x.bigEndian
-
-let e = challenge(rX: rX, publicX: publicX, message: message)
-let s = k + e.multiplied(by: d)
-let signature = rX + s.bigEndian
-guard verify(signature: signature, message: message, publicKey: publicX) else {
-    throw Secp256k1Error.signingFailed
-}
-return signature
-```
-
-[BIP340 recommends that](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0340.mediawiki), because a signature broken by a computation error can leak the key. It can't catch a bug the signer and verifier share, though. That takes a second implementation.
 
 ## Is the math right?
 
