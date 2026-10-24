@@ -2,7 +2,7 @@
 
 Draft — Alex Newman · October 23, 2026
 
-*A follow-up to [Bitcoin Beyond Conspiracy Theories](/blog/bitcoin-beyond-conspiracy-theories/): Winnow owns its curve and Winnow Rescue borrows libsecp256k1's. I fuzzed both, then timed both curves.*
+*A follow-up to [Bitcoin Beyond Conspiracy Theories](/blog/bitcoin-beyond-conspiracy-theories/): Winnow owns its curve and Winnow Rescue borrows libsecp256k1's. I fuzzed both, timed both curves, and asked what a proof could add.*
 
 I write two Bitcoin projects that treat the curve differently. Winnow, the iOS wallet, signs with its own Swift implementation. [Winnow Rescue](https://github.com/winnowwallet/winnowrescue), the recovery tool, finds coins in old wallets and will sweep them into an account you already have. Its core is about 11,800 lines of Rust, tests included, and it gets secp256k1 from libsecp256k1 through the rust-bitcoin crate.
 
@@ -21,7 +21,7 @@ Rescue is early. Only the core exists, and the command-line tool, the window and
 
 Neither fuzzer is better. Rescue's follows coverage, so a few seconds reach deep into its parsers and the state they feed. Winnow's has no feedback. It mutates from fixed seeds and hopes. In return Winnow fuzzes things Rescue doesn't have to: the curve arithmetic and a hostile device. None of Rescue's nine targets tests curve arithmetic, because libsecp256k1 does that and has its own tests.
 
-That's the asymmetry. Owning the curve adds a whole kind of bug for the fuzzer to find. To see whether Winnow's finds them, I planted 21 bugs in the curve code, one at a time. The fuzzer on every pull request caught 13. With a second implementation to check against, it catches 19, and the unit tests catch all 21. [Part 2](/blog/two-implementations/) has the details. I haven't done the same for Rescue's parsers. That's the obvious next experiment, with the same method.
+That's the asymmetry. Owning the curve adds a whole kind of bug for the fuzzer to find. To see whether Winnow's finds them, I planted 21 bugs in the curve code, one at a time. The fuzzer on every pull request caught 13. With a second implementation to check against, it catches 19, and the unit tests catch all 21. [Part 2](/blog/two-implementations/) has the details. I haven't done the same for Rescue's parsers. That's the obvious next experiment, with the same method. A clean fuzz run only means it found nothing. Further down I come back to what would show more.
 
 ## Why timing
 
@@ -59,6 +59,18 @@ Two caveats. Dudect also crops slow outliers and keeps the largest t. Under that
 Not a remote attacker. The phone signs on its own schedule and doesn't answer signing requests from the network. Of the attacks above, none worked from one signature.
 
 Software on the same phone is a different matter, because apps share the processor's caches. A secret-indexed table lookup is what cache attacks look for. Physical access adds power measurement. And the number of signatures will grow, since a hardware signer can be asked to sign repeatedly.
+
+## What a proof would add
+
+A fuzzer can only tell you what it found. The 21 planted bugs showed that mine finds some and misses others, and a clean run says nothing about the rest. Formal methods work the other way. You write down what the code must do, which is a specification, and a proof checker confirms that the code does it for every input, not just the ones you tried. [Lean](https://lean-lang.org) is one such checker.
+
+I've tried it twice, on branches that aren't published yet.
+
+**The curve arithmetic.** I wrote the integer, field and scalar arithmetic once in Lean, proved it there, and had Lean print the Swift. The app builds without Lean. Twenty-eight theorems cover it. Each operation returns the exact residue for every input, and the bounds the old comments only claimed are now checked facts. Then I planted twenty bugs in the Lean version, one at a time. The proofs rejected every one, including a lost carry, the kind that got past the original tests.
+
+**Spend review.** I wrote a Lean specification of the code that decides what a signer is shown before it signs a multisig spend, and had it generate 1,506 test cases. I planted 27 bugs in the Swift. The package tests caught 8, and the specification caught all 27. It also found a real bug: review crashed on a coin stored at the very top of the block-height range, which a restored backup can contain. That's fixed on the branch.
+
+A proof is only as good as what you trust. Here that is Lean's kernel, my model of what Swift's integer operations do, and the specification, which is my reading of what the code should do. The printer that turns Lean into Swift is checked by tests, not proved. The hand-written code around the generated arithmetic is still tested, not proved. Most of a wallet, its parsers, networking and screens, is better served by fuzzing. And neither trial says anything about timing. A correct signature can still be slow in the wrong way, so timing stays a measurement, and the last section is about how I'll make it.
 
 ## What fixing it takes, and how I'll know
 
