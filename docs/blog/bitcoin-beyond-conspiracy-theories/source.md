@@ -87,7 +87,7 @@ So the fuzzer now has something to argue with: [a second implementation](https:/
 
 Against the same 21 bugs, the fuzzer now catches 19, and with the new test the unit tests catch all 21. The two the fuzzer still misses sit deep in field arithmetic that keys and points can't steer, which is what that test is for. None of it turned up a bug in the real module: it passes every check, old and new.
 
-Tests and fuzzers only show the bugs they find. The stronger tool is a proof: a specification of what the code must do, and a machine that checks the code meets it for every input. That's what people mean by formal methods. I've started trying it on this module with a proof assistant called [Lean](https://lean-lang.org). In a first trial its proofs rejected every bug I planted in the proved version, including the lost carry above. It isn't in the wallet yet, and it covers the arithmetic, not the rest. A later post will say what the proofs assume and what they don't.
+Tests and fuzzers only show the bugs they find. The stronger tool is a proof: a specification of what the code must do, and a machine that checks the code meets it for every input. That's what people mean by formal methods. I've started trying it on this module with a proof assistant called [Lean](https://lean-lang.org). In [a first trial](https://github.com/winnowwallet/winnow/pull/249) its proofs rejected every bug I planted in the proved version, including the lost carry above. It isn't in the wallet yet, and it covers the arithmetic, not the rest. A later post will say what the proofs assume and what they don't.
 
 ## The curve is the small part
 
