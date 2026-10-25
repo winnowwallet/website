@@ -30,6 +30,16 @@ Two version numbers matter here. Version 2.1.2 signs `multi_a` leaves. A recover
 
 The internal key has to be an xpub, because BIP388 wallet policies accept only extended keys. I build it the way Liana does: BIP341's NUMS point, with the SHA-256 of the signers' keys as the chain code. Every child of that point is still unspendable.
 
+## Two implementations on purpose
+
+A 2-of-3 only protects you from a bug if the bug isn't in two places. If the phone and the Ledger ran the same secp256k1 code, one flaw in it could weaken both signers at once. They don't. Ledger's Bitcoin app calls the elliptic-curve routines in Ledger's own SDK, not libsecp256k1. The phone is a different implementation whichever one it uses.
+
+Which one the phone uses is a choice, not a rule. It doesn't have to be Winnow's own Swift curve. libsecp256k1 is as different from the Ledger's code as mine is, and it's the library most Bitcoin software leans on. What matters is that the phone doesn't copy the device.
+
+I still want the Swift module around, as a backup. If a flaw turns up in the library the phone depends on, there's a second implementation ready to switch to, with a reference implementation to check it against. [Part 2](/blog/two-implementations/) is about why two beat one.
+
+The trustee's phone is the soft spot. If it runs Winnow too, two of the three signers share Swift code. That's fine while the code is right. The Ledger is the signer that doesn't share it.
+
 ## Who holds the third key
 
 A 2-of-3 needs three keys, and the interesting question is whose. The second phone doesn't have to be yours. It can belong to a trustee, someone you trust to help and not to spend: a relative, a friend, a lawyer.
