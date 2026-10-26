@@ -4,7 +4,7 @@ Draft — Alex Newman · October 23, 2026
 
 *Taproot multisig in Winnow's Advanced mode: your phone, a Ledger and a trustee's phone, a way back for coins that sit still, and the recovery wallet that could help. The curve code didn't have to grow.*
 
-**Shelved 23 October 2026.** This replaces the MuSig2 draft. Keep it shelved until a physical Ledger has signed.
+**Shelved 23 October 2026, unshelved 26 October 2026.** This replaces the MuSig2 draft. A Nano X has now signed on mainnet; the sections below still describe the state before that and need rewriting before this is published.
 
 Winnow's latest internal builds let you hold a coin with several signers. I'll explain how the account works, what the Ledger does, and what I haven't been able to test yet.
 
@@ -68,7 +68,7 @@ The harder parts are about trust. Rescue's [own design](https://github.com/winno
 
 Bitcoin Core 31.1 produced the checksums and addresses for four timelocked descriptors, and the tests compare against those. In the signet journey in the 0.8.10 release run, Core cosigns a 2-of-2 spend. After a three-block delay, it accepts and mines a spend that the phone signs alone through the recovery leaf.
 
-Nothing has been signed on a physical Ledger yet. The Ledger tests use Ledger's own policy and address vectors and a software Ledger I wrote from the same documentation, and a fuzz target feeds the client hostile frames, commands and signatures. Agreeing with the simulator proves little: it shows the phone's client is consistent, not that the device agrees. The next test is a Nano X on signet, by hand.
+On 26 October 2026 a Nano X co-signed a mainnet spend from a Winnow 2-of-2 ([the transaction](https://mempool.space/tx/6d2b391e7bdabcb69a133e49ae40ee54f956be8057edc7974742ad3a0d85c589)): the first time a physical Ledger agreed with the phone's client. Until then the evidence was Ledger's own policy and address vectors, a software Ledger I wrote from the same documentation, and a fuzz target that feeds the client hostile frames, commands and signatures. Agreeing with the simulator proves little: it shows the phone's client is consistent, not that the device agrees.
 
 ## Where it stands
 

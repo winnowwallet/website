@@ -140,7 +140,7 @@ So I sent [another](https://blockstream.info/tx/3e28224cb67f95a1909a34b7bfceca5c
 
 The latest internal build, [0.8.11](https://github.com/winnowwallet/winnow/releases/tag/v0.8.11), adds Taproot multisig in Advanced mode: two phones and a Ledger in a 2-of-3, say, with an optional recovery path that lets fewer signers move a coin that has sat still for a while. Each signer makes an ordinary BIP340 signature over a different message (the script-path one, from [BIP342](https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0342.mediawiki)), so between `3794057` and [`7b7ff30`](https://github.com/winnowwallet/winnow/tree/7b7ff30db3156224e2cf1da3d93b591a59c88844), the curve module's Swift files didn't change at all. The price is paid on-chain: a 2-of-2 spend is about 42 vbytes bigger per input than a single signature, and anyone can see it's multisig.
 
-None of it has signed on a physical Ledger yet. That's the next test. The [research page](/research/#thresholds) has the details, and the whole line is [draft pull request #246](https://github.com/winnowwallet/winnow/pull/246).
+On 26 October 2026 a Nano X co-signed a spend from a Winnow 2-of-2 on mainnet ([the transaction](https://mempool.space/tx/6d2b391e7bdabcb69a133e49ae40ee54f956be8057edc7974742ad3a0d85c589)): two BIP340 signatures on the script path, one from the phone and one from the Ledger. The [research page](/research/#thresholds) has the details; the Ledger signer is [draft pull request #255](https://github.com/winnowwallet/winnow/pull/255), and the rest of the line is [draft pull request #246](https://github.com/winnowwallet/winnow/pull/246).
 
 ## The bar
 
