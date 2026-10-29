@@ -22,16 +22,6 @@ jobs:
           python3 -m unittest discover -s scripts/tests
           scripts/build-site --check
           scripts/check-site
-      # Only the deploy below reads the artifact, and only for this run: a pull request's
-      # check uploads nothing, and the upload is gone after a day, so the private repository's
-      # artifact storage holds one site instead of every run's 43 MB for 90 days.
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-        with:
-          name: website
-          path: docs/
-          if-no-files-found: error
-          retention-days: 1
   deploy:
     needs: check
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
@@ -42,10 +32,16 @@ jobs:
     steps:
       - name: Prepare deployment tool
         run: printf '{"private":true}\n' > package.json
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      # The site is the committed docs/ that the check above validated, at the same commit;
+      # the deploy checks it out itself rather than passing it as an artifact, so the private
+      # repository's artifact storage quota cannot stop a deploy.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          name: website
-          path: site
+          lfs: true
+          persist-credentials: false
+          path: source
+      - name: The site to deploy
+        run: mv source/docs site && rm -rf source
       - name: Deploy Winnow website
         id: deploy
         uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0
