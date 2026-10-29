@@ -22,11 +22,16 @@ jobs:
           python3 -m unittest discover -s scripts/tests
           scripts/build-site --check
           scripts/check-site
+      # Only the deploy below reads the artifact, and only for this run: a pull request's
+      # check uploads nothing, and the upload is gone after a day, so the private repository's
+      # artifact storage holds one site instead of every run's 43 MB for 90 days.
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
           name: website
           path: docs/
           if-no-files-found: error
+          retention-days: 1
   deploy:
     needs: check
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
