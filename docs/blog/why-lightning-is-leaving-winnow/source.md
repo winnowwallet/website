@@ -6,7 +6,7 @@ I have pulled Lightning from Winnow. Winnow goes back to being a Bitcoin wallet 
 
 This is becoming a habit. I built Tor into Winnow, removed it, and brought access back through gateways. Each retreat has taught me something about where the wallet should end.
 
-With Tor, I wanted access to more of the Bitcoin network. Embedding a whole networking stack was one way to get there. Eventually I found a smaller boundary: Winnow could speak SOCKS to a gateway and keep checking the Bitcoin data itself. The transport could live elsewhere. I described that route in [A Tailscale Workaround for Tor and I2P](https://apnewman.com/p/tailscale-workaround-tor-i2p/).
+With Tor, I wanted access to more of the Bitcoin network. Embedding a whole networking stack was one way to get there. Eventually I found a smaller boundary: Winnow could speak SOCKS to a gateway and keep checking the Bitcoin data itself. The transport could live elsewhere. I described that route in [A Tailscale Workaround for Tor and I2P](/blog/tailscale-workaround-tor-i2p/).
 
 Lightning asks a harder question. Where does the responsibility for the money live?
 

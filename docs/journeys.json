@@ -11,7 +11,7 @@
     "tests": [
       "test01CreateReceiveSendConfirm"
     ],
-    "limitations": "Without iCloud the wallet still works and shows Not backed up. Save a manual backup; recovery words and backup controls are in Advanced. The recorded simulator journey does not validate live iCloud.",
+    "limitations": "Without iCloud the wallet still works and shows Not backed up. Save a backup file; the recovery phrase and the backup controls are under Settings → Backup. The recorded simulator journey does not validate live iCloud.",
     "screenshots": {
       "01-onboarding": "Create a wallet"
     }
@@ -20,11 +20,11 @@
     "id": "receive",
     "section": "everyday",
     "title": "Receive bitcoin",
-    "description": "Label who an address is for, or what the payment is for, before sharing it. You can skip. Matching payments carry the local note in your wallet.",
+    "description": "Receive shows an address at once. Label this address adds a local note saying who the address is for, or what the payment is for. Matching payments carry the note in your wallet.",
     "journey": [
-      "Tap Receive and skip the optional address label.",
-      "Read the receive address and return to the wallet; fund the address from the test node and mine a block.",
-      "Check the funded balance and the received payment in wallet history."
+      "Tap Receive and read the address. A label is optional.",
+      "Return to the wallet; fund the address from the test node.",
+      "Check the funded balance and the received payment in Activity."
     ],
     "tests": [
       "test01CreateReceiveSendConfirm"
@@ -36,12 +36,29 @@
     }
   },
   {
+    "id": "person-card",
+    "section": "everyday",
+    "title": "An address and a card for one person",
+    "description": "On Receive, under From one person, type a payer’s name. Winnow makes an ordinary address for them, for any wallet or an exchange, and a card for a payer who uses Winnow. The card holds a code made for them and neither of the wallet’s keys. Each payment made with it goes to an address of its own, and Activity names it as received from them.",
+    "journey": [
+      "Open Receive. Under From one person, type the payer’s name and make their address and card.",
+      "The payer, holding only the card, pays its first two addresses.",
+      "Activity names both payments as received from that person, though nobody labelled them."
+    ],
+    "tests": [],
+    "limitations": "Give the address and the card only to that person: anyone who has them can see what is paid with them. A wallet that holds only its account key cannot make a card. The recorded journey’s payer is the test node, working from the card’s text alone.",
+    "screenshots": {
+      "50-card-for-dana": "An address and a card for one person",
+      "51-card-payments-from-dana": "Activity names both payments as that person’s"
+    }
+  },
+  {
     "id": "send",
     "section": "everyday",
     "title": "Send bitcoin",
     "description": "Choose an account, recipient, and amount. Check the address, fee, and total before sending, or before collecting the account’s other signatures. A silent payment code works as a recipient too.",
     "journey": [
-      "Open Send in Simple mode, paste an address, and enter the amount.",
+      "Open Send, paste an address, and enter the amount.",
       "Review the destination, amount, and fee before sending.",
       "Check that Bitcoin Core accepts the payment; mine a block, see the receipt confirm, and return to wallet history."
     ],
@@ -98,9 +115,9 @@
     "title": "Share a wallet with other signers",
     "description": "Choose who signs and how many must sign. With two of three, one signer can be away and the other two can still pay. An optional recovery path lets fewer signers, or a recovery key, spend a coin that has not moved for a chosen number of blocks.",
     "journey": [
-      "In Advanced, create a script-path 2-of-3 account from the phone’s key and two Bitcoin Core wallets’ keys, and receive test bitcoin into it.",
-      "Review a payment and sign on the phone; add one Core wallet’s signature from a PSBT. The other key is not needed.",
-      "Send and check that the node accepts the payment and the app sees it confirm; after the recovery delay, spend with the recovery path."
+      "Under Settings → Security → Multisig accounts, create a script-path 2-of-3 account from the phone’s key and two Bitcoin Core wallets’ keys, and receive test bitcoin into it.",
+      "Start the payment from Send with the account under From, and sign on the phone. Each Core wallet signs its copy of the PSBT and the phone combines them.",
+      "Send and check that the node accepts a transaction carrying exactly two signatures and that the app sees it confirm; after the recovery delay, spend with the recovery path."
     ],
     "tests": [
       "test01CreateReceiveSendConfirm"
@@ -111,7 +128,7 @@
       "10-multisig-build": "Any two of three signers",
       "11-multisig-funded": "The account is funded",
       "12-multisig-one-signature": "One signature so far",
-      "13-multisig-sent": "Two sign, it sends",
+      "13-multisig-sent": "Enough signatures, and it sends",
       "13a-account-page-share": "Share with co-signers",
       "13b-multisig-transactions": "History shows it once",
       "13c-send-recovery-path": "Spend with the recovery path",
@@ -122,7 +139,7 @@
     "id": "second-device",
     "section": "advanced",
     "title": "Add a Ledger as a second key",
-    "description": "Pair a Ledger under Settings → Signers and make a 2-of-2 with your phone. The Ledger shows the address and the payment on its own screen before it signs.",
+    "description": "Pair a Ledger under Settings → Security → Hardware wallets and keys and make a 2-of-2 with your phone. The Ledger shows the address and the payment on its own screen before it signs. With Bluetooth allowed, a Ledger in range while Winnow is open brings a card whose Set up pairs it, creates the 2-of-2 and has you compare the first address on both screens.",
     "journey": [
       "Pair a Ledger over Bluetooth and create a 2-of-2 account from the phone’s key and the Ledger’s.",
       "Check the receive address on the Ledger, fund the account, and review a payment.",
@@ -139,22 +156,26 @@
       "20b-ledger-transfer-row": "Fund the shared account",
       "21-ledger-signed": "Phone and Ledger both sign",
       "22-ledger-confirmed": "Confirmed",
-      "23-ledger-transactions": "History names the account"
+      "23-ledger-transactions": "History names the account",
+      "24-bluetooth-card": "Why Winnow asks for Bluetooth",
+      "25-ledger-nearby": "A Ledger in range brings a card",
+      "26-ledger-compare": "The first address, to compare with the Ledger’s screen",
+      "27-ledger-account": "The 2-of-2 account, funded"
     }
   },
   {
     "id": "accounts",
     "section": "advanced",
     "title": "Create or join a multisig account",
-    "description": "Under Wallet in Advanced, create an account from this phone, a Ledger and keys someone sent, or join one shared with you. Signatures travel as PSBTs.",
+    "description": "Under Settings → Security → Multisig accounts, create an account from this phone, a Ledger and keys someone sent, or join one shared with you. Join an account also takes a SegWit v0 account, wsh(sortedmulti(…)), whose payments someone else builds. Signatures travel as PSBTs.",
     "journey": [
-      "Open Wallet in Advanced and choose Create an account or Join an account.",
+      "Open Settings → Security → Multisig accounts and choose Create an account or Join an account.",
       "Open the account and use Share with co-signers."
     ],
     "tests": [],
     "guide": "/vaults",
     "screenshots": {
-      "34-wallet-multisig": "Multisig accounts in Wallet",
+      "34-wallet-multisig": "Multisig accounts in Settings",
       "35-join": "Join an account",
       "13a-account-page": "The account page"
     }
@@ -163,11 +184,11 @@
     "id": "recovery",
     "section": "everyday",
     "title": "Back up and restore",
-    "description": "Automatic encrypted iCloud backup restores this phone’s signing key, history, multisig accounts, saved people and labels. Manual backup files remain available.",
+    "description": "Automatic encrypted iCloud backup restores this phone’s signing key, history, multisig accounts, saved people and labels. Backup files remain available.",
     "journey": [
       "Create a wallet; backup begins without an Enable step. A successful save appears only after iCloud acknowledges it.",
       "On a replacement device, Winnow discovers backups automatically. Select one and authenticate; automatic updates resume using a separate record.",
-      "Use Advanced for recovery words, manual exports or disabling cloud backup. Without iCloud, keep a combined manual history-and-key file for spending recovery."
+      "Settings → Backup has the iCloud backup switch, Save a backup file and Show recovery phrase. Without iCloud, keep a backup file that includes the recovery phrase for spending recovery."
     ],
     "tests": [],
     "limitations": "Cloud and Keychain synchronization can be delayed. Other signers’ keys are not included. Older cloud copies may lack names and labels. Recovery words alone restore the wallet but not shared multisig accounts; those come back only from a backup file or the iCloud copy.",
@@ -180,11 +201,11 @@
   {
     "id": "controls",
     "section": "everyday",
-    "title": "One screen, or the full set of controls",
-    "description": "Simple mode is one screen with no settings. Advanced mode, one tap from its corner, is the full set: fee controls, network connections, signers, multisig accounts and every setting.",
+    "title": "One home, and Settings for the rest",
+    "description": "There is one mode. The home has the balance, Receive, Send, your multisig accounts, Activity and backup status. Settings holds Appearance, Network, Security, Backup and About. Send folds its fee controls under Fee.",
     "journey": [
-      "Create, receive, and send in Simple mode.",
-      "Return to the one-screen wallet and see its balance and payment history."
+      "Create, receive, and send from the home.",
+      "Return to the home and see the balance and the payment in Activity."
     ],
     "tests": [
       "test01CreateReceiveSendConfirm"
@@ -196,10 +217,14 @@
     "title": "Replace a pending payment with a higher fee",
     "description": "Review a replacement’s fee and change before authorizing it. The original remains visible as replaced.",
     "journey": [
-      "Open a pending outgoing payment in Advanced mode and choose Bump fee.",
-      "Review the replacement’s fee and change before authorizing it. History keeps the original marked as replaced."
+      "Open a pending outgoing payment from Activity and choose Bump fee.",
+      "Review the replacement’s fee and change before authorizing it. Activity keeps the original marked Replaced."
     ],
-    "tests": []
+    "tests": [],
+    "screenshots": {
+      "50-fee-bump-review": "Review the replacement’s fee",
+      "51-fee-bump-confirmed": "The replacement confirms; the original is marked Replaced"
+    }
   },
   {
     "id": "network",
@@ -207,12 +232,16 @@
     "title": "Inspect peers and control external disclosure",
     "description": "Inspect connected peers and network settings. Explorer links open only after an explicit warning about the information sent to that website.",
     "journey": [
-      "Open Advanced settings to inspect connected peers.",
+      "Open Settings → Network → Peers and routing to inspect connected peers.",
       "Review the warning before opening an external explorer; cancel to stay in the app.",
-      "Use Reset and shuffle peers when you want to discard remembered candidates and reconnect."
+      "Use Reset and shuffle peers when you want to discard remembered candidates and reconnect.",
+      "When no peer can be reached, the home says Offline. The warning leads to Settings → Network → Sync, whose Retry reconnects."
     ],
     "tests": [],
-    "limitations": "Explorer websites are not wallet backends. A single or coordinated set of peers can still withhold information; multiple connections are not proof of independent operators."
+    "limitations": "Explorer websites are not wallet backends. A single or coordinated set of peers can still withhold information; multiple connections are not proof of independent operators.",
+    "screenshots": {
+      "60-home-offline": "No peers: the home says Offline"
+    }
   },
   {
     "id": "census",
@@ -220,7 +249,7 @@
     "title": "The peers each build ships",
     "description": "Each build ships the census peer list, checked against Winnow’s pinned signing key before it is bundled. The app downloads no census.",
     "journey": [
-      "Open Advanced settings and read the bundled census’s observation date and peer counts.",
+      "Open Settings → Network → Peers and routing and read the shipped census’s observation date and candidate count.",
       "Use Reset and shuffle peers to discard remembered candidates and reconnect."
     ],
     "tests": [],

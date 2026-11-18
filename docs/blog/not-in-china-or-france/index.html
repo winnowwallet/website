@@ -60,7 +60,7 @@
                 <p class="article-subtitle">If you have to turn off France, you are writing too much crypto. Pulling Lightning kept Winnow in France; China wants a registered operator for an app it calls illegal.</p>
                 <div class="article-byline">
                     <span class="author-mark" aria-hidden="true">AN</span>
-                    <p><strong>Alex Newman</strong><span><time datetime="2026-10-01T14:19:00.000Z">October 1, 2026</time> · 5 min read</span></p>
+                    <p><strong>Alex Newman</strong><span><time datetime="2026-10-01T14:19:00.000Z">October 1, 2026</time> · Updated <time datetime="2026-11-18">November 18, 2026</time> · 5 min read</span></p>
                 </div>
             </header>
             <div class="article-content">
@@ -100,6 +100,7 @@
 <h2>If you have to pull France, you are writing too much crypto</h2>
 <p>Turning France off got build 0.8.0 into TestFlight, and it was a warning sign I should have read sooner.</p>
 <p>An on-chain Bitcoin wallet does not encrypt the network. Bitcoin transactions, blocks, and compact filters are public data. What the wallet has to supply outside iOS is hashing and digital signatures (SHA-256 and secp256k1), which authenticate and check integrity; they do not hide anything. Even France&#39;s Article 30 exempts cryptography that only authenticates or checks integrity. Where Winnow does encrypt, for the Keychain, iCloud recovery, and system HTTPS connections, it uses the encryption built into iOS. That is the top row of Apple&#39;s table: nothing to file.</p>
+<aside class="update-note"><p><strong>Update, November 2026.</strong> Winnow has since been rewritten in Lean, and its iCloud backup is now sealed with AES-256-GCM written in the app's own code, not iOS's. The sentence above that says Winnow encrypts only with what is built into iOS described the Swift app. I'm checking what that changes in the export-compliance answer and will say so here.</p></aside>
 <p>Winnow only landed in the middle row because I had written a Lightning implementation in Swift inside the app, and with it my own transport and onion encryption outside iOS. That was the same lesson <a href="/blog/tailscale-workaround-tor-i2p/">Tor taught me</a> the day before, and the one <a href="/blog/why-lightning-is-leaving-winnow/">Lightning taught me</a> six days later. Embedding Tor meant carrying a 400-crate Rust networking stack inside the wallet; moving Tor to a SOCKS gateway let Winnow stay a Bitcoin client. Embedding a custom Lightning engine meant carrying peer encryption, onion routing, and channel-closing machinery inside the on-chain app.</p>
 <p>Needing an export-compliance exemption was an architectural smell. If you have to pull France, you are writing too much crypto. When I pulled Lightning out of Winnow, the custom encryption left with it. We never shipped Lightning, so we never turned France off.</p>
 <h2>China</h2>

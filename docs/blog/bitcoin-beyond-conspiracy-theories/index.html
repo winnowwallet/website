@@ -30,7 +30,7 @@
                 <p class="article-subtitle">The NIST curve seeds had no secret and no lost phrase. Bitcoin's curve has no seed at all. And 894 lines of my own Swift signed a payment to Kraken.</p>
                 <div class="article-byline">
                     <span class="author-mark" aria-hidden="true">AN</span>
-                    <p><strong>Alex Newman</strong><span><time datetime="2026-10-20T21:57:26.000Z">October 20, 2026</time> · Updated <time datetime="2026-10-23">October 23, 2026</time> · 11 min read</span></p>
+                    <p><strong>Alex Newman</strong><span><time datetime="2026-10-20T21:57:26.000Z">October 20, 2026</time> · Updated <time datetime="2026-11-18">November 18, 2026</time> · 11 min read</span></p>
                 </div>
             </header>
             <div class="article-content">
@@ -256,6 +256,7 @@
 <h2 id="multisig-needed-no-new-curve-code">Multisig needed no new curve code</h2>
 <p>The latest internal build, <a href="https://github.com/winnowwallet/winnow/releases/tag/v0.8.11">0.8.11</a>, adds Taproot multisig in Advanced mode: two phones and a Ledger in a 2-of-3, say, with an optional recovery path that lets fewer signers move a coin that has sat still for a while. Each signer makes an ordinary BIP340 signature over a different message (the script-path one, from <a href="https://github.com/bitcoin/bips/blob/927b6de9915c9262615a6399de51b200f81e5aa4/bip-0342.mediawiki">BIP342</a>), so between <code>3794057</code> and <a href="https://github.com/winnowwallet/winnow/tree/7b7ff30db3156224e2cf1da3d93b591a59c88844"><code>7b7ff30</code></a>, the curve module's Swift files didn't change at all. The price is paid on-chain: a 2-of-2 spend is about 42 vbytes bigger per input than a single signature, and anyone can see it's multisig.</p>
 <p>On 26 October 2026 a Nano X co-signed a spend from a Winnow 2-of-2 on mainnet (<a href="https://mempool.space/tx/6d2b391e7bdabcb69a133e49ae40ee54f956be8057edc7974742ad3a0d85c589">the transaction</a>): two BIP340 signatures on the script path, one from the phone and one from the Ledger. The <a href="/research/#thresholds">research page</a> has the details; the Ledger signer is <a href="https://github.com/winnowwallet/winnow/pull/255">draft pull request #255</a>, and the rest of the line is <a href="https://github.com/winnowwallet/winnow/pull/246">draft pull request #246</a>.</p>
+<aside class="update-note"><p><strong>Update, November 2026.</strong> Winnow has since been rewritten in Lean 4, and the Swift module described here no longer ships. The wallet now runs one secp256k1 written in Lean, proved against the curve as specified and written to do the same work whatever the key is; that timing property has only been checked on a Linux build so far. Pull requests #246 and #255 are closed, and the work continues in <a href="https://github.com/winnowwallet/winnow-lean">winnowwallet/winnow-lean</a>.</p></aside>
 <h2 id="the-bar">The bar</h2>
 <p>The NIST seeds waited 29 years for an explanation, and the story everyone told turned out to be wrong. What settled it was evidence anyone can rerun, and that's the bar for a wallet too.</p>
 

@@ -1210,6 +1210,19 @@ footer {
     font-size: 0.78rem;
 }
 
+/* A dated note added to a post after it was published. */
+.article-content aside.update-note {
+    background: #efece4;
+    border-left: 3px solid #c5b7a4;
+    font-size: 0.95em;
+    margin: 2.25rem 0;
+    padding: 0.35rem 1.1rem;
+}
+
+.article-content aside.update-note p {
+    margin: 0.6rem 0;
+}
+
 .article-content hr {
     border: 0;
     border-top: 1px solid var(--rule);

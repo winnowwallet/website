@@ -54,8 +54,8 @@ then discovered confirmation through the app.
 The retained local evidence is
 `recovery/shared-account-2026-09-17/video-run/`: `NodeUI.xcresult`, `node-ui.log`,
 `journey.mp4`, and the 16 original PNGs in `screenshots/`. The captures come from
-[WinnowAppUITests.swift](../../UITests/WinnowAppUITests.swift) and its
-[MultisigJourney.swift](../../UITests/MultisigJourney.swift) continuation.
+[WinnowAppUITests.swift](../../upstream/UITests/WinnowAppUITests.swift) and its
+[MultisigJourney.swift](../../upstream/UITests/MultisigJourney.swift) continuation.
 Keep replacements with the matching log, result bundle, revision, device, and
 date. iPad evidence must be recorded separately.
 
@@ -64,7 +64,7 @@ not refresh those images, their flows, or the old `timings.json`.
 A screenshot is a recorded moment, not proof that the current test passed.
 PNGs use Git LFS; [check-site](../../scripts/check-site) checks referenced assets
 and unresolved pointers before publishing. Follow the
-[screenshot guidance](../../.github/internal/app-store-screenshots.md) when
+[screenshot guidance](https://github.com/winnowwallet/winnow-lean/blob/main/.github/internal/app-store-screenshots.md) when
 selecting images.
 
 ## Historical capture provenance

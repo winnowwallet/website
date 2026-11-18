@@ -47,14 +47,20 @@ ACTS = [
 ]
 SHOT_WIDTH, SHOT_HEIGHT = 1206, 2622
 MANIFEST = "docs/journey-provenance.json"
-WALLET = "https://github.com/winnowwallet/winnow"
+# The repository whose CI makes a version 2 manifest: the Lean app's. A manifest without a run URL links its commit here.
+WALLET = "https://github.com/winnowwallet/winnow-lean"
 # Gallery headings for the CI journeys' tests; a test not named here gets its name in words.
 TEST_HEADINGS = {
     "testCreateReceiveSendConfirm": "An ordinary payment",
     "testLedgerPairVerifySpend": "A Ledger as the second key",
+    "testLedgerCardTwoOfTwo": "A Ledger nearby, set up from its card",
     "testMultisigTwoOfThreeWithRecovery": "Two of three, and the recovery path",
-    "testShippedCensus": "The peer census",
+    "testFeeBumpReplaceConfirm": "A pending payment replaced at a higher fee",
+    "testRetryAfterNoPeers": "Offline, then Retry",
+    "testShippedCensus": "Settings: the peer census, backup and multisig accounts",
     "testSilentPaymentSend": "A silent payment",
+    "testSpentElsewhere": "Coins spent from another device",
+    "testCardForOnePerson": "A card for one person",
 }
 # The hero's three modes with CI media: the first of each mode's screenshots the manifest has. Without one,
 # that mode keeps its committed reference screenshot and words.
@@ -289,11 +295,12 @@ def ci_media(manifest, captions):
     network = str(manifest.get("network") or "regtest")
     return {"modes": modes, "acts": ci_acts(manifest, captions), "poster": modes[0]["shot"],
             "network": network.upper(),
-            "path_label": "Recorded journey: an ordinary send, a 2-of-2 payment with a Ledger, then a 2-of-3 "
-                          "payment and its recovery path",
+            "path_label": "Three of the recorded journeys: an ordinary send, a 2-of-2 payment with a Ledger, "
+                          "and a 2-of-3 payment with its recovery path",
             "note": f"Real payments on a private {network} node, recorded by CI. The 2-of-3’s other signers are "
                     "Bitcoin Core wallets on that node; the Ledger is simulated.",
-            "video_label": "Ordinary, Ledger 2-of-2, 2-of-3, and silent payments in Winnow",
+            "video_label": "Winnow’s recorded UI journeys, one after another: ordinary, 2-of-3, Ledger, fee-bump "
+                           "and silent payments among them",
             "dialog_note": f"Private {network} · recorded by CI", "run": manifest}
 
 
@@ -343,7 +350,7 @@ def checked_section(run):
 <div class="checked-grid"><div class="checked-copy"><p>Each change to Winnow builds the app from its Lean source, runs it in a simulator against a private Bitcoin node, and records what happened. The screens above come from the newest run that passed.</p>
 <dl class="run-facts"><div><dt>Commit</dt><dd><a href="{escape(commit_url(run))}"><code>{sha[:7]}</code></a></dd></div><div><dt>Device</dt><dd>{on or "Simulator"}</dd></div><div><dt>Network</dt><dd>{escape(str(run.get("network") or "regtest"))}</dd></div><div><dt>Recorded</dt><dd>{when}</dd></div><div><dt>Source</dt><dd>{run_link}</dd></div></dl>
 <ul class="gates">{gates}</ul>
-<p class="gate-note">A release tag runs all of it again before a build goes to TestFlight.</p></div>
+<p class="gate-note">A release tag goes to TestFlight only when a full run like this has already passed on the same tree. The release finds that run; it does not test again.</p></div>
 <ol class="test-list" aria-label="UI journeys in this run">{rows}</ol></div>
 </section>'''
 
@@ -352,7 +359,7 @@ def lean_section():
     return f'''<section class="lean" id="lean" aria-labelledby="lean-title">
 <div class="section-heading"><p class="eyebrow">WRITTEN IN LEAN 4</p><h2 id="lean-title">No Swift. One language, top to bottom.</h2></div>
 <div class="lean-grid">
-<article><p class="lean-label">01 · The wallet</p><h3>Bitcoin in Lean</h3><p>Keys, transactions, PSBTs, descriptors, compact-filter sync, peers and broadcast are Lean 4 compiled to C. Every signature runs on a secp256k1 whose arithmetic is proven in Lean.</p></article>
+<article><p class="lean-label">01 · The wallet</p><h3>Bitcoin in Lean</h3><p>Keys, transactions, PSBTs, descriptors, compact-filter sync, peers and broadcast are Lean 4 compiled to C. Every key and signature runs on one secp256k1, proved in Lean against the curve as specified.</p></article>
 <article><p class="lean-label">02 · The app</p><h3>Model, update, view</h3><p>Each screen is a Lean function from the wallet’s state. Standard iOS controls draw it, through an Objective-C shell that is itself printed from Lean at build time.</p></article>
 <article><p class="lean-label">03 · The framework</p><h3>LeanNative</h3><p>Keychain, Face ID, Bluetooth, iCloud and background tasks reach Lean as typed capabilities. The Xcode project is generated from a Lean description of the app, which refuses a permission without its explanation.</p></article>
 </div>

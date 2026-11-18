@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Multisig accounts &mdash; Winnow</title>
-<meta name="description" content="k-of-n Taproot accounts in Advanced mode: pair a Ledger, save other people's keys, create or join an account, add a recovery path, and back it up.">
+<meta name="description" content="k-of-n multisig accounts under Settings → Security: pair a Ledger, save other people's keys, create or join an account, add a recovery path, and back it up.">
 <link rel="canonical" href="https://winnowwallet.com/vaults">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://winnowwallet.com/vaults">
 <meta property="og:title" content="Multisig accounts &mdash; Winnow">
-<meta property="og:description" content="k-of-n Taproot accounts in Advanced mode: pair a Ledger, save other people's keys, create or join an account, add a recovery path, and back it up.">
+<meta property="og:description" content="k-of-n multisig accounts under Settings → Security: pair a Ledger, save other people's keys, create or join an account, add a recovery path, and back it up.">
 <meta property="og:image" content="https://winnowwallet.com/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Multisig accounts &mdash; Winnow">
-<meta name="twitter:description" content="k-of-n Taproot accounts in Advanced mode: pair a Ledger, save other people's keys, create or join an account, add a recovery path, and back it up.">
+<meta name="twitter:description" content="k-of-n multisig accounts under Settings → Security: pair a Ledger, save other people's keys, create or join an account, add a recovery path, and back it up.">
 <meta name="twitter:image" content="https://winnowwallet.com/og.png">
 <link rel="stylesheet" href="site.css">
 </head>
@@ -22,12 +22,12 @@
 <header class="topbar"><div class="bar"><a class="mark" href="/" aria-label="Winnow home">winnow</a><nav class="links" aria-label="Main"><a href="/architecture">How it works</a><a href="/vaults">Multisig</a><a href="https://github.com/winnowwallet/winnow-lean">GitHub ↗</a></nav></div></header>
 <main id="main">
 <h1>Multisig accounts</h1>
-<p class="lede">An account that needs any k of n keys to spend. Build it in Advanced mode, back it up, then fund it.</p>
-<nav class="contents" aria-label="On this page"><a href="#choose-policy">What it is</a><a href="#signers">Signers</a><a href="#setup">Set up</a><a href="#recovery">Recovery path</a><a href="#ledger">Ledger</a><a href="#bitcoin-core">Bitcoin Core</a><a href="#backups">Back up</a><a href="#approve">Spend</a><a href="#testing">Testing</a></nav>
+<p class="lede">An account that needs any k of n keys to spend. Build it under Settings → Security, back it up, then fund it.</p>
+<nav class="contents" aria-label="On this page"><a href="#choose-policy">What it is</a><a href="#signers">Signers</a><a href="#setup">Set up</a><a href="#recovery">Recovery path</a><a href="#ledger">Ledger</a><a href="#bitcoin-core">Bitcoin Core</a><a href="#segwit">SegWit v0</a><a href="#backups">Back up</a><a href="#approve">Spend</a><a href="#testing">Testing</a></nav>
 
 <section id="choose-policy">
 <h2>What a k-of-n account is</h2>
-<p>A multisig account is a Taproot address whose coins move only on the script path: any k of its n signers must sign. Each signer signs the same message on their own, in any order. There are no rounds between signers. The PSBT carries the signatures until there are enough.</p>
+<p>A multisig account that Winnow builds is a Taproot address whose coins move only on the script path: any k of its n signers must sign. Each signer signs the same message on their own, in any order. There are no rounds between signers. The PSBT carries the signatures until there are enough. Winnow can also join a <a href="#segwit">SegWit v0 account</a> that someone else builds.</p>
 <div class="table-wrap" role="region" tabindex="0" aria-label="Scrollable table"><table>
 <caption>Examples</caption>
 <thead><tr><th scope="col">Policy</th><th scope="col">Who can spend</th><th scope="col">What to plan for</th></tr></thead>
@@ -40,18 +40,18 @@
 </section>
 
 <section id="signers">
-<h2>Settings → Signers</h2>
-<p>Accounts are built from the signers this phone knows. In <strong>Settings → Signers</strong>:</p>
+<h2>Hardware wallets and keys</h2>
+<p>Accounts are built from the signers this phone knows. In <strong>Settings → Security → Hardware wallets and keys</strong>:</p>
 <ul>
 <li><strong>Pair a Ledger.</strong> Unlock the Ledger, open its Bitcoin app (2.1.2 or later; Bitcoin Test on signet) and tap Pair. The first time, confirm the same pairing code on both screens. The Ledger's multisig key is saved on the phone; nothing is approved on the Ledger until an account uses it.</li>
-<li><strong>Keys someone sent.</strong> Save another person's key with a name, such as Bob. A key looks like <code>[fingerprint/path]xpub…/&lt;0;1&gt;/*</code>. Two keys sent together, such as a phone's and its Ledger's, count as one signer: both must sign for it.</li>
+<li><strong>Save keys someone sent.</strong> Save another person's key with a name, such as Bob. A key looks like <code>[fingerprint/path]xpub…/&lt;0;1&gt;/*</code>. Two keys sent together, such as a phone's and its Ledger's, count as one signer: both must sign for it.</li>
 </ul>
 <p>This page also shows this phone's own key to send to others. Removing a signer does not change accounts already built with it.</p>
 </section>
 
 <section id="setup">
 <h2>Create, join and share an account</h2>
-<p>Multisig accounts are in Advanced mode, on the <strong>Wallet</strong> tab, in the Multisig section.</p>
+<p>Multisig accounts are under <strong>Settings → Security → Multisig accounts</strong>. Once this phone has an account, the home lists it under Accounts.</p>
 <h3 id="create">Create an account</h3>
 <p>Choose the members: this phone, a paired Ledger, keys someone sent, or an account already on this phone (its own policy then decides how it signs). Set how many must sign, for example <strong>Any 2 of 3 members spend</strong>. The app shows the resulting policy before you create it.</p>
 <h3 id="join">Join an account</h3>
@@ -70,12 +70,20 @@
 <h2>What a Ledger shows</h2>
 <p>A paired Ledger signs over Bluetooth. When an account includes it, Winnow registers the account on the Ledger, and you approve it in the Bitcoin app. A recovery path or a nested account needs Bitcoin app 2.2.1 or later.</p>
 <p><strong>Verify on Ledger</strong> has the Ledger derive the receive address; compare it with the one on its screen. When spending, the Ledger shows the payment on its own screen before it signs. Check the addresses, amounts and fee there, not only on the phone.</p>
+<p>With Bluetooth allowed, a Ledger in range while Winnow is open and no Ledger is paired brings a card. Its <strong>Set up</strong> pairs the Ledger, creates a 2-of-2 of this phone and the Ledger (or a 2-of-3 with a recovery key), registers it on the Ledger and has you compare the first receive address on both screens.</p>
 </section>
 
 <section id="bitcoin-core">
 <h2>A Bitcoin Core wallet as one key</h2>
-<p>A Bitcoin Core wallet can hold one key of an account. Take its Taproot key from <code>listdescriptors</code>, written as <code>[fingerprint/86'/1'/0']tpub…/&lt;0;1&gt;/*</code> on signet, and save it under Settings → Signers. After creating the account, import its descriptor into Core with Core's own key replaced by the private version (<code>importdescriptors</code>). Core then adds its signature to a PSBT with <code>walletprocesspsbt</code>; paste the result back into Winnow.</p>
+<p>A Bitcoin Core wallet can hold one key of an account. Take its Taproot key from <code>listdescriptors</code>, written as <code>[fingerprint/86'/1'/0']tpub…/&lt;0;1&gt;/*</code> on signet, and save it under Settings → Security → Hardware wallets and keys. After creating the account, import its descriptor into Core with Core's own key replaced by the private version (<code>importdescriptors</code>). Core then adds its signature to a PSBT with <code>walletprocesspsbt</code>; paste the result back into Winnow.</p>
 <p>Core is one signer here, like any other key. It is not a coordinator, and Winnow has no separate Core setup screen.</p>
+</section>
+
+<section id="segwit">
+<h2>SegWit v0 accounts (join only)</h2>
+<p><strong>Join an account</strong> also takes a SegWit v0 account, <code>wsh(sortedmulti(k, KEY, …))</code>. It is for a wallet one of whose keys is a single fixed public key that signs only with ECDSA and derives nothing, such as a key held in a cloud key service. The other keys are extended keys like this phone's; at least one key must be.</p>
+<p>Winnow shows the account's addresses and finds its coins. It builds no payment from such an account: whoever holds the fixed key does, and the account page has no <strong>Send from this account</strong>. Paste the PSBT they send with <strong>Paste a PSBT from a co-signer</strong>, check the amounts and fee, and choose <strong>Add this phone's signature</strong>. Once enough signatures verify, <strong>Finalize and broadcast</strong> sends it.</p>
+<p><strong>Create an account</strong> makes Taproot accounts only, and a Ledger cannot sign for a SegWit v0 account from Winnow.</p>
 </section>
 
 <section id="backups">
@@ -92,7 +100,7 @@
 
 <section id="approve">
 <h2>Spend from an account</h2>
-<p>Every payment starts from Send, the recovery path included; the account page also has <strong>Send from this account</strong>. Review the payment, sign on this phone, and the payment waits under Transactions until the other signers have signed. Share the PSBT with them, or paste a co-signer's signed copy with <strong>Paste a PSBT from a co-signer</strong>. Once enough signatures are in, Winnow finalizes and broadcasts the transaction over its own peer connections.</p>
+<p>Every payment starts from Send, the recovery path included; the account page also has <strong>Send from this account</strong>. Review the payment, sign on this phone, and the payment waits until the other signers have signed: in Activity as <strong>Awaiting signatures</strong>, and on the account page as <strong>Payment awaiting signatures</strong>. Share the PSBT with them, or paste a co-signer's signed copy with <strong>Paste a PSBT from a co-signer</strong>. Once enough signatures are in, Winnow finalizes and broadcasts the transaction over its own peer connections.</p>
 <p>Signers can sign in any order. Private keys stay with their holders; the PSBT carries the payment details and signatures.</p>
 </section>
 
@@ -104,8 +112,9 @@
 <section id="testing">
 <h2>How it is tested</h2>
 <ul>
-<li>Every pull request runs <code>testMultisigTwoOfThreeWithRecovery</code>: a 2-of-3 built in the app with two Bitcoin Core wallets on a regtest node. The phone and both Core wallets sign, Core accepts a witness with exactly two signatures, and after a one-day delay the phone alone spends on the recovery path.</li>
-<li><code>testLedgerPairVerifySpend</code> pairs a simulated Ledger under Settings → Signers, has it verify the receive address, and spends with the phone's and the Ledger's signatures. No real Ledger is in CI.</li>
+<li>Every CI run includes <code>testMultisigTwoOfThreeWithRecovery</code>: a 2-of-3 built in the app with two Bitcoin Core wallets on a regtest node. The phone and both Core wallets sign, Core accepts a witness with exactly two signatures, and after a one-day delay the phone alone spends on the recovery path.</li>
+<li><code>testLedgerPairVerifySpend</code> pairs a simulated Ledger under Settings → Security → Hardware wallets and keys, has it verify the receive address, and spends with the phone's and the Ledger's signatures. <code>testLedgerCardTwoOfTwo</code> starts from the nearby card instead: Set up pairs the simulated Ledger, creates a 2-of-2 and shows its first address, which the node then pays. No real Ledger is in CI.</li>
+<li>SegWit v0 accounts: <code>segwit-test</code> holds the descriptor, the review's refusals, signing and finalizing to BIP143's and BIP67's vectors and to signatures OpenSSL made. <code>segwit-regtest</code> checks the account's addresses against a regtest Bitcoin Core's and has Core's chain confirm spends that Core's wallets and this one signed together. <code>backend-test</code> does the same through the app, with Core building and co-signing the payment.</li>
 <li>On 26 October 2026, a real Nano X co-signed a mainnet 2-of-2 with the Swift app (0.8.14): transaction <code>6d2b391e…</code>, block 973,281. The Lean app's CI uses the simulated Ledger.</li>
 </ul>
 <p><a href="/recording">The recorded journeys</a> · <a href="https://github.com/winnowwallet/winnow-lean/actions">Current test runs</a></p>
@@ -115,7 +124,8 @@
 <summary>Technical details: descriptors, privacy and signing</summary>
 <p>A plain account is <code>tr(NUMS, sortedmulti_a(k, …))</code>. The internal key is unspendable, so there is no key-path spend around the threshold. A recovery path, or a member with several keys, adds script leaves to the same tree. Receiving does not reveal the policy; a spend reveals the script it used, with its keys and threshold.</p>
 <p>The app reads PSBT v0 and v2 and shares v0. It checks known inputs and derives its own output scripts to recognize change; it does not trust a proposer's change labels or derivation metadata.</p>
-<p>Accounts sync in the everyday wallet's compact-filter scan. Signing support is Taproot only.</p>
+<p>A SegWit v0 account is <code>wsh(sortedmulti(k, KEY, …))</code>. Each key is one fixed compressed public key, used as it is at every address, or an extended key deriving <code>/&lt;0;1&gt;/*</code>. Its signatures are ECDSA and commit to every input and output (SIGHASH_ALL). A SegWit v0 signature commits only to the amount of the coin it spends, so the review takes every amount from the wallet's own record of the coins its scan found, never from the PSBT.</p>
+<p>Accounts sync in the everyday wallet's compact-filter scan. Taproot accounts are signed with BIP340 on the script path, SegWit v0 accounts with ECDSA.</p>
 <p><a href="https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki">Taproot rules</a> · <a href="https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki">PSBT</a></p>
 </details>
 

@@ -35,7 +35,7 @@
             </header>
             <figure class="article-lead-media"><a class="article-image-link" target="_blank" href="/images/blog/dead-chain-peers/census.png"><img fetchpriority="high" src="/images/blog/dead-chain-peers/census.png" alt="Bar chart: share of reachable endpoints serving compact filters, 13% on clearnet, 29% on Tor, 65% on I2P"></a><figcaption>Every reachable Bitcoin endpoint, dialled with Winnow's own handshake on September 4, 2026.</figcaption></figure>
             <div class="article-content">
-                <p>I was running the mainnet test for <a href="https://github.com/posix4e/winnow">Winnow</a>, my Taproot-only iOS wallet that learns about the chain from ordinary Bitcoin peers over compact filters. No server, no account. Fresh wallet, receive a few thousand sats, watch it confirm, send it back. Simple.</p>
+                <p>I was running the mainnet test for <a href="https://github.com/winnowwallet/winnow">Winnow</a>, my Taproot-only iOS wallet that learns about the chain from ordinary Bitcoin peers over compact filters. No server, no account. Fresh wallet, receive a few thousand sats, watch it confirm, send it back. Simple.</p>
                 <p>It never got to the receive step. The filter scan stopped at block 965,021 of 965,521, five hundred short of the tip, with three peers connected and a red line saying "The connection to the peer was not open." Ten minutes later it was still sitting there.</p>
                 <p>The peer list explained it.</p>
                 <table>
@@ -102,7 +102,7 @@
                 <p>None of it looks at the user-agent string. A stuck Core node and a stuck Knots node get the same treatment, and a Knots node at the tip is as good a peer as any.</p>
 
                 <h2>Reproduce it</h2>
-                <p>The tool and the tables script are in the <a href="https://github.com/posix4e/winnow">Winnow repository</a>, and the SOCKS5 option that reached the hidden networks is in the wallet's own connection layer now. A scheduled job runs the census daily and publishes the aggregates, per network, with the per-node detail kept as a two-week artifact, so the numbers above can be checked rather than believed, and watched as the stuck nodes upgrade or don't.</p>
+                <p>The tool and the tables script are in the <a href="https://github.com/winnowwallet/census">census repository</a>, and the SOCKS5 option that reached the hidden networks is in the wallet's own connection layer now. A scheduled job runs the census daily and publishes the aggregates, per network, with the per-node detail kept as a two-week artifact, so the numbers above can be checked rather than believed, and watched as the stuck nodes upgrade or don't.</p>
                 <pre><code>swift run WinnowCensus --input snapshot.json --tor-socks 127.0.0.1:9050 --i2p-socks 127.0.0.1:4447 \
     --tip 965522 --out census.jsonl --summary-json summary.json
 scripts/census-tables census.jsonl</code></pre>

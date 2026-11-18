@@ -375,13 +375,13 @@
         </div>
       </div>
     </div>
-    <p class="takeaway">Automatic encrypted iCloud recovery includes this phone’s signing key, history, multisig accounts, the signer list and saved people. Simple mode shows its save status; Advanced can turn it off. For manual recovery, keep <b>both recovery words and a backup file</b>. Words alone do not restore past payments or multisig accounts. A phrase-free file restores watch-only access on a replacement device; manual JSON import needs a file containing the words to restore signing. Cloud recovery requires the same Apple Account with iCloud Keychain. Without iCloud, the wallet remains usable and offers a manual backup. <a href="/import">Backup and recovery</a>.</p>
+    <p class="takeaway">Automatic encrypted iCloud recovery includes this phone’s signing key, history, multisig accounts, the signer list and saved people. The home shows its save status; Settings → Backup → iCloud backup can turn it off. For manual recovery, keep <b>both recovery words and a backup file</b>. Words alone do not restore past payments or multisig accounts. A phrase-free file restores watch-only access on a replacement device; manual JSON import needs a file containing the words to restore signing. Cloud recovery requires the same Apple Account with iCloud Keychain. Without iCloud, the wallet remains usable and offers a manual backup. <a href="/import">Backup and recovery</a>.</p>
   </figure>
 
   <!-- ═══ FIGURE 4 ═══ -->
   <figure class="fig" id="fig-multisig">
     <h2>4 · Spend from a k-of-n account</h2>
-    <p class="sub">A multisig account is a Taproot address with no usable key path, <code>tr(NUMS, sortedmulti_a(k, …))</code>. Any k of its n signers can approve a payment. Each signs the same script-path message on its own, in any order, with no rounds between them. The PSBT carries the signatures from one signer to the next.</p>
+    <p class="sub">A multisig account is a Taproot address with no usable key path, <code>tr(NUMS, sortedmulti_a(k, …))</code>. Any k of its n signers can approve a payment. Each signs the same script-path message on its own, in any order, with no rounds between them. The PSBT carries the signatures from one signer to the next. <strong>Join an account</strong> also takes a SegWit v0 account, <code>wsh(sortedmulti(k, KEY, …))</code>, signed with ECDSA: Winnow checks and signs a PSBT someone else built, and builds none for such an account itself.</p>
     <div class="stage">
       <div class="f4">
         <div class="f4-stage">
@@ -453,8 +453,12 @@
           <p>Keys, transactions, PSBTs, descriptors, compact-filter sync, peers, the mempool window and the broadcaster. Bitcoin P2P runs over Lean’s own TCP, on libuv.</p>
         </div>
         <div class="f6-layer lean">
-          <h4>Curve · <code>Lean/Secp</code></h4>
-          <p>Winnow’s own secp256k1. Lean proofs tie its field and point arithmetic, public keys, tweaks, and BIP340 signing and verification to a specification curve, and the build fails if one rests on an unproved step. It is not constant-time.</p>
+          <h4>Curve · <code>Lean/SecpCt</code></h4>
+          <p>Winnow’s own secp256k1, and the only one in the app: field, scalars, points, keys, tweaks, BIP340 and ECDSA on machine words. Lean proofs hold each operation to the curve as specified in <code>Lean/Secp</code>, and the build fails if one rests on an unproved step. The code is written to do the same work whatever the secret is. That its timing does not depend on a key has been checked only for a Linux x86-64 build under Valgrind, not for the arm64 builds the app ships, so the app does not rely on it.</p>
+        </div>
+        <div class="f6-layer lean">
+          <h4>Core · <code>Lean/WinnowCore</code></h4>
+          <p>The part of the wallet that transaction review needs, as a library of its own: hashes and the curve, BIP32, transactions, PSBTs and sighashes, descriptors and their addresses, spend review and the header chain. It has no seed phrases, Unicode tables, coin selection or I/O. The wallet imports it, and CI holds its imports to an allowed list.</p>
         </div>
         <div class="f6-layer lean">
           <h4>App · <code>LeanApp/WinnowApp</code></h4>
@@ -475,7 +479,7 @@
         </div>
       </div>
     </div>
-    <p class="takeaway">CI checks every Debug, Release and device build for Swift, and a release checks the signed archive and IPA again. The proofs cover the curve arithmetic, not the Objective-C shell or iOS, which are trusted. Lean’s runtime libraries run on iOS retargeted from macOS builds, which Lean does not support officially. Source: <a href="https://github.com/winnowwallet/winnow-lean">winnow-lean</a> (MIT) and <a href="https://github.com/LeanNative/leannative">LeanNative</a>.</p>
+    <p class="takeaway">CI checks every Debug, Release and device build for Swift, and a release checks the signed archive and IPA again. The proofs cover the curve code and its BIP340 and ECDSA signing. The rest of the wallet is tested, not proved, and the Objective-C shell and iOS are trusted. The proofs are about the source; the compiled code is held to recorded answers and to Bitcoin Core on regtest. The AES behind backup encryption is not constant-time. Lean’s runtime libraries run on iOS retargeted from macOS builds, which Lean does not support officially. Source: <a href="https://github.com/winnowwallet/winnow-lean">winnow-lean</a> (MIT) and <a href="https://github.com/LeanNative/leannative">LeanNative</a>.</p>
   </figure>
 
 </main>

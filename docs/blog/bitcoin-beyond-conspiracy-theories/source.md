@@ -142,6 +142,8 @@ The latest internal build, [0.8.11](https://github.com/winnowwallet/winnow/relea
 
 On 26 October 2026 a Nano X co-signed a spend from a Winnow 2-of-2 on mainnet ([the transaction](https://mempool.space/tx/6d2b391e7bdabcb69a133e49ae40ee54f956be8057edc7974742ad3a0d85c589)): two BIP340 signatures on the script path, one from the phone and one from the Ledger. The [research page](/research/#thresholds) has the details; the Ledger signer is [draft pull request #255](https://github.com/winnowwallet/winnow/pull/255), and the rest of the line is [draft pull request #246](https://github.com/winnowwallet/winnow/pull/246).
 
+**Update, November 2026.** Winnow has since been rewritten in Lean 4, and the Swift module described here no longer ships. The wallet now runs one secp256k1 written in Lean, proved against the curve as specified and written to do the same work whatever the key is; that timing property has only been checked on a Linux build so far. Pull requests #246 and #255 are closed, and the work continues in [winnowwallet/winnow-lean](https://github.com/winnowwallet/winnow-lean).
+
 ## The bar
 
 The NIST seeds waited 29 years for an explanation, and the story everyone told turned out to be wrong. What settled it was evidence anyone can rerun, and that's the bar for a wallet too.

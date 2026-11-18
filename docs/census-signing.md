@@ -26,8 +26,9 @@ census commit (by default the newest on its main) and:
    `peers-source.txt`, recording the census commit, the signature, the health
    filter and both files' SHA-256.
 
-CI runs it once per run, in the `build` job. `scripts/build-ios` runs it for
-Release builds and when the list is missing. If the signature does not verify,
+CI runs it in every job that builds the app (`lean`, `app` and `release`), as
+that job's `prepare` step. `scripts/build-ios` runs it for Release builds and
+when the list is missing. If the signature does not verify,
 the build stops; there is no unsigned fallback.
 
 ## Publisher and wallet trust
@@ -76,8 +77,8 @@ secret is lost, use this rotation process; never restore unsigned acceptance.
 The census repository's contract tests verify its committed catalog, missing
 and modified signatures, foreign keys, and a known-answer signature. In
 winnow-lean, `scripts/tests` (`test_census_import.py`, `test_ed25519_verify.py`)
-cover signature refusal, the health filter and the derived file; CI's `tests`
-job runs `census-check` on the shipped list, and the `testShippedCensus`
+cover signature refusal, the health filter and the derived file; CI's `lean`
+job runs them and `census-check` on the shipped list, and the `shippedCensus`
 journey checks that the list shows in Settings on mainnet.
 
 ## History: the Swift app

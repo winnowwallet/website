@@ -1,8 +1,13 @@
 # Parallel validation on tdx (retired)
 
-> **Retired, 30 October 2026.** This described the Swift app's tdx CI, which
-> ended with 0.8.13. Winnow's CI now runs on WarpBuild through LeanNative's
-> ios-app workflow: see [/testing](../testing.md).
+> **Retired.** This described the Swift app's tdx CI. It ran until 13 October
+> 2026, when the Swift app's lanes moved to WarpBuild
+> ([winnowwallet/winnow#212](https://github.com/winnowwallet/winnow/pull/212)),
+> where they ran through 0.8.13. The Lean app's CI is LeanNative's ios-app
+> workflow; it ran on WarpBuild too until 1 November 2026
+> ([winnowwallet/winnow-lean#23](https://github.com/winnowwallet/winnow-lean/pull/23))
+> and has run on GitHub's hosted macOS runners (`macos-26`) since. See
+> [testing](../testing.md).
 
 ## History: the Swift app's tdx CI
 

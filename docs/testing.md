@@ -1,55 +1,67 @@
 # Testing the Lean app
 
 Winnow 0.9.x is written in Lean 4 in
-[winnowwallet/winnow-lean](https://github.com/winnowwallet/winnow-lean). This
-page describes how that app is tested and what the site's journey media show.
-The Swift app's suites (WalletCoreTests, AppTests, the single signet journey)
-ended with 0.8.13; their history stays in
+[winnowwallet/winnow-lean](https://github.com/winnowwallet/winnow-lean). The
+app's own
+[testing guide](https://github.com/winnowwallet/winnow-lean/blob/main/docs/testing.md)
+is the reference: what each CI job runs, every journey step by step, how to run
+them locally, and the fuzzer. This page summarises it and describes what the
+site's journey media show. The Swift app's suites (WalletCoreTests, AppTests,
+the single signet journey) ended with the Swift app, whose main stopped at
+0.8.13; their history stays in
 [winnowwallet/winnow](https://github.com/winnowwallet/winnow), and the retired
 [tdx CI notes](engineering/tdx-ci.md) describe how they ran.
 
 ## CI
 
-Every pull request and push to main runs LeanNative's reusable `ios-app`
-workflow (`.github/workflows/ci.yml` in winnow-lean) on WarpBuild runners. A
-fork's pull request gets no CI. The Lean is built once and cached; the other
-jobs restore it and run in parallel.
+Every push to winnow-lean's main, and every pull request that is ready for
+review and changes more than the docs, runs LeanNative's reusable `ios-app`
+workflow
+([`.github/workflows/ci.yml`](https://github.com/winnowwallet/winnow-lean/blob/main/.github/workflows/ci.yml))
+on GitHub's hosted macOS runners, or on a self-hosted Mac while the
+repository's `MACOS_RUNNER` variable names one. Three jobs start at once and a
+fourth joins their evidence.
 
 | Job | What it runs |
 | --- | --- |
-| `build` | Builds `Lean/` and `LeanApp/`, which checks every proof, and the test executables. Imports the census peer list once (`scripts/import-census`). |
-| `tests` | `census-check` on that list, the scripts' unit tests, `multisig-test`, `ledger-test`, `silent-payment-test`, `records-test`, `multisig-app-test`, `ledger-transport-test`. |
-| `extra` | `scripts/ci-regtest`: `io-test`, `backend-test` and `multisig-differential` against a disposable regtest Bitcoin Core (the pinned 31.1 release). |
-| `app` | Debug and Release simulator builds and a Release device build, each checked for Swift; `verify-release-no-test-mode`; the UI journeys; then the `journey-media` artifact. |
+| `lean` | Builds `Lean/` and `LeanApp/`, which checks every proof; then the Lean test executables, the fuzzer, `scripts/ci-regtest`'s suites against a disposable regtest Bitcoin Core, and the journeys headless against the app itself. |
+| `app` | The Debug simulator build, checked for Swift, and the UI journeys in a simulator, split across two runners. |
+| `media` | Once both parts pass: their evidence joined into the `journey-media` artifact. |
+| `release` | The Debug and Release simulator builds and the Release device build, each checked for Swift; the test-mode check. |
 
-`verify-release-no-test-mode` launches both simulator builds with test mode's
+The test-mode check launches both simulator builds with test mode's
 environment: Debug must start the test run, Release must ignore it.
 
-## The five journeys
+## The journeys
 
-The UI journeys are Objective-C XCUITests (`LeanApp/ios/UITests`, target
-`WinnowLeanUITests`). Each launches the app in test mode on an iPhone Duo
-simulator against a regtest node, finds controls by the identifiers the views
-give them, and checks the app's results against the node.
+The UI journeys are Lean
+([`LeanApp/Journeys.lean`](https://github.com/winnowwallet/winnow-lean/blob/main/LeanApp/Journeys.lean)),
+run on the Mac. Each step is one command to LeanNative's journey driver, the
+one XCUITest in the app's UI test target; each check is Lean, against the
+node. Each journey launches the app in test mode in a simulator (CI's is an
+iPhone 17 Pro) against a regtest node and finds controls by the identifiers
+the views give them.
 
-- `testCreateReceiveSendConfirm`: create a wallet, receive from the node,
-  review and send a payment the node accepts, see it confirm.
-- `testLedgerPairVerifySpend`: pair test mode's simulated Ledger, have it
-  verify the receive address, and spend with the phone's and the Ledger's
-  signatures.
-- `testMultisigTwoOfThreeWithRecovery`: a 2-of-3 with two Bitcoin Core
-  wallets, built in the app. The first address is Core's; the phone and both
-  Cores sign, and Core accepts a witness with exactly two signatures. After the
-  one-day delay the phone alone spends on the recovery path.
-- `testShippedCensus`: the census peer list the build ships shows in Settings
-  on mainnet.
-- `testSilentPaymentSend`: pay a BIP352 code. The node's transaction pays the
-  one output that backend-test's receiver, written from the BIP's receiving
-  side, finds, and the receipt shows its address.
+Main, whose runs supply this site's media, has nine:
 
-What the journeys do not cover: a physical Ledger (CI's is simulated; the
-owner's Nano X co-signed a mainnet 2-of-2 on 26 October 2026 with the Swift
-app), receiving silent payments (Winnow does not), live Tor and I2P gateways,
+- `createReceiveSendConfirm`: create a wallet, receive, send, see it confirm.
+- `multisigTwoOfThreeWithRecovery`: a 2-of-3 with two Bitcoin Core wallets,
+  then its recovery path.
+- `ledgerPairVerifySpend`: pair test mode's simulated Ledger, verify an
+  address, spend with both signatures.
+- `ledgerCardTwoOfTwo`: the Ledger nearby card sets up a 2-of-2 of the phone
+  and the Ledger.
+- `shippedCensus`: the census peer list the build ships shows in Settings.
+- `silentPaymentSend`: pay a BIP352 code.
+- `feeBumpReplaceConfirm`: bump a fee; Core checks the replacement.
+- `spentElsewhere`: coins spent by the same phrase in another wallet.
+- `retryAfterNoPeers`: Retry after the node goes off the network.
+
+The 0.9.16 release line adds a tenth, `cardForOnePerson`: a card for one
+person, paid by the node from the card's text alone.
+
+What the journeys do not cover: a physical Ledger (CI's is simulated),
+receiving silent payments (Winnow does not), live Tor and I2P gateways,
 iCloud, background tasks scheduled by iOS, and iPad layouts.
 
 ## Run them locally
@@ -58,31 +70,21 @@ From a winnow-lean checkout, with the Lean toolchain
 `leanprover/lean4:v4.35.0` (elan):
 
 ```sh
-cd LeanApp
-lake build backend-test records-test
-./.lake/build/bin/backend-test               # end to end against a fresh regtest bitcoind
-./.lake/build/bin/records-test
-cd ..
 scripts/build-ios Debug                      # the app for the simulator, from a clean checkout
-scripts/ui-journeys                          # the UI journeys against a regtest fixture
+scripts/journeys                             # the UI journeys against a regtest fixture
+scripts/journeys --wire                      # the same journeys headless, with no simulator
 ```
 
-`scripts/ui-journeys` runs the journeys as CI does, on a throwaway simulator
-unless `UI_SIMULATOR` names one, and keeps the result bundle, a screen
-recording, the screenshots and the app's test-mode journals in
-`LeanApp/ios/build/ui-journey`. Pass `xcodebuild` arguments to run one, for
-example
-`-only-testing:WinnowLeanUITests/WinnowLeanUITests/testCreateReceiveSendConfirm`.
-Tests find Bitcoin Core through `WINNOW_BITCOIND` and `WINNOW_BITCOIN_CLI`,
-Homebrew or the PATH; `scripts/ci-regtest` uses the pinned release that
-`scripts/install-bitcoin` downloads.
+Name journeys to run only those, for example
+`scripts/journeys createReceiveSendConfirm`. The app's testing guide has the
+test executables, where the results are kept and how Bitcoin Core is found.
 
 ## The journey media on this site
 
-After the journeys, `scripts/journey-media` in winnow-lean turns the run into
-the `journey-media` artifact: the screenshots, a browser copy of the recording
-and `journey-provenance.json` (the run, source commit, device, each test's
-result and seconds, and each file's SHA-256).
+After the journeys, LeanNative's `journey-media` step in winnow-lean's `media`
+job turns the run into the `journey-media` artifact: the screenshots, a
+browser copy of the recording and `journey-provenance.json` (the run, source
+commit, device, each test's result and seconds, and each file's SHA-256).
 
 This site's `scripts/fetch-journey-media` downloads that artifact from the
 newest successful `ci.yml` run on winnow-lean's main, checks every file against

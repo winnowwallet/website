@@ -52,7 +52,7 @@
 <section class="lean" id="lean" aria-labelledby="lean-title">
 <div class="section-heading"><p class="eyebrow">WRITTEN IN LEAN 4</p><h2 id="lean-title">No Swift. One language, top to bottom.</h2></div>
 <div class="lean-grid">
-<article><p class="lean-label">01 · The wallet</p><h3>Bitcoin in Lean</h3><p>Keys, transactions, PSBTs, descriptors, compact-filter sync, peers and broadcast are Lean 4 compiled to C. Every signature runs on a secp256k1 whose arithmetic is proven in Lean.</p></article>
+<article><p class="lean-label">01 · The wallet</p><h3>Bitcoin in Lean</h3><p>Keys, transactions, PSBTs, descriptors, compact-filter sync, peers and broadcast are Lean 4 compiled to C. Every key and signature runs on one secp256k1, proved in Lean against the curve as specified.</p></article>
 <article><p class="lean-label">02 · The app</p><h3>Model, update, view</h3><p>Each screen is a Lean function from the wallet’s state. Standard iOS controls draw it, through an Objective-C shell that is itself printed from Lean at build time.</p></article>
 <article><p class="lean-label">03 · The framework</p><h3>LeanNative</h3><p>Keychain, Face ID, Bluetooth, iCloud and background tasks reach Lean as typed capabilities. The Xcode project is generated from a Lean description of the app, which refuses a permission without its explanation.</p></article>
 </div>

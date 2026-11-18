@@ -26,8 +26,8 @@
   <nav class="contents" aria-label="On this page"><a href="#coin-selection-and-change">Coins and change</a><a href="#fees-without-a-mempool">Fees</a><a href="#signing">Signing</a><a href="#getting-it-out">Relay</a><a href="#what-still-leaks">Privacy</a></nav>
   <h2 id="the-problem">Four steps</h2><ol><li>Select enough coins for the payment and fee.</li><li>Build a transaction and return any change to your wallet.</li><li>Review the address, amount and fee before signing.</li><li>Broadcast through peers, then distinguish relay from confirmation.</li></ol>
   <h2 id="one-spend-shape">2. One spend shape</h2>
-  <p>Everyday spends are BIP86 P2TR key-path. The signed witness is one 64-byte Schnorr signature (<code>SIGHASH_DEFAULT</code>); fee math uses 66 witness bytes per input (compact-size count + length + 64). The script-path shape of a k-of-n account (k signatures, the leaf script and its control block) belongs to <a href="/vaults">multisig accounts</a> and plugs into the same builder via <code>witnessBytesPerInput</code>.</p>
-  <p>The phone <em>receives</em> only P2TR. It <em>pays</em> standard P2PKH, P2SH, P2WPKH, P2WSH and P2TR addresses. Destination diversity is a payment-layer concern; the wallet’s own outputs stay one type so coin selection, change, and watch-list code have a single script shape.</p>
+  <p>Everyday spends are BIP86 P2TR key-path. The signed witness is one 64-byte Schnorr signature (<code>SIGHASH_DEFAULT</code>); fee math uses 66 witness bytes per input (compact-size count + length + 64). The script-path shape of a k-of-n account (k signatures, the leaf script and its control block) belongs to <a href="https://winnowwallet.com/vaults">multisig accounts</a> and plugs into the same builder via <code>witnessBytesPerInput</code>. A coin paid to one of the wallet’s cards is a P2TR key-path output too, with the same witness; only its key differs (§5).</p>
+  <p>The everyday wallet <em>receives</em> only P2TR, and so does a Taproot multisig account. The one exception is a joined SegWit v0 multisig account, <code>wsh(sortedmulti(k, KEY, …))</code>, whose addresses are P2WSH; Winnow watches and co-signs for it and builds no payment from it (§5). The phone <em>pays</em> standard P2PKH, P2SH, P2WPKH, P2WSH and P2TR addresses. Destination diversity is a payment-layer concern; the wallet’s own outputs stay one type so coin selection, change, and watch-list code have a single script shape.</p>
   <p>Transactions are version 2, with empty <code>scriptSig</code>s, sequence <code>0xFFFFFFFD</code> (BIP125 opt-in RBF) and Bitcoin Core’s anti-fee-sniping locktime: the current tip, or one tenth of the time a random height up to 99 blocks before it. A pending send with change can be fee-bumped in the transaction history; signaling replacement from the first broadcast avoids a policy surprise when it is needed.</p>
   <hr />
   <h2 id="coin-selection-and-change">3. Coin selection and change</h2>
@@ -52,19 +52,20 @@
   <p>History retains the old txid as <strong>replaced</strong> and adds the new pending entry. If the original wins the confirmation race before the replacement propagates, scanning discards the replacement descendant and its locally-counted change before applying the confirmed original. Conversely, if broadcasting succeeds but the replacement’s state commit fails, its exact input set still identifies it as the winner when scanned and removes the original pending change. Neither race can double-count balance.</p>
   <hr />
   <h2 id="signing">5. Signing</h2>
-  <p>The everyday path is PSBTv2 even for single-sig (BIP370/371): creator attaches witness UTXOs and Taproot key-origin metadata, the signer writes <code>PSBT_IN_TAP_KEY_SIG</code>, the finalizer extracts a raw transaction. One pipeline with <a href="/vaults">multisig accounts</a>, which add script-path signatures (<code>PSBT_IN_TAP_SCRIPT_SIG</code>) to the same PSBT, instead of a private “just sign it” shortcut that would drift.</p>
+  <p>The everyday path is PSBTv2 even for single-sig (BIP370/371): creator attaches witness UTXOs and Taproot key-origin metadata, the signer writes <code>PSBT_IN_TAP_KEY_SIG</code>, the finalizer extracts a raw transaction. One pipeline with <a href="https://winnowwallet.com/vaults">multisig accounts</a>, which add script-path signatures (<code>PSBT_IN_TAP_SCRIPT_SIG</code>) to the same PSBT, instead of a private “just sign it” shortcut that would drift. A joined SegWit v0 account is signed differently: its payment arrives as a PSBT built by whoever holds its fixed key, and the phone reviews it, then adds an ECDSA signature over the BIP143 digest to every input as a BIP174 partial signature (<code>SIGHASH_ALL</code>). A Ledger cannot sign for such an account from Winnow.</p>
   <p>Secrets:</p>
   <ul>
   <li>The seed is a BIP39 mnemonic (12 words, 16 bytes of entropy) or a master xprv, stored in the iOS Keychain through the shell’s Keychain capability under the wallet id (master fingerprint, 8 hex chars).</li>
   <li>Accessibility is <code>WhenUnlockedThisDeviceOnly</code>, and the item is not synchronized. The app asks for the passcode or biometrics before it reads the secret; the item has no user-presence flag of its own, so that check is the app’s. The JSON wallet file on disk holds the descriptor, UTXOs, and history — public material.</li>
   <li><code>Wallet.tweakedPrivateKey</code> derives <code>m/86'/coin'/account'/chain/index</code> from the account key loaded for this signing call and applies the BIP86 tweak (no merkle root). The persisted wallet state holds no seed.</li>
+  <li>A coin paid to a card the wallet issued is signed by <code>Wallet.spendSecret</code> instead: it derives the wallet's silent payment spend key at <code>m/352'/coin'/0'/0'/0</code> (BIP352's path, below the master key, so a wallet that holds only its account key cannot spend such a coin), checks it and the scan key (<code>m/352'/coin'/0'/1'/0</code>) against the two keys the wallet file recorded, adds the card's label when the coin was paid to the card's own spend key (BIP352's label, derived from the scan private key and the card's index; which key the coin was paid to is read off the coin's script), and adds the payment's tweak, which it derives from the scan key, the card's tweak and the payment index. No BIP86 tweak is applied, and the PSBT input carries no BIP32 origin, since the key is not a BIP32 child of the account key.</li>
   </ul>
-  <p>All secret-key operations go through Winnow’s own secp256k1 in Lean (<code>Lean/Secp</code>), whose proofs tie BIP340 signing and verification to a specification curve. It is not constant-time: its timing depends on the key, which is acceptable for signing the owner approves on their own phone and not for a signing service. The sighash is BIP341 <code>SIGHASH_DEFAULT</code>. Auxiliary nonce randomness is 32 fresh bytes per signature.</p>
+  <p>All secret-key operations go through Winnow’s own secp256k1 in Lean, one implementation (<code>Lean/SecpCt</code>), each operation proved against the curve as specified in <code>Lean/Secp</code>. It is written to do the same work whatever the secret is, with no branch on a secret and no table looked up by one. The proofs are about answers; the timing of compiled code has been checked only for a Linux x86-64 build under Valgrind, not for the arm64 builds the app ships, so the app does not rely on it. It relies on how it signs: rarely, with the owner approving each payment on screen, and never at a peer’s or a server’s request. The code is not for a signing service. A signature is verified before it leaves. The Taproot sighash is BIP341 <code>SIGHASH_DEFAULT</code>. Auxiliary nonce randomness is 32 fresh bytes per BIP340 signature; ECDSA nonces are made the same way, under tags of their own.</p>
   <p>Wallet amounts and UTXOs come from locally verified blocks, not Esplora. BIP341 signatures commit to input amounts; explorer pages are external manual checks and never feed the signer.</p>
   <hr />
   <h2 id="unsupported-wallet-data">6. Unsupported wallet data</h2>
   <p>Winnow restores descriptor-derived coins. It refuses wallet files or import bundles containing legacy signing data that it cannot use, rather than dropping that data and showing coins it cannot spend.</p>
-  <p>A recovery phrase alone does not recover unsupported coin types. Keep the original wallet and backup and use compatible wallet software for those coins. See <a href="/import">import and recovery</a>.</p>
+  <p>A recovery phrase alone does not recover unsupported coin types. Keep the original wallet and backup and use compatible wallet software for those coins. See <a href="import.html">import and recovery</a>.</p>
   <hr />
   <h2 id="getting-it-out">7. Getting it out</h2>
   <p><code>TxBroadcaster</code> is P2P relay, not an API client:</p>
@@ -75,7 +76,7 @@
   <li>Re-announce on exponential backoff (60s base, cap 1h) until <code>FilterSync</code> reports the tx in a matched block, or the caller cancels (e.g. a replacement).</li>
   <li>Pending txs persist as JSON (raw tx, feerate, next attempt) so a killed app resumes relay.</li>
   </ul>
-  <p>While the Send screen is open, a <a href="/read-side#bounded-mempool-windows">bounded mempool window</a> watches for peers echoing our txid back. An echo is evidence the network has the bytes; it is not confirmation. The UI says “broadcast” / “relayed” / “seen in a block”, never “sent” at 0-conf.</p>
+  <p>While the Send screen is open, a <a href="read-side.html#bounded-mempool-windows">bounded mempool window</a> watches for peers echoing our txid back. An echo is evidence the network has the bytes; it is not confirmation. The UI says “broadcast” / “relayed” / “seen in a block”, never “sent” at 0-conf.</p>
   <p>Winnow does not POST transactions to Esplora. A transaction row can open the selected explorer after a warning, but P2P relay remains the broadcast path and the page’s answer is not consumed by the wallet.</p>
   <hr />
   <h2 id="what-still-leaks">8. What still leaks</h2>
@@ -135,12 +136,17 @@
   <tr>
   <td>7</td>
   <td>Multisig account spend</td>
-  <td>Same builder and broadcaster; any k signers add script-path signatures to the PSBT, in any order (<a href="/vaults">multisig accounts</a>)</td>
+  <td>Same builder and broadcaster; any k signers add script-path signatures to the PSBT, in any order (<a href="https://winnowwallet.com/vaults">multisig accounts</a>)</td>
+  </tr>
+  <tr>
+  <td>8</td>
+  <td>Co-sign for a joined SegWit v0 account</td>
+  <td><strong>Paste a PSBT from a co-signer</strong> → review → <strong>Add this phone’s signature</strong> (ECDSA) → <strong>Finalize and broadcast</strong> once enough signatures verify; Winnow builds no payment from this account</td>
   </tr>
   </tbody>
   </table></div>
   <hr />
-<h2 id="conclusion">Related guides</h2><p><a href="/read-side">How confirmation is detected</a> · <a href="/vaults">Multisig accounts</a> · <a href="/import">Backup and recovery</a></p>
+<h2 id="conclusion">Related guides</h2><p><a href="read-side.html">How confirmation is detected</a> · <a href="https://winnowwallet.com/vaults">Multisig accounts</a> · <a href="import.html">Backup and recovery</a></p>
 </main>
 <footer><div class="bar"><nav aria-label="Footer"><a href="/roadmap">Roadmap</a><a href="/privacy">Privacy</a><a href="/recording">Recording</a></nav></div></footer>
 </body>
