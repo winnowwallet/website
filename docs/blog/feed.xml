@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <rss version="2.0">
   <channel>
+    <lastBuildDate>Wed, 18 Nov 2026 14:16:00 +0000</lastBuildDate>
     <title>Winnow blog</title>
     <link>https://winnowwallet.com/blog/</link>
     <description>Wallet engineering and field reports by Alex Newman.</description>

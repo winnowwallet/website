@@ -1,0 +1,364 @@
+{
+  "version": 2,
+  "source_sha": "b64907e0e053b08fbe09ede25a10faca48a3e322",
+  "run_url": "https://github.com/winnowwallet/winnow-lean/actions/runs/42669467738",
+  "branch": "main",
+  "network": "regtest",
+  "test": "LeanApp/Journeys.lean",
+  "result": "passed",
+  "test_seconds": 405.508,
+  "device": {
+    "name": "iPhone 17 Pro",
+    "os": "iOS 26.5",
+    "type": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro"
+  },
+  "tests": [
+    {
+      "name": "testCreateReceiveSendConfirm",
+      "result": "passed",
+      "seconds": 26.133
+    },
+    {
+      "name": "testMultisigTwoOfThreeWithRecovery",
+      "result": "passed",
+      "seconds": 101.49
+    },
+    {
+      "name": "testFeeBumpReplaceConfirm",
+      "result": "passed",
+      "seconds": 50.896
+    },
+    {
+      "name": "testRetryAfterNoPeers",
+      "result": "passed",
+      "seconds": 17.041
+    },
+    {
+      "name": "testLedgerPairVerifySpend",
+      "result": "passed",
+      "seconds": 85.28
+    },
+    {
+      "name": "testShippedCensus",
+      "result": "passed",
+      "seconds": 24.688
+    },
+    {
+      "name": "testSilentPaymentSend",
+      "result": "passed",
+      "seconds": 19.511
+    },
+    {
+      "name": "testSpentElsewhere",
+      "result": "passed",
+      "seconds": 76.733
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "01-onboarding",
+      "test": "testCreateReceiveSendConfirm",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 177400,
+      "sha256": "1ae0f811e285656075f388eac4209f80271ac19bbeeb5b80b5e2a4839abb0a65"
+    },
+    {
+      "name": "03-receive",
+      "test": "testCreateReceiveSendConfirm",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 184366,
+      "sha256": "3dafa484d9fe39eced1fc440c634a67dad5440f340291e4b659f21abce834dc2"
+    },
+    {
+      "name": "04-home-funded",
+      "test": "testCreateReceiveSendConfirm",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 192362,
+      "sha256": "b21da030a768609da76f2ec5bfee2eeb619484a1d9236d483e7cd1ac19816ae2"
+    },
+    {
+      "name": "05-send-review",
+      "test": "testCreateReceiveSendConfirm",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 143085,
+      "sha256": "aaeca4152c00c47d93c810de7e2c0055d24bbafc4b855c0e6eee7ffdc6485c31"
+    },
+    {
+      "name": "06-send-confirmed",
+      "test": "testCreateReceiveSendConfirm",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 142538,
+      "sha256": "c3724698ab6e6347496450d1aacded883b311538c0d9b89c274fb26a55149b5e"
+    },
+    {
+      "name": "07-home-after-send",
+      "test": "testCreateReceiveSendConfirm",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 195550,
+      "sha256": "28008c6720cb0fcbb56b0a07b637d7512a38f2f74d82c42480e0e3df50bc62d3"
+    },
+    {
+      "name": "10-multisig-build",
+      "test": "testMultisigTwoOfThreeWithRecovery",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 352856,
+      "sha256": "4ad42491d6d7ca345ed468b81d3c24968952b5a78316e831dce8791ed01943e5"
+    },
+    {
+      "name": "11-multisig-funded",
+      "test": "testMultisigTwoOfThreeWithRecovery",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 203895,
+      "sha256": "793f0a79899b149ec660cc078b7180fe5dbc7ac05babf40b3b65ae5f77d02874"
+    },
+    {
+      "name": "12-multisig-one-signature",
+      "test": "testMultisigTwoOfThreeWithRecovery",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 402007,
+      "sha256": "348706fc7ee019b0a5e812c0d8630a723b07b95f5f8c30e70fad9cdc92d60b5d"
+    },
+    {
+      "name": "13-multisig-sent",
+      "test": "testMultisigTwoOfThreeWithRecovery",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 186914,
+      "sha256": "daa351fbc5aaaa2aa621087b7e022c908692e4d78b61ccb76b66293d499c1ce7"
+    },
+    {
+      "name": "13a-account-page",
+      "test": "testMultisigTwoOfThreeWithRecovery",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 404636,
+      "sha256": "feec89247c77b4a09ea1abe65f5788bee6f1cc96e5f946b814bcdaa9121fa832"
+    },
+    {
+      "name": "13a-account-page-share",
+      "test": "testMultisigTwoOfThreeWithRecovery",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 330708,
+      "sha256": "871b0d4e9df631f3492f2f92f834ed8daaac9a482997e90b855c30b8f0a26834"
+    },
+    {
+      "name": "13b-multisig-transactions",
+      "test": "testMultisigTwoOfThreeWithRecovery",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 356119,
+      "sha256": "c10709476119daf27d7dc1749342a5ab1a22b1f31a95751d8e7e24d981b43567"
+    },
+    {
+      "name": "13c-send-recovery-path",
+      "test": "testMultisigTwoOfThreeWithRecovery",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 214484,
+      "sha256": "b8c599b10bed99970159a9a57d53701db2c08038fbae93d8d8f66a02e2d91e37"
+    },
+    {
+      "name": "14-multisig-recovered",
+      "test": "testMultisigTwoOfThreeWithRecovery",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 189024,
+      "sha256": "371fa54e31c6fd93aa6f4ec95feef931b5d1fd6e253ae8916c9a0776f58a8e19"
+    },
+    {
+      "name": "50-fee-bump-review",
+      "test": "testFeeBumpReplaceConfirm",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 212498,
+      "sha256": "a67192f0a03b4732614ec0e00f4ce3856edeae95266413822d3be85a7ce0b8b4"
+    },
+    {
+      "name": "51-fee-bump-confirmed",
+      "test": "testFeeBumpReplaceConfirm",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 333834,
+      "sha256": "601f46a1711f86c5c12820561cf40aabea4b972805b3096934df1c57243177aa"
+    },
+    {
+      "name": "60-home-retry",
+      "test": "testRetryAfterNoPeers",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 196262,
+      "sha256": "613ef05839002012ab9c67ddb423a5ffbba09ec866a6599797e1d8586035b62c"
+    },
+    {
+      "name": "19-signers-paired",
+      "test": "testLedgerPairVerifySpend",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 291648,
+      "sha256": "2af20d8b86b808875347b33554fb9405cbe50bd39b5cd62575fb0142928e2dc3"
+    },
+    {
+      "name": "20-ledger-verified",
+      "test": "testLedgerPairVerifySpend",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 312295,
+      "sha256": "9a23e964236c3e978288da87911c740f787db6a442e3c95c140e6e8445f98005"
+    },
+    {
+      "name": "20b-ledger-transfer-row",
+      "test": "testLedgerPairVerifySpend",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 342035,
+      "sha256": "7fe67a2e9b396732ee931a8fd68b4a2842239166e2051b2cbd2ec4e67bb35a99"
+    },
+    {
+      "name": "21-ledger-signed",
+      "test": "testLedgerPairVerifySpend",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 236012,
+      "sha256": "c5c22964c243e56f2acc6846bfdec5c81ed706ccb9238a5ee8920fb04e64ab60"
+    },
+    {
+      "name": "22-ledger-confirmed",
+      "test": "testLedgerPairVerifySpend",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 174244,
+      "sha256": "8f8df9e3ca36532a4623e05810eb8a7d2e5fd7579c79f3dfdcbc933a617c172c"
+    },
+    {
+      "name": "23-ledger-transactions",
+      "test": "testLedgerPairVerifySpend",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 342383,
+      "sha256": "4b3204adb5db378665b8e4a377af8dc2e21412a1a491c089f171d7a871667468"
+    },
+    {
+      "name": "30-settings-census",
+      "test": "testShippedCensus",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 401404,
+      "sha256": "7e23bca602bf2866110722475370d8dbdabb67f99d06c59c81dcaed7673db161"
+    },
+    {
+      "name": "31-settings-backup",
+      "test": "testShippedCensus",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 243974,
+      "sha256": "19876903786d3a7433e84e3de8026abd3fa2664516adebdec97554e4c8949529"
+    },
+    {
+      "name": "32-backup-file-sheet",
+      "test": "testShippedCensus",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 141197,
+      "sha256": "ba4600c199b5ae843d38a72c0e370e6241fe8f4b2c3c483e6445b8b0a32e9c56"
+    },
+    {
+      "name": "33-icloud-sheet",
+      "test": "testShippedCensus",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 210603,
+      "sha256": "709e17cfeb779d2a43170986574c07813e99ea827ce4bf4ea76caefe91b5440b"
+    },
+    {
+      "name": "34-wallet-multisig",
+      "test": "testShippedCensus",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 331920,
+      "sha256": "135767d097bee568699061cf921934d1d04cf46105df7868d758311b92f99d20"
+    },
+    {
+      "name": "35-join",
+      "test": "testShippedCensus",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 238911,
+      "sha256": "ba347eabfb1710ebf5d3b43c6e21b1c3dcb881d1b64a47d96161386501273d93"
+    },
+    {
+      "name": "40-silent-review",
+      "test": "testSilentPaymentSend",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 177517,
+      "sha256": "0c9437d563a90e3ee903a15806112c934ef964aeb2f9ceb1e0fbeb5a86c470dd"
+    },
+    {
+      "name": "41-silent-confirmed",
+      "test": "testSilentPaymentSend",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 172045,
+      "sha256": "564ead9ea6c761278dd3d2f719f45d600b20634fe55b07d2bc8e0f28eda7ea91"
+    }
+  ],
+  "video": {
+    "width": 720,
+    "height": 1566,
+    "duration_seconds": 448.708,
+    "codec": "h264",
+    "bytes": 15771099,
+    "sha256": "4fa5b6c432f3872803535d8a3f39e2310ef4b9dbf021675260b5db1faf4d4a92",
+    "transcoded": true,
+    "path": "videos/wallet-journey.mp4"
+  },
+  "parts": [
+    {
+      "tests": [
+        "testCreateReceiveSendConfirm",
+        "testMultisigTwoOfThreeWithRecovery",
+        "testFeeBumpReplaceConfirm",
+        "testRetryAfterNoPeers"
+      ],
+      "test_seconds": 197.656,
+      "original_video": {
+        "width": 1206,
+        "height": 2622,
+        "duration_seconds": 219.168,
+        "codec": "h264",
+        "bytes": 148496827,
+        "sha256": "9ee424cdee18bf1abf1fcb44e78b3d13ad0b731fa812f49c4cbb743af6772a6a",
+        "path_in_run": "journey.mp4"
+      }
+    },
+    {
+      "tests": [
+        "testLedgerPairVerifySpend",
+        "testShippedCensus",
+        "testSilentPaymentSend",
+        "testSpentElsewhere"
+      ],
+      "test_seconds": 207.852,
+      "original_video": {
+        "width": 1206,
+        "height": 2622,
+        "duration_seconds": 229.548,
+        "codec": "h264",
+        "bytes": 157890368,
+        "sha256": "113227593ba5dbff2fdaadf6282ffd77b11577d029c8651c9088439ec6dc3b5f",
+        "path_in_run": "journey.mp4"
+      }
+    }
+  ],
+  "normalized_at": "2026-11-09T18:06:34+00:00"
+}

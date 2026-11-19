@@ -1,0 +1,72 @@
+/* Compact reading layouts are independent of the desktop scroll choreography. */
+@media(max-width:900px){
+ body:not(.subpage){--gutter:clamp(20px,6vw,48px)}
+ .story .chapter,body.is-static .story .chapter,body[data-motion] .story .chapter{min-height:0;padding:52px var(--gutter);gap:30px;display:flex;flex-direction:column}
+ .story .chapter{height:auto!important;max-height:none;position:relative}
+ .story .chapter-frame{display:contents;position:static;height:auto;min-height:0;max-height:none;overflow:visible;padding:0}
+ .story .chapter.hero,body.is-static .story .chapter.hero,body[data-motion] .story .chapter.hero{padding-top:104px;padding-bottom:44px}
+ .story .chapter-copy{width:100%;max-width:620px;margin-inline:auto}
+ .story .chapter-copy,.story .chapter-copy > *, .engineering .proof-line>span,.engineering-benefit,.signer-module,.signing-bridge,.engineering-context,.engineering-top,.evidence article{opacity:1!important;visibility:visible!important;filter:none!important;transform:none!important}
+ .story .chapter h1,body.is-static .story .chapter h1{font-size:clamp(44px,11.6vw,66px);line-height:.98;letter-spacing:-.045em}
+ .story .chapter h1 em{font-size:.65em;line-height:1.05;margin-top:15px}
+ .story .chapter h1 em br{display:none}
+ .story .chapter h2,body.is-static .story .chapter h2{font-size:clamp(40px,10.7vw,62px);line-height:1.02;letter-spacing:-.04em}
+ .story #hardware h2{font-size:clamp(36px,9.6vw,56px)}
+ .story .eyebrow{font-size:10px;line-height:1.6;margin-bottom:18px;flex-wrap:wrap;gap:8px}
+ .story .intro{font-size:20px;line-height:1.38;margin-top:22px;max-width:480px}
+ .story .supporting{font-size:18px;line-height:1.42;margin-top:15px;max-width:480px}
+ .story .chapter-note{font-size:13px;line-height:1.5;margin-top:18px;max-width:440px}
+ .story .cta{font-size:17px;min-height:48px;margin-top:22px;padding:12px 17px;gap:35px}
+ .story .scroll-link{font-size:14px;margin-left:18px;gap:9px;min-height:44px;align-items:center}
+ .story details{max-width:none;margin-top:22px}.story summary{min-height:48px;align-items:center;font-size:17px}
+ .story details p{font-size:17px;line-height:1.5}
+ .story .technical-link{margin-top:16px;min-height:44px;align-items:center}
+ .story .mobile-art,body.is-static .story .mobile-art{width:min(100%,244px);aspect-ratio:244/526;margin-inline:auto;padding:0;overflow:visible;perspective:none;isolation:isolate}
+ .story .mobile-art .phone{width:100%;aspect-ratio:244/526;border:1px solid #667176;background:linear-gradient(130deg,#dee2e1,#48545a 45%,#aab3b6);border-radius:14% / 6.5%;box-shadow:0 14px 24px -14px #17242b40;filter:none;transform:none!important;transform-style:flat}
+ .story .mobile-art .phone-glass{transform:none;border-width:1cqw;box-shadow:inset 0 0 0 1px #ffffff20}
+ .story .mobile-art .device-slice,.story .mobile-art .device-glare,.story .mobile-art .studio-light{display:none}
+ .story .mobile-art .app-scroll{overflow:hidden;pointer-events:none}
+ .story #trustee .mobile-art,.story #recovery .mobile-art{display:none}
+ .story .mobile-signers,body.is-static .story .mobile-signers{margin-top:26px;padding-top:20px;gap:14px}
+ .story .mobile-signers span{font-size:16px}.story .mobile-signers b{font-size:27px;margin-bottom:10px}.story .mobile-signers small{font-size:13px;line-height:1.4}
+ .story .mobile-recovery,body.is-static .story .mobile-recovery{max-width:none;margin-top:28px;padding:25px 22px;background:#ecece8;border-radius:18px}
+ .story .recovery-clock-note{font-size:16px;line-height:1.45;margin-top:22px}
+ .story .recovery-duration strong{font-size:88px}.story .recovery-plan li{padding-block:16px}.story .recovery-plan li>div{font-size:18px}.story .recovery-plan small{font-size:14px}
+ .engineering-frame{padding:56px var(--gutter)}
+ .engineering h2{font-size:clamp(43px,10.5vw,70px);line-height:1.03}
+ .engineering-benefit{font-size:20px;line-height:1.4;margin-top:24px}
+ .engineering-top>h2{font-size:clamp(40px,10vw,60px);line-height:1.03}
+ .engineering-proof{gap:30px}.engineering-progress{margin-top:36px}
+ .signing-paths{display:grid;grid-template-columns:1fr 1fr;gap:24px 22px;margin-top:30px;max-width:450px}
+ .signer-module{width:100%;max-width:none}.hardware-module{grid-column:1;grid-row:1}.winnow-module{grid-column:2;grid-row:1}
+ .signing-chip{height:144px;padding:18px 8px;border-radius:16px}.signing-chip strong{font-size:21px}.signing-chip small{font-size:11px}
+ .signing-bridge{grid-column:1/-1;grid-row:2;width:100%;padding:0 24px;gap:16px}.signing-bridge span{font-size:9px}
+ .engineering-context{font-size:13px;line-height:1.45;margin-top:20px}
+ .evidence article{padding-block:24px!important}.evidence h3{font-size:30px;line-height:1.1}.evidence p{font-size:19px;line-height:1.45}
+ .closing{padding:56px var(--gutter)}.closing h2{font-size:clamp(40px,10vw,62px);line-height:1.04}.faq{margin-top:48px;gap:20px}.faq summary{min-height:56px;align-items:center;font-size:18px}
+ .global-footer{margin-inline:var(--gutter,6vw);padding:36px 24px 24px}.footer-top{gap:32px 20px}.global-footer .footer-brand p{display:block;font-size:22px;max-width:280px}.footer-col{gap:4px;font-size:17px}.footer-col a{min-height:44px;display:flex;align-items:center;line-height:1.3}.footer-col .footer-label{margin-bottom:8px;font-size:10px}.footer-bottom{margin-top:28px}.footer-bottom a,.footer-bottom button{min-height:44px;display:flex;align-items:center}
+ .subpage .page-main{padding-bottom:56px}.subpage .page-hero{padding-top:36px;padding-bottom:34px}.subpage .page-hero h1{font-size:clamp(44px,10.7vw,72px);line-height:1.02;margin-bottom:22px;text-wrap:balance}
+ .subpage .lead{font-size:21px;line-height:1.4}.subpage .page-nav{gap:8px 22px;margin-bottom:28px;padding-block:14px}.subpage .page-nav a{display:flex;align-items:center;min-height:44px}
+ .subpage .article-section{padding-block:36px 42px;gap:24px}.subpage .article-section h2{font-size:clamp(34px,8.7vw,48px)}.subpage .article-section p,.subpage .article-section li{font-size:19px;line-height:1.5}
+ .subpage .ink-panel{padding:28px 24px;border-radius:20px}.subpage .ink-panel p{font-size:19px}.subpage .panel-grid{gap:30px}.subpage .next-page{gap:20px}.subpage .next-page h2{font-size:32px}
+ .subpage .rule-table{table-layout:fixed;width:100%;font-size:16px;overflow-wrap:anywhere}.subpage .info-strip{gap:24px}.subpage .info-strip strong{overflow-wrap:anywhere}.subpage .policy-tabs button{flex:1;min-height:48px;padding:10px;font-size:16px}
+ .subpage .stack-diagram>div{font-size:20px}.subpage .source-links a{min-width:0;overflow-wrap:anywhere}
+}
+@media(min-width:650px) and (max-width:900px){
+ .story .chapter,body.is-static .story .chapter,body[data-motion] .story .chapter{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:36px;align-items:center}
+ .story .chapter h1,body.is-static .story .chapter h1{font-size:52px}.story .chapter h2,body.is-static .story .chapter h2{font-size:46px}.story #hardware h2{font-size:40px}
+ .story #trustee,.story #recovery,body.is-static .story #trustee,body.is-static .story #recovery{display:block}.story #trustee .chapter-copy,.story #recovery .chapter-copy{max-width:620px}
+ .story .mobile-recovery{max-width:500px!important}
+}
+@media(max-width:360px){
+ .story .scroll-link{margin-left:0;display:flex;margin-top:6px}.story .chapter.hero{padding-top:96px!important}.story .mobile-art{width:224px!important;aspect-ratio:244/526}
+ .footer-top{column-gap:14px}.footer-col{font-size:16px}.global-footer{padding-inline:20px}.signing-paths{column-gap:14px}.signing-chip strong{font-size:19px}.signing-chip small{font-size:10px}
+ .subpage .node-stack{grid-template-columns:1fr}.subpage .test-list li{grid-template-columns:1fr;gap:8px}.subpage .test-list .test-result{text-align:left}
+}
+/* Static space is retained on compact screens without allocating a canvas. */
+body.is-static[data-engineering=universe] .engineering-frame{background-image:radial-gradient(#ffffff38 .6px,transparent .8px);background-size:43px 57px}
+@media(max-width:900px){.universe-canvas{display:none!important}.engineering-frame{background-image:radial-gradient(#ffffff38 .6px,transparent .8px);background-size:43px 57px}.reveal.in-view{animation:none!important}}
+
+@media(max-width:900px){.subpage .ink-panel .eyebrow{font:10px/1.6 Arial,sans-serif;letter-spacing:.12em}.story .mobile-art [class^=device-]{display:none}}
+
+@media(max-width:900px){.subpage .article-section .eyebrow{font:10px/1.6 Arial,sans-serif;letter-spacing:.12em}.subpage .source,.subpage .article-section .source{font:12px/1.6 Arial,sans-serif}.subpage .ink-panel .source{font-size:12px}}

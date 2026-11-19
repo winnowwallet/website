@@ -1,0 +1,35 @@
+/* Shared, locally hosted navigation. No changes to the landing scene or wallet UI. */
+/* Keyboard access stays above the header, clear of the identity at every width. */
+.skip{position:fixed;left:50%;top:12px;transform:translate(-50%,-200%);z-index:200;max-width:calc(100% - 32px);padding:12px 18px;background:#191b1e;color:#fff;text-align:center;text-decoration:none;border-radius:6px;font:16px/1.3 Degular,Arial,sans-serif}
+.skip:focus{top:12px;transform:translateX(-50%);outline:2px solid #f7931a;outline-offset:4px}
+.global-header{position:relative;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:28px 5.5vw;color:#191b1e;font:18px/1.2 Degular,Arial,sans-serif;border:0;background:transparent}
+.global-header .brand img{display:block;width:140px;height:35px}
+.global-header a{color:inherit;text-decoration:none}
+.global-header .nav-main{display:flex;align-items:center;gap:28px;margin:0}
+.global-header .download-link{border:1px solid #191b1e33;border-radius:30px;padding:12px 20px;white-space:nowrap}
+.site-menu{position:relative}
+.site-menu summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:12px 0;font:inherit;border:0}
+.site-menu summary::-webkit-details-marker{display:none}
+.site-menu summary:after{content:'+';font:22px/1 Arial;transition:transform .25s}
+.site-menu[open] summary:after{transform:rotate(45deg)}
+.site-menu .menu-panel{position:absolute;right:-30px;top:52px;width:340px;padding:22px;background:#fafaf7;border:1px solid #191b1e20;border-radius:18px;box-shadow:0 22px 70px #191b1e20;display:grid;gap:0;color:#191b1e}
+.menu-panel a{padding:12px 10px;border-radius:8px;display:flex;justify-content:space-between;font-size:20px}
+.menu-panel a:hover,.menu-panel a:focus-visible{background:#f7eadb;color:#9b4e00}
+.menu-panel a:after{content:'↗';color:#63666b}
+.menu-panel a[aria-current=page]{color:#9b4e00}
+.menu-panel small{padding:12px 10px 4px;color:#63666b;font:12px/1.4 Arial}
+.global-footer{display:block;margin:0 5.5vw;padding:70px 5.5vw 25px;background:#ecece8;color:#191b1e;font-family:Degular,Arial,sans-serif;border:0}
+.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;max-width:1400px;margin:auto}
+.global-footer .footer-brand img{display:block;width:140px;height:35px;margin:0}.global-footer p{font-size:24px;line-height:1.15;margin:25px 0 0;max-width:240px;letter-spacing:-.02em}
+.footer-col{display:flex;flex-direction:column;align-items:flex-start;gap:12px;font-size:18px}
+.global-footer a{color:inherit;text-decoration:none;white-space:normal}.global-footer a:hover{color:#9b4e00}
+.footer-col .footer-label{font:11px/1.4 Arial;letter-spacing:.1em;text-transform:uppercase;color:#63666b;margin-bottom:14px}
+.footer-bottom{max-width:1400px;margin:60px auto 0;padding-top:23px;border-top:1px solid #191b1e20;display:flex;align-items:center;justify-content:space-between;gap:20px;color:#63666b;font-size:14px}
+.global-footer button{border:0;background:transparent;color:inherit;cursor:pointer;font:inherit;padding:0}.global-footer small{font:inherit;max-width:none}
+.global-header :focus-visible,.global-footer :focus-visible{outline:2px solid #9b4e00;outline-offset:5px}
+body:not(.subpage) .global-header{position:absolute;inset:0 0 auto}
+@media(max-width:760px){.global-header{padding:22px 6vw;gap:18px}.global-header .brand img{width:120px;height:30px}.global-header .nav-main{display:flex;gap:0}.global-header .nav-main>.nav-desktop{display:none}.global-header .download-link{display:none}.site-menu .menu-panel{position:fixed;left:5vw;right:5vw;top:78px;width:auto;max-height:calc(100svh - 100px);overflow:auto}.footer-top{grid-template-columns:1fr 1fr;gap:40px 25px}.footer-brand{grid-column:1/-1}.footer-bottom{align-items:flex-start;flex-direction:column}.global-footer{padding:50px 6vw 25px}.global-footer p{font-size:25px;max-width:none}}
+
+/* Match the selected homepage inset on every page, including its narrow gutters. */
+@media(max-width:900px){.global-footer{margin-inline:7vw}}
+@media(max-width:360px){.global-footer{margin-inline:6vw}}

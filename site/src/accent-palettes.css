@@ -1,0 +1,70 @@
+/* Color studies only. The canonical geometry and source-derived screen content stay fixed. */
+[data-palette=signal], [data-palette=orange]{--signature:#f7931a;--on-signature:#16181b}
+/* Studio + accents: neutral page, orange actions and small points of emphasis. */
+[data-palette=signal]{--paper:#f5f5f3;--ink:#191b1e;--muted:#63666b;--line:#191b1e26;--deep:#121518;--wash:#dfdfdc;--card:#e5e5e1;--blue:#30343a;--pale:#e3e5e8}
+[data-palette=signal] .phone-glass{--app-paper:#f5f5f3;--app-ink:#191b1e;--app-muted:#62666b;--app-line:#191b1e33;--app-accent:#30343a;--app-on-accent:#fff}
+[data-palette=signal][data-phone-theme=dark] .phone-glass,
+[data-phone-theme=dark] [data-palette=signal] .phone-glass{--app-paper:#121518;--app-ink:#f5f5f3;--app-muted:#b2b6bc;--app-line:#f5f5f333;--app-accent:#e3e5e8;--app-on-accent:#121518}
+[data-palette=signal] .balance{color:var(--app-ink)}
+/* Keep the warm action color inside the app, in both appearances. */
+[data-palette=signal] .phone-glass .source-action.primary,
+[data-palette=signal] .phone-glass .app-actions>span:last-child{background:var(--signature);color:var(--on-signature);border-color:var(--signature)}
+/* Small points of emphasis; long headings and page buttons remain neutral. */
+[data-palette=signal] .recovery-duration strong,
+[data-palette=signal] .pair-note>span{color:var(--signature)}
+[data-palette=signal] .recovery-clock-note{border-left-color:var(--signature)}
+[data-palette=signal] .approval-dots{--blue:var(--signature)}
+/* One set of engineering surfaces, three live color directions. Champagne is provisional. */
+[data-palette=signal] .engineering{--paper:#f6f2eb;--deep:#191a19;--blue:#977756;--pale:#ead6b7;--engineering-copy:#d0c8bc;--engineering-muted:#b3a99a;--engineering-metal:#454540;--engineering-shadow:#111211;--engineering-key:#211c16;--engineering-edge:#a38d6e;--engineering-rule:#ead6b733}
+[data-palette=signal][data-engineering=copper] .engineering{--paper:#fff4ea;--deep:#201815;--blue:#b56538;--pale:#f3bf92;--engineering-copy:#dec9b9;--engineering-muted:#bfa390;--engineering-metal:#594037;--engineering-shadow:#160e0b;--engineering-key:#2a170e;--engineering-edge:#bf805a;--engineering-rule:#f3bf9233}
+[data-palette=signal][data-engineering=petrol] .engineering{--paper:#f0f4ef;--deep:#112322;--blue:#397e79;--pale:#b3d6c7;--engineering-copy:#c4d5cf;--engineering-muted:#9bb6ac;--engineering-metal:#35534e;--engineering-shadow:#091716;--engineering-key:#142a23;--engineering-edge:#7fa89a;--engineering-rule:#b3d6c733}
+/* Universe: Vesalius's black space and white light, with Winnow orange details. */
+[data-palette=signal][data-engineering=universe] .engineering{--paper:#f7f7f5;--deep:#080808;--blue:#777;--pale:#e8e8e5;--engineering-copy:#c8c8c5;--engineering-muted:#9d9d9a;--engineering-metal:#333;--engineering-shadow:#030303;--engineering-key:#171717;--engineering-edge:#aaa;--engineering-rule:#ffffff29}
+.universe-canvas{display:none;position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1}
+/* Inside the isolated .engineering-frame: aura (-2), canvas/rim (-1), content (auto). */
+[data-palette=signal][data-engineering=universe] .universe-canvas{display:block}
+[data-palette=signal][data-engineering=universe] .engineering-aura{background:radial-gradient(ellipse at 50% 115%,#ffffff0d,transparent 60%)}
+[data-palette=signal][data-engineering=universe] .engineering-horizon{left:-4%;right:-4%;height:43%;bottom:-34%;border-top-color:#ffffffe0;box-shadow:0 -2px 9px #ffffff80,0 -9px 38px #ffffff26,0 -35px 90px #ffffff0d}
+[data-palette=signal][data-engineering=universe] .engineering h2 em{background:none;color:#f7f7f5}
+[data-palette=signal][data-engineering=universe] .winnow-module .signing-chip{background:linear-gradient(135deg,#fff,#e4e4e1 50%,#a3a3a0);box-shadow:inset 0 1px 0 #fff,0 5px 0 #535353,0 7px 0 #a2a2a2,0 22px 50px #ffffff0c}
+[data-palette=signal][data-engineering=universe] .signing-bridge{color:#c8c8c5}
+[data-palette=signal][data-engineering=universe] .signing-bridge i{background:linear-gradient(90deg,#ffffff20,#f7931a);box-shadow:0 0 9px #f7931a33}
+[data-palette=signal][data-engineering=universe] .signing-bridge i:last-child{background:linear-gradient(90deg,#f7931a,#ffffff20)}
+[data-palette=signal][data-engineering=universe] .engineering-evidence .engineering-aura{background:radial-gradient(ellipse at 10% 100%,#ffffff09,transparent 65%)}
+/* Transition review: keep Universe selected while comparing the section join. */
+[data-engineering=universe][data-horizon=none] .engineering-horizon{display:none}
+[data-engineering=universe][data-horizon=none] .engineering-evidence .engineering-frame,
+[data-engineering=universe][data-horizon=fade] .engineering-evidence .engineering-frame{border-top-color:transparent}
+[data-engineering=universe][data-horizon=none] .universe-canvas{mask-image:linear-gradient(transparent,#000 12%,#000 78%,transparent)}
+[data-palette=signal][data-engineering=universe][data-horizon=none] .engineering-aura,
+[data-palette=signal][data-engineering=universe][data-horizon=fade] #engineering .engineering-aura{background:none}
+[data-palette=signal][data-engineering=universe][data-horizon=fade] .engineering-horizon{left:0;right:0;bottom:0;height:25%;border:0;border-radius:0;box-shadow:none;background:linear-gradient(0deg,#ffffff0c,transparent)}
+[data-palette=signal][data-engineering=universe][data-horizon=fade] .engineering-evidence .engineering-aura{opacity:1;background:linear-gradient(#ffffff0c,transparent 30%),radial-gradient(ellipse at 10% 100%,#ffffff09,transparent 65%)}
+[data-palette=signal] .engineering .eyebrow,
+[data-palette=signal] .engineering-context,
+[data-palette=signal] .engineering-progress,
+[data-palette=signal] .engineering-progress a{color:var(--engineering-muted)}
+[data-palette=signal] .engineering-benefit,
+[data-palette=signal] .proof-intro,
+[data-palette=signal] .evidence p{color:var(--engineering-copy)}
+[data-palette=signal] .engineering .text-link,
+[data-palette=signal] .evidence a,
+[data-palette=signal] .evidence article>span{color:#ffb454}
+[data-palette=signal] .evidence small{color:var(--pale)}
+[data-palette=signal] .engineering-progress [aria-current]{color:var(--pale)}
+[data-palette=signal] .engineering-progress>i,
+[data-palette=signal] .evidence article::before{background:var(--engineering-rule)}
+[data-palette=signal] .hardware-module .signing-chip{background:linear-gradient(145deg,var(--engineering-metal),var(--deep) 90%);box-shadow:inset 0 1px 0 #ffffff60,0 5px 0 var(--engineering-shadow),0 7px 0 color-mix(in srgb,var(--engineering-edge) 40%,transparent),0 25px 45px #0006}
+[data-palette=signal] .winnow-module .signing-chip{color:var(--engineering-key);box-shadow:inset 0 1px 0 #fff9,0 5px 0 color-mix(in srgb,var(--blue) 45%,var(--engineering-shadow)),0 7px 0 var(--engineering-edge),0 25px 60px color-mix(in srgb,var(--blue) 30%,transparent)}
+[data-palette=signal] .winnow-module .signing-chip svg{color:var(--engineering-key)}
+[data-palette=signal] .engineering-evidence .engineering-frame{border-top-color:var(--engineering-rule)}
+[data-palette=signal] .phone-glass .source-action.primary.disabled{background:var(--app-line);color:var(--app-muted);border-color:transparent;opacity:.65}
+/* Orange owns primary actions; balances, links and headings keep their cobalt treatment. */
+[data-palette=orange] .source-action.primary,
+[data-palette=orange] .app-actions>span:last-child,
+[data-palette=orange] .cta{background:var(--signature);color:var(--on-signature);border-color:var(--signature)}
+[data-palette=orange] .cta:hover{background:#ffad42}
+/* Preserve the grayscale studio circle. */
+[data-palette=signal] .studio-pearl{background:radial-gradient(circle at 30% 23%,#fff 0%,#fdfdfc 23%,#f1f1ef 48%,#e0e1df 72%,#cbcece 88%,#f4f5f3 100%)}
+[data-palette=signal] .studio-bloom{background:radial-gradient(ellipse,#d9d9d522,transparent 68%)}
+[data-palette=signal] .studio-reflection{background:linear-gradient(120deg,#fff0 25%,#ffffff80 50%,#fff0 72%)}

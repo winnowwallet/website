@@ -1,0 +1,21 @@
+/* Full native captures include their own status bar. Keep their original aspect
+   ratio inside the existing animated casing; never redraw or recolor app UI. */
+.phone[data-native-capture],body[data-motion=orbit] .phone[data-native-capture],.story .mobile-art .phone[data-native-capture]{aspect-ratio:auto;padding:2%}
+.phone[data-native-capture] .phone-glass{position:relative;inset:auto;width:100%;aspect-ratio:1206/2622;border:0;display:block;box-shadow:none}
+.phone[data-native-capture] .phone-status,.phone[data-native-capture] .home-indicator{display:none}
+.phone[data-native-capture] .screen-stack{position:absolute;inset:0}
+.phone[data-native-capture] .app-screen{inset:0;padding:0;overflow:hidden}
+.phone[data-native-capture] .native-screen{position:absolute;inset:0;margin:0}
+.phone[data-native-capture] .native-screen img{display:block;width:100%;height:100%;object-fit:contain}
+.phone[data-native-capture] .native-screen .native-light{display:none}
+body[data-phone-theme=light] .phone[data-native-capture] .native-screen .native-dark{display:none}
+body[data-phone-theme=light] .phone[data-native-capture] .native-screen .native-light{display:block}
+
+body[data-native-screens] .scene-caption{display:none}
+body[data-native-screens][data-review=on] .scene-caption{display:block}
+body[data-native-screens] .story .mobile-art[data-native-preview]{aspect-ratio:auto}
+body[data-native-screens] .mobile-art>p.native-caption{display:none}
+body[data-native-screens][data-review=on] .mobile-art>p.native-caption{display:block}
+
+/* Private review captions sit below the hardware relationship label. */
+@media(min-width:901px){body[data-native-screens] .scene-caption{bottom:36px}}

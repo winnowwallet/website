@@ -63,3 +63,7 @@ receiving it as an artifact, so the private repository's artifact storage quota
 cannot stop a deploy. The `website`
 environment requires `CF_API_TOKEN` and `CF_ACCOUNT_ID`. Set its deployment
 branch policy to main. Validation receives no deployment secrets.
+
+## Launch pages
+
+See [site/README.md](site/README.md) for the launch-page source and guide URL map.

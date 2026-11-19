@@ -497,6 +497,12 @@ def main():
         media = ci_media(manifest, check_inventory(args.root, journeys))
         pages = {"index.html": homepage(journeys, cases, media),
                  "recording.html": recording_page(args.root, dict(manifest, poster=media["poster"]))}
+    if (args.root / "site/src/index.html").exists():
+        import runpy
+        # Keep the CI-backed journey gallery and its media refresh pipeline.
+        pages["journeys.html"] = pages.pop("index.html")
+        launch = runpy.run_path(str(args.root / "scripts/build-launch.py"))
+        pages.update(launch["render"](args.root))
     for name, rendered in pages.items():
         output = args.root / "docs" / name
         if args.check:

@@ -1,31 +1,312 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Why Lightning Is Leaving Winnow — Winnow</title>
-    <meta name="description" content="I added it, then took it out. The next Lightning wallet will start with a different foundation.">
-    <link rel="canonical" href="https://winnowwallet.com/blog/why-lightning-is-leaving-winnow/">
-    <link rel="alternate" type="application/rss+xml" title="Winnow blog" href="https://winnowwallet.com/blog/feed.xml">
-    <meta property="og:type" content="article">
-    <meta property="og:site_name" content="Winnow">
-    <meta property="og:title" content="Why Lightning Is Leaving Winnow — Winnow">
-    <meta property="og:description" content="I added it, then took it out. The next Lightning wallet will start with a different foundation.">
-    <meta property="og:url" content="https://winnowwallet.com/blog/why-lightning-is-leaving-winnow/">
-    <meta property="og:image" content="https://winnowwallet.com/images/blog/why-lightning-is-leaving-winnow/share-card.png">
-    <meta property="article:published_time" content="2026-10-07T15:48:00.000Z">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Why Lightning Is Leaving Winnow — Winnow">
-    <meta name="twitter:description" content="I added it, then took it out. The next Lightning wallet will start with a different foundation.">
-    <meta name="twitter:image" content="https://winnowwallet.com/images/blog/why-lightning-is-leaving-winnow/share-card.png">
-    <link rel="stylesheet" href="/blog/article.css">
-</head>
-<body class="blog-body">
-    <nav><div class="nav-container"><a href="/" class="logo">winnow</a><ul class="nav-links"><li><a href="/">Wallet</a></li><li><a href="/blog/" aria-current="page">Blog</a></li><li><a href="https://compare.winnowwallet.com/">Compare</a></li></ul></div></nav>
-    <main class="article-main">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f5f3"><title>Why Lightning Is Leaving Winnow — Winnow</title><meta name="description" content="I added it, then took it out. The next Lightning wallet will start with a different foundation."><meta property="og:type" content="article"><meta property="og:site_name" content="Winnow"><meta property="og:title" content="Why Lightning Is Leaving Winnow — Winnow"><meta property="og:description" content="I added it, then took it out. The next Lightning wallet will start with a different foundation."><meta property="og:image" content="https://winnowwallet.com/assets/og-winnow.png"><meta name="twitter:card" content="summary_large_image"><link rel="alternate" type="application/rss+xml" title="Winnow blog" href="../../blog/feed.xml"><link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg"><style>@font-face{font-family:Degular;src:url('../../assets/fonts/Degular-Regular-latin.woff2');font-weight:400;font-display:swap;unicode-range:U+20,U+2C,U+2E,U+30-39,U+41-5A,U+61-7A,U+A0}@font-face{font-family:Degular;src:url('../../assets/fonts/Degular-Medium-latin.woff2');font-weight:500;font-display:swap;unicode-range:U+20,U+2C,U+2E,U+30-39,U+41-5A,U+61-7A,U+A0}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:30px}body{margin:0;background:#f5f5f3;color:#191b1e;font-family:Degular,Arial,sans-serif;-webkit-font-smoothing:antialiased}a{color:#9b4e00;text-underline-offset:5px}button,input,select{font:inherit}button{cursor:pointer}a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #9b4e00;outline-offset:5px}img{max-width:100%}.skip{position:absolute;left:20px;top:-80px;background:#fff;padding:15px;z-index:150}.skip:focus{top:10px}
+.page-main{max-width:1440px;margin:auto;padding:0 5.5vw 100px}.page-hero{padding:85px 0 70px;position:relative}.eyebrow{font:11px/1.5 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#63666b;margin:0 0 28px}.page-hero h1{font-size:clamp(56px,7.5vw,112px);line-height:.93;letter-spacing:-.045em;font-weight:400;margin:0 0 34px;max-width:1050px}.page-hero h1 em{font-style:normal;color:#9b4e00}.lead{font-size:clamp(23px,2.15vw,30px);line-height:1.3;max-width:660px;margin:0 0 30px;letter-spacing:-.015em}.version-line{font:12px/1.5 Arial;color:#63666b;margin:24px 0 0}.page-nav{display:flex;gap:25px;flex-wrap:wrap;padding:24px 0;border-top:1px solid #191b1e26;margin:0 0 50px;font-size:18px}.page-nav a{text-decoration:none;color:#53565b}.page-nav a:hover{color:#9b4e00}
+.article-section{display:grid;grid-template-columns:.85fr 1.15fr;gap:90px;border-top:1px solid #191b1e26;padding:62px 0 80px;scroll-margin-top:35px}.article-section h2{font-size:clamp(36px,3.9vw,56px);line-height:1.02;letter-spacing:-.035em;font-weight:400;margin:0;max-width:440px}.article-section h3{font-size:26px;font-weight:400;margin:28px 0 10px}.article-section p,.article-section li{font-size:21px;line-height:1.45;margin:0 0 22px}.article-section ul{padding-left:22px}.article-section .source,.source{font:13px/1.6 Arial,sans-serif;color:#63666b;margin:24px 0 0}.article-section .source a{color:inherit}.article-section .eyebrow{font:11px/1.5 Arial;margin:0 0 22px}
+.ink-panel{background:#080808;color:#f7f7f5;border-radius:24px;padding:clamp(28px,4vw,65px);overflow:hidden;position:relative}.ink-panel:before{content:'';position:absolute;pointer-events:none;inset:0;background:radial-gradient(ellipse at 85% 100%,#ffffff0d,transparent 65%)}.ink-panel>*{position:relative}.ink-panel .eyebrow{color:#b8b8b5}.ink-panel a{color:#ffb454}.ink-panel h2{font-size:clamp(36px,4.2vw,62px);font-weight:400;letter-spacing:-.035em;line-height:1;margin:15px 0 30px}.ink-panel p{font-size:22px;line-height:1.4;max-width:690px}.panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:70px}.text-link{display:inline-flex;gap:35px;border-bottom:1px solid currentColor;text-decoration:none;padding:0 0 10px;font-size:19px}
+.architecture-map{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:35px;align-items:center;min-height:330px}.system-node{border:1px solid #ffffff38;border-radius:16px;padding:24px;background:linear-gradient(140deg,#ffffff10,transparent);box-shadow:0 20px 45px #0002;min-height:150px;display:flex;flex-direction:column;justify-content:center}.system-node strong{font-size:30px;line-height:1.1;font-weight:400}.system-node small{font-size:16px;color:#c8c8c5;line-height:1.4;margin-top:14px}.system-node.primary{min-height:250px;border-color:#e8e8e5;background:linear-gradient(135deg,#ffffff,#c2c2bf);color:#191b1e;box-shadow:0 25px 80px #ffffff0a}.system-node.primary small{color:#4b4d50}.system-node .node-label{font:10px/1.5 Arial;letter-spacing:.1em;display:block;margin-bottom:24px}.node-stack{display:grid;gap:20px}.connection-note{font:12px/1.5 Arial;color:#b8b8b5;text-align:center;margin-top:20px}.stack-diagram{display:grid;gap:10px}.stack-diagram>div{padding:24px;border:1px solid #ffffff35;border-radius:10px;display:flex;justify-content:space-between;gap:20px;font-size:22px}.stack-diagram small{font-size:15px;color:#c8c8c5}
+.info-strip{display:flex;gap:40px;flex-wrap:wrap;padding:25px 0;margin:30px 0;border-top:1px solid #ffffff30;border-bottom:1px solid #ffffff30}.info-strip div{display:grid;gap:8px}.info-strip small{font:10px Arial;letter-spacing:.1em;text-transform:uppercase;color:#b8b8b5}.info-strip strong{font-weight:400;font-size:20px}.test-list{margin:0;padding:0;list-style:none}.test-list li{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;padding:17px 0;border-top:1px solid #ffffff26}.test-list b{font-size:21px;font-weight:400}.test-list small{display:block;font:10px/1.5 monospace;color:#aaa9a6;margin-top:5px;overflow-wrap:anywhere}.test-list .test-result{font:10px/1.4 Arial;letter-spacing:.08em;color:#b8e8d1;text-align:right;white-space:nowrap}.ci-panel{margin:40px 0 70px}.ci-panel .source{color:#b8b8b5}.evidence-foot{font-size:16px!important;color:#c8c8c5;margin-top:30px}.detail-note{padding:26px 30px;background:#e9e9e5;border-radius:14px;margin:30px 0}.detail-note p{margin:0;font-size:21px;line-height:1.4}.detail-note .eyebrow{font:11px Arial;margin-bottom:16px}
+.policy-tabs,.roadmap-options{display:flex;gap:8px;flex-wrap:wrap;margin:25px 0 35px}.policy-tabs button,.roadmap-options a{border:1px solid #a4a4a44d;padding:12px 20px;border-radius:30px;background:transparent;color:inherit;text-decoration:none;font-size:17px}.policy-tabs button[aria-pressed=true]{background:#f7931a;color:#16181b;border-color:#f7931a}.policy-output{min-height:205px}.approval-pair{display:inline-flex;align-items:center;gap:18px;border:1px solid #a4a4a444;padding:19px 22px;border-radius:12px;font-size:24px;margin:8px 8px 0 0;background:#ffffff06}.approval-pair i{font-style:normal;color:#f7931a}.policy-output h3{font-size:33px;font-weight:400;letter-spacing:-.02em;margin:0 0 15px}.policy-output p{font-size:21px;max-width:750px;color:#c8c8c5}.rule-table{width:100%;border-collapse:collapse;font-size:19px}.rule-table th,.rule-table td{padding:18px 12px 18px 0;border-bottom:1px solid #191b1e26;text-align:left;vertical-align:top}.rule-table th{font:11px Arial;letter-spacing:.08em;text-transform:uppercase;color:#63666b}.rule-table td:first-child{width:40%}.source-links{display:grid;gap:0}.source-links a{display:grid;grid-template-columns:1fr auto;gap:20px;padding:30px 0;border-top:1px solid #191b1e26;text-decoration:none;color:inherit}.source-links strong{font-size:32px;font-weight:400;letter-spacing:-.02em}.source-links p{font-size:19px;color:#63666b;margin:10px 0 0}.source-links span{font-size:28px;color:#9b4e00}.code-block{padding:30px;background:#080808;border:1px solid #ffffff33;border-radius:12px;color:#e8e8e5;font:15px/1.7 monospace;overflow:auto;margin:0}.code-block .code-muted{color:#9d9d9a}.code-block .code-bright{color:#f7f7f5}
+.next-page{border-top:1px solid #191b1e26;margin-top:65px;padding-top:40px;display:flex;justify-content:space-between;gap:30px;align-items:center}.next-page p{font-size:32px;line-height:1.1;letter-spacing:-.02em;margin:0}.next-page a{white-space:nowrap}.roadmap-options{margin-top:0}.roadmap-options a[aria-current=true]{background:#191b1e;color:white;border-color:#191b1e}.option-description{font-size:21px;color:#63666b;max-width:650px;line-height:1.35;margin:0 0 40px}.roadmap-stage{position:relative;border-radius:24px}.roadmap-item{position:relative}.roadmap-item .status{font:10px/1.5 Arial;letter-spacing:.12em;text-transform:uppercase;color:#c8c8c5;display:inline-flex;gap:10px;align-items:center}.roadmap-item .status:before{content:'';width:6px;height:6px;background:#f7931a;border-radius:50%}.roadmap-item h2{font-size:clamp(37px,4.6vw,68px);font-weight:400;line-height:1;letter-spacing:-.035em;margin:23px 0}.roadmap-item p{font-size:22px;line-height:1.35;max-width:520px}.roadmap-item ul{padding:0;list-style:none;max-width:550px}.roadmap-item li{padding:12px 0;border-top:1px solid #ffffff26;font-size:18px;line-height:1.35;color:#c8c8c5}.roadmap-item details{margin-top:20px}.roadmap-item summary{font-size:17px;cursor:pointer}.roadmap-item details p{font-size:18px;color:#c8c8c5}.roadmap-number{font-size:110px;line-height:1;color:#ffffff26;letter-spacing:-.07em;font-variant-numeric:tabular-nums}.roadmap-line{display:none}
+[data-roadmap=path] .roadmap-stage{background:radial-gradient(ellipse at 20% 40%,#202020,transparent 58%),#080808;color:#f7f7f5;padding:20px 5% 40px;overflow:hidden}[data-roadmap=path] .roadmap-item{padding:65px 0 55px 29%;min-height:540px}[data-roadmap=path] .roadmap-number{position:absolute;left:4%;top:60px;font-size:55px;color:#f7931a}[data-roadmap=path] .roadmap-line{display:block;position:absolute;left:14%;top:90px;width:16%;height:calc(100% - 185px);overflow:visible;pointer-events:none}.roadmap-line path{fill:none;stroke-linecap:round;stroke-width:1.4}.roadmap-line .track{stroke:#ffffff29}.roadmap-line .draw{stroke:#f5f5f3;filter:drop-shadow(0 0 4px #ffffff);stroke-dasharray:100;stroke-dashoffset:0}.roadmap-line circle{fill:#f7931a;filter:drop-shadow(0 0 8px #f7931a)}
+[data-roadmap=chapters] .roadmap-stage{color:#191b1e}[data-roadmap=chapters] .roadmap-item{padding:60px 0;border-top:1px solid #191b1e26;display:grid;grid-template-columns:1fr 2fr;gap:30px}[data-roadmap=chapters] .roadmap-number{font-size:clamp(100px,16vw,225px);color:#9b4e00}[data-roadmap=chapters] .roadmap-item .status{color:#63666b}[data-roadmap=chapters] .roadmap-item li{color:#63666b;border-color:#191b1e26}[data-roadmap=chapters] .roadmap-item details p{color:#63666b}[data-roadmap=chapters] .roadmap-item h2{font-size:clamp(40px,5vw,76px)}
+[data-roadmap=board] .roadmap-stage{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}[data-roadmap=board] .roadmap-item{background:#e9e9e5;border:1px solid #d7d7d3;border-radius:20px;padding:30px;display:flex;flex-direction:column}[data-roadmap=board] .roadmap-item:first-of-type{background:#080808;color:white}[data-roadmap=board] .roadmap-number{font-size:64px;color:#9b4e00;margin-bottom:55px}[data-roadmap=board] .roadmap-item h2{font-size:37px;line-height:1.02}[data-roadmap=board] .roadmap-item p{font-size:20px}[data-roadmap=board] .roadmap-item .status{color:#63666b}[data-roadmap=board] .roadmap-item:first-of-type .status{color:#c8c8c5}[data-roadmap=board] .roadmap-item li{color:#63666b;border-color:#191b1e26;font-size:17px}[data-roadmap=board] .roadmap-item:first-of-type li{color:#c8c8c5;border-color:#ffffff26}[data-roadmap=board] .roadmap-item details p{color:inherit;font-size:17px}
+.review-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}.review-tile{display:block;padding:35px;border:1px solid #191b1e26;border-radius:18px;text-decoration:none;color:inherit;background:#fafaf7}.review-tile strong{font-size:34px;font-weight:400}.review-tile p{font-size:19px;line-height:1.35;color:#63666b;margin-bottom:0}.review-tile:hover{border-color:#9b4e00}.asset-preview{max-width:100%;border-radius:16px;margin:25px 0}.reveal.in-view{animation:rise-in .8s cubic-bezier(.16,1,.3,1) both}@keyframes rise-in{from{opacity:.3;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}[data-roadmap=board] .roadmap-item.in-view{animation:settle-in .85s cubic-bezier(.2,1.15,.3,1) both}@keyframes settle-in{from{opacity:.3;transform:translateY(22px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+[data-roadmap=board] .roadmap-item:first-of-type .roadmap-number{color:#e8e8e5}
+@media(max-width:900px){.article-section{gap:35px;grid-template-columns:.9fr 1.1fr}.panel-grid{gap:35px;grid-template-columns:1fr}.architecture-map{gap:15px}.system-node{padding:20px}.system-node strong{font-size:24px}[data-roadmap=board] .roadmap-stage{grid-template-columns:1fr}[data-roadmap=board] .roadmap-number{margin-bottom:30px}}
+@media(max-width:640px){.page-main{padding:0 6vw 65px}.page-hero{padding:55px 0 40px}.page-hero h1{font-size:59px}.lead{font-size:24px}.page-nav{gap:18px;font-size:17px;margin-bottom:30px}.article-section{grid-template-columns:1fr;padding:40px 0 45px;gap:28px}.article-section h2{font-size:39px}.article-section p,.article-section li{font-size:20px}.architecture-map{grid-template-columns:1fr;min-height:0;gap:16px}.node-stack{grid-template-columns:1fr 1fr}.system-node.primary{min-height:190px}.system-node{min-height:125px}.system-node strong{font-size:23px}.system-node small{font-size:15px}.ink-panel{padding:28px 23px;border-radius:18px}.ink-panel p{font-size:21px}.info-strip{gap:25px}.test-list b{font-size:19px}.test-list li{gap:12px}.approval-pair{font-size:21px;padding:15px;gap:10px}.policy-tabs button{padding:10px 13px;font-size:16px}.policy-output{min-height:280px}.policy-output h3{font-size:29px}.next-page{align-items:flex-start;flex-direction:column}.review-grid{grid-template-columns:1fr}.page-hero .eyebrow{font-size:10px}.roadmap-options{gap:6px}.roadmap-options a{font-size:15px;padding:10px 13px}[data-roadmap=path] .roadmap-item{padding:45px 5px 35px 17%;min-height:0}[data-roadmap=path] .roadmap-number{font-size:20px;top:46px;left:0}[data-roadmap=path] .roadmap-line{left:13%;top:80px;width:3%;height:calc(100% - 160px)}.roadmap-item p{font-size:21px}[data-roadmap=chapters] .roadmap-item{grid-template-columns:1fr;gap:10px;padding:35px 0}[data-roadmap=chapters] .roadmap-number{font-size:85px}.stack-diagram>div{flex-direction:column;gap:6px}.rule-table{font-size:17px}.code-block{font-size:12px;padding:20px}.review-tile{padding:25px}.detail-note{padding:24px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal.in-view,[data-roadmap=board] .roadmap-item.in-view{animation:none}.roadmap-line .draw{stroke-dashoffset:0!important}.roadmap-line circle{display:none}}
+
+/* Roadmap: wide sweep, compact window rail, and phone reading layout.
+   One content tree; the path measures the rendered layout and expanded details. */
+.roadmap-page{--roadmap-gutter:clamp(20px,5.5vw,80px)}
+.roadmap-page .page-main{max-width:none;padding:0 0 80px}
+.roadmap-page .page-main>.page-hero,.roadmap-page .page-main>.source,.roadmap-page .next-page,
+.roadmap-page .roadmap-options,.roadmap-page .option-description{width:calc(100% - var(--roadmap-gutter)*2);max-width:1280px;margin-inline:auto}
+.roadmap-page .page-hero h1{font-size:clamp(52px,7.5vw,108px);text-wrap:balance}
+.roadmap-page .roadmap-options a{min-height:44px;display:flex;align-items:center;justify-content:center}
+.roadmap-page [data-roadmap] .roadmap-stage{border-radius:0}
+.roadmap-page [data-roadmap=path] .roadmap-stage{--roadmap-layout:wide;padding:32px 0 60px}
+.roadmap-page .roadmap-inner{position:relative;width:calc(100% - var(--roadmap-gutter)*2);max-width:1160px;margin-inline:auto}
+.roadmap-page [data-roadmap=path] .roadmap-item{min-height:540px}
+.roadmap-page .roadmap-item>div:last-child{min-width:0}
+.roadmap-page .roadmap-item .status{line-height:1.6}
+.roadmap-page .roadmap-item .status:before{flex:none}
+.roadmap-page .roadmap-item h2{text-wrap:balance}
+.roadmap-page .roadmap-item details{max-width:550px}
+.roadmap-page .roadmap-item summary{display:flex;align-items:center;justify-content:space-between;gap:18px;list-style:none;min-height:48px;padding:10px 0;line-height:1.4}
+.roadmap-page .roadmap-item summary::-webkit-details-marker{display:none}
+.roadmap-page .roadmap-item summary:after{content:'+';font:22px/1 Arial;flex:none;transition:transform .2s}
+.roadmap-page .roadmap-item details[open] summary:after{transform:rotate(45deg)}
+.roadmap-page .roadmap-item details p{line-height:1.5;margin:10px 0 0}
+.roadmap-page [data-roadmap=path] .roadmap-item.reveal.in-view{animation:none}
+.roadmap-page [data-roadmap=board] .roadmap-stage{display:block}
+.roadmap-page [data-roadmap=board] .roadmap-inner{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;max-width:1280px}
+.roadmap-page [data-roadmap=chapters] .roadmap-inner{max-width:1280px}
+/* The desktop curve has its own lane, separated from every line of copy.
+   Its full SVG bounds stop at least 96px before the text column. */
+@media(min-width:1180px) and (min-height:700px){
+ .roadmap-page [data-roadmap=path] .roadmap-inner{--roadmap-copy-start:37%;--roadmap-path-start:13%;--roadmap-path-gap:clamp(96px,8vw,128px)}
+ .roadmap-page [data-roadmap=path] .roadmap-item{padding:64px 0 76px var(--roadmap-copy-start);min-height:560px}
+ .roadmap-page [data-roadmap=path] .roadmap-item>div:last-child{max-width:640px}
+ .roadmap-page [data-roadmap=path] .roadmap-number{top:62px;font-size:60px}
+ .roadmap-page [data-roadmap=path] .roadmap-line{left:var(--roadmap-path-start);width:calc(var(--roadmap-copy-start) - var(--roadmap-path-start) - var(--roadmap-path-gap));top:94px;height:calc(100% - 190px)}
+ .roadmap-page [data-roadmap=path] .roadmap-item h2{margin:24px 0 28px}
+ .roadmap-page [data-roadmap=path] .roadmap-item p{max-width:560px;line-height:1.45}
+ .roadmap-page [data-roadmap=path] .roadmap-item ul,.roadmap-page [data-roadmap=path] .roadmap-item details{max-width:640px}
+ .roadmap-page [data-roadmap=path] .roadmap-item ul{margin-block:28px 20px}
+ .roadmap-page [data-roadmap=path] .roadmap-item li{padding-block:15px}
+}
+@media(min-width:1180px) and (min-height:700px) and (prefers-reduced-motion:no-preference){.roadmap-page [data-roadmap=path] .roadmap-item.in-view>div:last-child{animation:rise-in .8s cubic-bezier(.16,1,.3,1) both}}
+/* Tablet, split windows and short desktop windows share a bounded reading rail. */
+@media(max-width:1179px),(max-height:699px){
+ .roadmap-page .page-hero{padding-block:54px 38px}
+ .roadmap-page .page-hero h1{font-size:clamp(48px,7.8vw,80px);line-height:1;margin-bottom:24px;max-width:850px}
+ .roadmap-page .lead{font-size:clamp(22px,2.6vw,26px);line-height:1.4;margin-bottom:0}
+ .roadmap-page .roadmap-options{gap:8px;margin-bottom:22px}
+ .roadmap-page .roadmap-options a{padding:10px 16px;font-size:16px}
+ .roadmap-page .option-description{font-size:19px;line-height:1.45;margin-bottom:32px}
+ .roadmap-page [data-roadmap=path] .roadmap-stage{--roadmap-layout:rail;padding:60px 0}
+ .roadmap-page [data-roadmap=path] .roadmap-inner{max-width:820px}
+ .roadmap-page [data-roadmap=path] .roadmap-item{display:grid;grid-template-columns:56px minmax(0,1fr);gap:30px;min-height:0;padding:0 0 76px}
+ .roadmap-page [data-roadmap=path] .roadmap-item:last-child{padding-bottom:0}
+ .roadmap-page [data-roadmap=path] .roadmap-number{position:relative;left:auto;top:auto;display:grid;place-items:center;width:56px;height:56px;font-size:32px;letter-spacing:-.04em;background:#080808;border-radius:50%;color:#f7931a;z-index:1}
+ .roadmap-page [data-roadmap=path] .roadmap-line{inset:0;width:100%;height:100%;overflow:hidden}
+ .roadmap-page [data-roadmap=path] .roadmap-item>div:last-child{padding-top:18px}
+ .roadmap-page [data-roadmap=path] .roadmap-item h2{font-size:clamp(40px,5.4vw,58px);margin:20px 0;max-width:650px}
+ .roadmap-page [data-roadmap=path] .roadmap-item p{font-size:21px;line-height:1.45;max-width:620px}
+ .roadmap-page [data-roadmap=path] .roadmap-item ul{max-width:620px;margin-block:24px 12px}
+ .roadmap-page [data-roadmap=path] .roadmap-item li{font-size:18px;line-height:1.45;padding-block:14px}
+ .roadmap-page [data-roadmap=path] .roadmap-item details{max-width:620px;margin-top:14px}
+ .roadmap-page [data-roadmap=path] .roadmap-item details p{font-size:18px}
+ .roadmap-page [data-roadmap=board] .roadmap-inner{grid-template-columns:1fr}
+ .roadmap-page [data-roadmap=board] .roadmap-item{display:grid;grid-template-columns:64px minmax(0,1fr);gap:26px}
+ .roadmap-page [data-roadmap=board] .roadmap-number{font-size:48px;margin:0}
+ .roadmap-page .next-page{align-items:flex-start;flex-direction:column;gap:22px}
+}
+/* Phones use a slimmer path, generous text width and thumb-sized controls. */
+@media(max-width:599px){
+ .roadmap-page{--roadmap-gutter:clamp(18px,5vw,28px)}
+ .roadmap-page .page-main{padding-bottom:48px}
+ .roadmap-page .page-hero{padding-block:38px 30px}
+ .roadmap-page .page-hero h1{font-size:clamp(43px,10.5vw,62px);line-height:1.01;letter-spacing:-.04em;margin-bottom:22px}
+ .roadmap-page .page-hero .eyebrow{margin-bottom:20px}
+ .roadmap-page .lead{font-size:21px;line-height:1.4}
+ .roadmap-page .roadmap-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:18px}
+ .roadmap-page .roadmap-options a{border-radius:12px;padding:10px 7px;font-size:15px;line-height:1.25;text-align:center;min-height:60px;text-wrap:balance}
+ .roadmap-page .option-description{font-size:17px;line-height:1.45;margin-bottom:26px}
+ .roadmap-page [data-roadmap=path] .roadmap-stage{padding:38px 0 46px}
+ .roadmap-page [data-roadmap=path] .roadmap-item{grid-template-columns:24px minmax(0,1fr);gap:14px;padding-bottom:54px}
+ .roadmap-page [data-roadmap=path] .roadmap-number{width:24px;height:28px;font:14px/1 Arial;letter-spacing:0}
+ .roadmap-page [data-roadmap=path] .roadmap-item>div:last-child{padding-top:5px}
+ .roadmap-page [data-roadmap=path] .roadmap-item .status{font-size:10px;letter-spacing:.07em;gap:8px}
+ .roadmap-page [data-roadmap=path] .roadmap-item h2{font-size:clamp(34px,8.5vw,47px);line-height:1.05;margin:18px 0}
+ .roadmap-page [data-roadmap=path] .roadmap-item p{font-size:18px;line-height:1.5}
+ .roadmap-page [data-roadmap=path] .roadmap-item ul{margin-block:22px 10px}
+ .roadmap-page [data-roadmap=path] .roadmap-item li{font-size:17px;line-height:1.45;padding-block:13px}
+ .roadmap-page [data-roadmap=path] .roadmap-item details p{font-size:17px}
+ .roadmap-page .roadmap-item summary{font-size:17px;gap:12px}
+ .roadmap-page [data-roadmap=board] .roadmap-item{display:block;padding:24px}
+ .roadmap-page [data-roadmap=board] .roadmap-number{font-size:40px;margin-bottom:26px}
+ .roadmap-page [data-roadmap=chapters] .roadmap-item{grid-template-columns:1fr;gap:14px;padding:30px 0}
+ .roadmap-page [data-roadmap=chapters] .roadmap-number{font-size:64px}
+ .roadmap-page [data-roadmap=chapters] .roadmap-item h2{font-size:38px}
+ .roadmap-page .next-page{margin-top:36px;padding-top:28px}
+ .roadmap-page .next-page p{font-size:28px}
+ .roadmap-page .next-page a{white-space:normal}
+ .roadmap-page .footer-top{column-gap:22px}
+ .roadmap-page .footer-col{font-size:17px;gap:8px}
+ .roadmap-page .footer-col a{padding-block:6px}
+}
+@media(max-height:500px) and (min-width:600px){
+ .roadmap-page .page-hero{padding-block:30px}
+ .roadmap-page [data-roadmap=path] .roadmap-stage{padding-block:36px}
+ .roadmap-page [data-roadmap=path] .roadmap-item{padding-bottom:48px}
+}
+
+.ink-panel .eyebrow{font:11px/1.5 Arial,sans-serif}.ink-panel .source{font:13px/1.6 Arial,sans-serif}
+
+/* Selected Universe system: quiet paper for reading, black space for diagrams.
+   Static stars sit in .ink-panel::before below the existing positioned content. */
+:root{--signature:#f7931a;--link-ink:#9b4e00;--universe-black:#080808}
+.page-hero h1 em{color:#4b4d50}
+.ink-panel:before{background:url('../../assets/universe-field.svg') center bottom/cover no-repeat,radial-gradient(ellipse at 70% 115%,#ffffff12,transparent 60%)}
+.system-node.primary{box-shadow:inset 0 1px 0 #fff,0 20px 55px #ffffff0b}
+.policy-tabs button[aria-pressed=true]{font-weight:500}
+[data-roadmap=path] .roadmap-stage{background:url('../../assets/universe-field.svg') center bottom/cover no-repeat,radial-gradient(ellipse at 20% 40%,#ffffff08,transparent 58%),#080808}
+[data-roadmap=chapters] .roadmap-number,[data-roadmap=board] .roadmap-number{color:var(--link-ink)}
+[data-roadmap=board] .roadmap-item:first-of-type .roadmap-number{color:var(--signature)}
+
+/* Shared, locally hosted navigation. No changes to the landing scene or wallet UI. */
+/* Keyboard access stays above the header, clear of the identity at every width. */
+.skip{position:fixed;left:50%;top:12px;transform:translate(-50%,-200%);z-index:200;max-width:calc(100% - 32px);padding:12px 18px;background:#191b1e;color:#fff;text-align:center;text-decoration:none;border-radius:6px;font:16px/1.3 Degular,Arial,sans-serif}
+.skip:focus{top:12px;transform:translateX(-50%);outline:2px solid #f7931a;outline-offset:4px}
+.global-header{position:relative;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:28px 5.5vw;color:#191b1e;font:18px/1.2 Degular,Arial,sans-serif;border:0;background:transparent}
+.global-header .brand img{display:block;width:140px;height:35px}
+.global-header a{color:inherit;text-decoration:none}
+.global-header .nav-main{display:flex;align-items:center;gap:28px;margin:0}
+.global-header .download-link{border:1px solid #191b1e33;border-radius:30px;padding:12px 20px;white-space:nowrap}
+.site-menu{position:relative}
+.site-menu summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:12px 0;font:inherit;border:0}
+.site-menu summary::-webkit-details-marker{display:none}
+.site-menu summary:after{content:'+';font:22px/1 Arial;transition:transform .25s}
+.site-menu[open] summary:after{transform:rotate(45deg)}
+.site-menu .menu-panel{position:absolute;right:-30px;top:52px;width:340px;padding:22px;background:#fafaf7;border:1px solid #191b1e20;border-radius:18px;box-shadow:0 22px 70px #191b1e20;display:grid;gap:0;color:#191b1e}
+.menu-panel a{padding:12px 10px;border-radius:8px;display:flex;justify-content:space-between;font-size:20px}
+.menu-panel a:hover,.menu-panel a:focus-visible{background:#f7eadb;color:#9b4e00}
+.menu-panel a:after{content:'↗';color:#63666b}
+.menu-panel a[aria-current=page]{color:#9b4e00}
+.menu-panel small{padding:12px 10px 4px;color:#63666b;font:12px/1.4 Arial}
+.global-footer{display:block;margin:0 5.5vw;padding:70px 5.5vw 25px;background:#ecece8;color:#191b1e;font-family:Degular,Arial,sans-serif;border:0}
+.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;max-width:1400px;margin:auto}
+.global-footer .footer-brand img{display:block;width:140px;height:35px;margin:0}.global-footer p{font-size:24px;line-height:1.15;margin:25px 0 0;max-width:240px;letter-spacing:-.02em}
+.footer-col{display:flex;flex-direction:column;align-items:flex-start;gap:12px;font-size:18px}
+.global-footer a{color:inherit;text-decoration:none;white-space:normal}.global-footer a:hover{color:#9b4e00}
+.footer-col .footer-label{font:11px/1.4 Arial;letter-spacing:.1em;text-transform:uppercase;color:#63666b;margin-bottom:14px}
+.footer-bottom{max-width:1400px;margin:60px auto 0;padding-top:23px;border-top:1px solid #191b1e20;display:flex;align-items:center;justify-content:space-between;gap:20px;color:#63666b;font-size:14px}
+.global-footer button{border:0;background:transparent;color:inherit;cursor:pointer;font:inherit;padding:0}.global-footer small{font:inherit;max-width:none}
+.global-header :focus-visible,.global-footer :focus-visible{outline:2px solid #9b4e00;outline-offset:5px}
+body:not(.subpage) .global-header{position:absolute;inset:0 0 auto}
+@media(max-width:760px){.global-header{padding:22px 6vw;gap:18px}.global-header .brand img{width:120px;height:30px}.global-header .nav-main{display:flex;gap:0}.global-header .nav-main>.nav-desktop{display:none}.global-header .download-link{display:none}.site-menu .menu-panel{position:fixed;left:5vw;right:5vw;top:78px;width:auto;max-height:calc(100svh - 100px);overflow:auto}.footer-top{grid-template-columns:1fr 1fr;gap:40px 25px}.footer-brand{grid-column:1/-1}.footer-bottom{align-items:flex-start;flex-direction:column}.global-footer{padding:50px 6vw 25px}.global-footer p{font-size:25px;max-width:none}}
+
+/* Match the selected homepage inset on every page, including its narrow gutters. */
+@media(max-width:900px){.global-footer{margin-inline:7vw}}
+@media(max-width:360px){.global-footer{margin-inline:6vw}}
+
+/* Blog and missing-page layouts share the public shell and its local fonts. */
+.blog-main,.article-main{max-width:1440px;margin:auto;padding:64px 5.5vw 100px}
+.blog-intro{max-width:1000px;margin:0 0 64px}
+.blog-intro .eyebrow{color:#9b4e00}
+.blog-intro h1{font-size:clamp(52px,7.6vw,106px);font-weight:400;line-height:.98;letter-spacing:-.045em;max-width:940px;margin:0 0 28px;text-wrap:balance}
+.blog-intro>p:not(.eyebrow){font-size:25px;line-height:1.35;max-width:620px;margin:0 0 24px}
+.feed-link{font-size:17px}
+.post-list{display:grid;gap:0}
+.post-preview{border-top:1px solid #191b1e30;padding:42px 0}
+.post-preview-copy{display:grid;grid-template-columns:150px minmax(0,1fr);column-gap:42px;max-width:1100px}
+.post-preview time{grid-column:1;grid-row:1/4;font:13px/1.5 Arial,sans-serif;color:#63666b;padding-top:7px}
+.post-preview h2{grid-column:2;font-size:clamp(30px,3.25vw,46px);line-height:1.05;letter-spacing:-.025em;font-weight:400;margin:0 0 20px;text-wrap:balance}
+.post-preview h2 a{color:inherit;text-decoration:none}
+.post-preview h2 a:hover{text-decoration:underline;text-decoration-thickness:1px}
+.post-preview p{grid-column:2;font-size:22px;line-height:1.4;color:#53565b;max-width:760px;margin:0 0 24px}
+.post-preview .read-more{grid-column:2;font-size:18px;justify-self:start}
+.post-preview:first-child{padding:48px;margin-bottom:28px;border:0;border-radius:24px;color:#f5f5f3;background:#090909 url(../../assets/universe-field.svg) center/cover}
+.post-preview:first-child time,.post-preview:first-child p{color:#c3c3c0}
+.post-preview:first-child .read-more{color:#ffad42}
+.article-header{max-width:1040px;margin:0 auto 56px}
+.article-header .eyebrow{margin-bottom:30px}
+.article-header h1{font-size:clamp(48px,6.6vw,92px);font-weight:400;line-height:1;letter-spacing:-.04em;margin:0 0 30px;text-wrap:balance}
+.article-subtitle{font-size:clamp(22px,2.2vw,29px);line-height:1.35;color:#53565b;max-width:830px;margin:0 0 32px}
+.article-byline{display:flex;gap:14px;align-items:center;font:14px/1.5 Arial,sans-serif}
+.author-mark{border:1px solid #191b1e26;border-radius:50%;width:44px;height:44px;display:grid;place-items:center;color:#9b4e00;flex:none}
+.article-byline p{margin:0}.article-byline strong{font-weight:600}.article-byline p>span{display:block;color:#63666b;margin-top:3px}
+.article-content{max-width:740px;margin:auto;font-size:22px;line-height:1.58;letter-spacing:-.005em;overflow-wrap:anywhere}
+.article-content p,.article-content ul,.article-content ol{margin:0 0 26px}
+.article-content h2{font-size:36px;line-height:1.1;letter-spacing:-.02em;font-weight:500;margin:54px 0 24px;scroll-margin-top:30px}
+.article-content h3{font-size:27px;line-height:1.2;font-weight:500;margin:38px 0 20px}
+.article-content li{margin-bottom:10px}.article-content ul,.article-content ol{padding-left:24px}
+.article-content strong{font-weight:500}
+.article-content blockquote{margin:30px 0;padding:2px 0 2px 24px;border-left:2px solid #f7931a;color:#53565b}
+.article-content pre{padding:22px;background:#eaeae6;border-radius:10px;overflow:auto;font:14px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;max-width:100%;margin:28px 0;letter-spacing:0;tab-size:2}
+.article-content code{font: .78em/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:0}.article-content pre code{font:inherit;overflow-wrap:normal}
+.table-scroll{overflow-x:auto;margin:28px 0 36px;max-width:100%;border:1px solid #191b1e26;border-radius:10px}
+.article-content table{border-collapse:collapse;width:100%;font-size:17px;line-height:1.45;text-align:left;min-width:520px}
+.article-content th,.article-content td{padding:14px 18px;border-bottom:1px solid #191b1e20;vertical-align:top}.article-content th{background:#eaeae6;font-weight:500}
+.article-content tr:last-child td{border-bottom:0}
+.article-content img,.article-lead-media img{display:block;max-width:100%;height:auto;margin:32px auto;border-radius:8px}
+.article-content img.blog-phone{max-width:min(100%,340px)}
+.article-lead-media{max-width:850px;margin:0 auto 54px}.article-lead-media figcaption{font:14px/1.5 Arial,sans-serif;color:#63666b}
+.back-to-writing{max-width:740px;margin:64px auto 0;padding-top:28px;border-top:1px solid #191b1e26;font-size:20px}
+.not-found{margin:16px 5.5vw 60px;padding:70px 24px 80px;min-height:620px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;color:#f5f5f3;background:#090909 url(../../assets/universe-field.svg) center/cover;border-radius:24px}
+.not-found-code{color:#f7931a;font-size:clamp(110px,16vw,200px);line-height:.85;letter-spacing:-.07em;margin:0 0 30px}
+.not-found h1{font-size:clamp(38px,5vw,66px);font-weight:400;line-height:1.05;letter-spacing:-.035em;margin:0 0 22px;text-wrap:balance}
+.not-found p:not(.not-found-code){font-size:22px;color:#c3c3c0;max-width:470px;line-height:1.4;margin:0 0 30px}
+.not-found-actions{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:26px}
+.not-found-actions a{color:#f5f5f3;font-size:18px}.not-found-actions .home-link{color:#171717;background:#f7931a;padding:16px 24px;text-decoration:none;border-radius:5px}
+@media(max-width:900px){.blog-main,.article-main{padding:40px 7vw 64px}.blog-intro{margin-bottom:40px}.post-preview-copy{grid-template-columns:1fr;gap:0}.post-preview time{grid-row:auto;grid-column:1;margin-bottom:18px;padding:0}.post-preview h2,.post-preview p,.post-preview .read-more{grid-column:1}.post-preview:first-child{padding:32px}.article-header{margin-bottom:38px}.not-found{margin-inline:7vw;min-height:560px}}
+@media(max-width:600px){.blog-intro h1{font-size:clamp(44px,11.5vw,62px)}.blog-intro>p:not(.eyebrow){font-size:21px}.post-preview{padding:32px 0}.post-preview:first-child{padding:28px 22px;border-radius:16px}.post-preview h2{font-size:32px}.post-preview p{font-size:20px}.article-header h1{font-size:clamp(39px,10vw,54px)}.article-subtitle{font-size:22px}.article-content{font-size:20px;line-height:1.55}.article-content h2{font-size:30px;margin-top:40px}.article-content h3{font-size:25px}.article-content pre{padding:16px;font-size:12px}.article-byline{font-size:12px}.article-lead-media{margin-bottom:36px}.not-found{min-height:510px;padding:48px 20px;border-radius:16px;margin-bottom:40px}.not-found p:not(.not-found-code){font-size:20px}.not-found-actions{gap:22px}}
+
+/* Dated author corrections stay alongside the historical passage. */
+.article-content .update-note{border-left:3px solid #f7931a;background:#ebebe7;padding:22px 24px;margin:30px 0;font-size:19px;line-height:1.55}
+.article-content .update-note p:last-child{margin-bottom:0}
+.post-date{grid-column:1;grid-row:1/4;padding-top:7px;font:14px/1.5 Arial,sans-serif;color:#63666b}
+.post-date time{padding:0;display:block;font:inherit}.post-date span{display:block;margin-top:8px;font-size:12px}
+.post-preview:first-child .post-date{color:#c3c3c0}
+@media(max-width:900px){.post-date{grid-row:auto;grid-column:1;margin-bottom:18px;padding:0}.post-date time{margin:0}}
+</style><link rel="canonical" href="https://winnowwallet.com/blog/why-lightning-is-leaving-winnow/"><meta property="og:url" content="https://winnowwallet.com/blog/why-lightning-is-leaving-winnow/"><meta property="article:published_time" content="2026-10-07T15:48:00.000Z"><link rel="preload" href="../../assets/fonts/Degular-Regular-latin.woff2" as="font" type="font/woff2" crossorigin><style>/* Compact reading layouts are independent of the desktop scroll choreography. */
+@media(max-width:900px){
+ body:not(.subpage){--gutter:clamp(20px,6vw,48px)}
+ .story .chapter,body.is-static .story .chapter,body[data-motion] .story .chapter{min-height:0;padding:52px var(--gutter);gap:30px;display:flex;flex-direction:column}
+ .story .chapter{height:auto!important;max-height:none;position:relative}
+ .story .chapter-frame{display:contents;position:static;height:auto;min-height:0;max-height:none;overflow:visible;padding:0}
+ .story .chapter.hero,body.is-static .story .chapter.hero,body[data-motion] .story .chapter.hero{padding-top:104px;padding-bottom:44px}
+ .story .chapter-copy{width:100%;max-width:620px;margin-inline:auto}
+ .story .chapter-copy,.story .chapter-copy > *, .engineering .proof-line>span,.engineering-benefit,.signer-module,.signing-bridge,.engineering-context,.engineering-top,.evidence article{opacity:1!important;visibility:visible!important;filter:none!important;transform:none!important}
+ .story .chapter h1,body.is-static .story .chapter h1{font-size:clamp(44px,11.6vw,66px);line-height:.98;letter-spacing:-.045em}
+ .story .chapter h1 em{font-size:.65em;line-height:1.05;margin-top:15px}
+ .story .chapter h1 em br{display:none}
+ .story .chapter h2,body.is-static .story .chapter h2{font-size:clamp(40px,10.7vw,62px);line-height:1.02;letter-spacing:-.04em}
+ .story #hardware h2{font-size:clamp(36px,9.6vw,56px)}
+ .story .eyebrow{font-size:10px;line-height:1.6;margin-bottom:18px;flex-wrap:wrap;gap:8px}
+ .story .intro{font-size:20px;line-height:1.38;margin-top:22px;max-width:480px}
+ .story .supporting{font-size:18px;line-height:1.42;margin-top:15px;max-width:480px}
+ .story .chapter-note{font-size:13px;line-height:1.5;margin-top:18px;max-width:440px}
+ .story .cta{font-size:17px;min-height:48px;margin-top:22px;padding:12px 17px;gap:35px}
+ .story .scroll-link{font-size:14px;margin-left:18px;gap:9px;min-height:44px;align-items:center}
+ .story details{max-width:none;margin-top:22px}.story summary{min-height:48px;align-items:center;font-size:17px}
+ .story details p{font-size:17px;line-height:1.5}
+ .story .technical-link{margin-top:16px;min-height:44px;align-items:center}
+ .story .mobile-art,body.is-static .story .mobile-art{width:min(100%,244px);aspect-ratio:244/526;margin-inline:auto;padding:0;overflow:visible;perspective:none;isolation:isolate}
+ .story .mobile-art .phone{width:100%;aspect-ratio:244/526;border:1px solid #667176;background:linear-gradient(130deg,#dee2e1,#48545a 45%,#aab3b6);border-radius:14% / 6.5%;box-shadow:0 14px 24px -14px #17242b40;filter:none;transform:none!important;transform-style:flat}
+ .story .mobile-art .phone-glass{transform:none;border-width:1cqw;box-shadow:inset 0 0 0 1px #ffffff20}
+ .story .mobile-art .device-slice,.story .mobile-art .device-glare,.story .mobile-art .studio-light{display:none}
+ .story .mobile-art .app-scroll{overflow:hidden;pointer-events:none}
+ .story #trustee .mobile-art,.story #recovery .mobile-art{display:none}
+ .story .mobile-signers,body.is-static .story .mobile-signers{margin-top:26px;padding-top:20px;gap:14px}
+ .story .mobile-signers span{font-size:16px}.story .mobile-signers b{font-size:27px;margin-bottom:10px}.story .mobile-signers small{font-size:13px;line-height:1.4}
+ .story .mobile-recovery,body.is-static .story .mobile-recovery{max-width:none;margin-top:28px;padding:25px 22px;background:#ecece8;border-radius:18px}
+ .story .recovery-clock-note{font-size:16px;line-height:1.45;margin-top:22px}
+ .story .recovery-duration strong{font-size:88px}.story .recovery-plan li{padding-block:16px}.story .recovery-plan li>div{font-size:18px}.story .recovery-plan small{font-size:14px}
+ .engineering-frame{padding:56px var(--gutter)}
+ .engineering h2{font-size:clamp(43px,10.5vw,70px);line-height:1.03}
+ .engineering-benefit{font-size:20px;line-height:1.4;margin-top:24px}
+ .engineering-top>h2{font-size:clamp(40px,10vw,60px);line-height:1.03}
+ .engineering-proof{gap:30px}.engineering-progress{margin-top:36px}
+ .signing-paths{display:grid;grid-template-columns:1fr 1fr;gap:24px 22px;margin-top:30px;max-width:450px}
+ .signer-module{width:100%;max-width:none}.hardware-module{grid-column:1;grid-row:1}.winnow-module{grid-column:2;grid-row:1}
+ .signing-chip{height:144px;padding:18px 8px;border-radius:16px}.signing-chip strong{font-size:21px}.signing-chip small{font-size:11px}
+ .signing-bridge{grid-column:1/-1;grid-row:2;width:100%;padding:0 24px;gap:16px}.signing-bridge span{font-size:9px}
+ .engineering-context{font-size:13px;line-height:1.45;margin-top:20px}
+ .evidence article{padding-block:24px!important}.evidence h3{font-size:30px;line-height:1.1}.evidence p{font-size:19px;line-height:1.45}
+ .closing{padding:56px var(--gutter)}.closing h2{font-size:clamp(40px,10vw,62px);line-height:1.04}.faq{margin-top:48px;gap:20px}.faq summary{min-height:56px;align-items:center;font-size:18px}
+ .global-footer{margin-inline:var(--gutter,6vw);padding:36px 24px 24px}.footer-top{gap:32px 20px}.global-footer .footer-brand p{display:block;font-size:22px;max-width:280px}.footer-col{gap:4px;font-size:17px}.footer-col a{min-height:44px;display:flex;align-items:center;line-height:1.3}.footer-col .footer-label{margin-bottom:8px;font-size:10px}.footer-bottom{margin-top:28px}.footer-bottom a,.footer-bottom button{min-height:44px;display:flex;align-items:center}
+ .subpage .page-main{padding-bottom:56px}.subpage .page-hero{padding-top:36px;padding-bottom:34px}.subpage .page-hero h1{font-size:clamp(44px,10.7vw,72px);line-height:1.02;margin-bottom:22px;text-wrap:balance}
+ .subpage .lead{font-size:21px;line-height:1.4}.subpage .page-nav{gap:8px 22px;margin-bottom:28px;padding-block:14px}.subpage .page-nav a{display:flex;align-items:center;min-height:44px}
+ .subpage .article-section{padding-block:36px 42px;gap:24px}.subpage .article-section h2{font-size:clamp(34px,8.7vw,48px)}.subpage .article-section p,.subpage .article-section li{font-size:19px;line-height:1.5}
+ .subpage .ink-panel{padding:28px 24px;border-radius:20px}.subpage .ink-panel p{font-size:19px}.subpage .panel-grid{gap:30px}.subpage .next-page{gap:20px}.subpage .next-page h2{font-size:32px}
+ .subpage .rule-table{table-layout:fixed;width:100%;font-size:16px;overflow-wrap:anywhere}.subpage .info-strip{gap:24px}.subpage .info-strip strong{overflow-wrap:anywhere}.subpage .policy-tabs button{flex:1;min-height:48px;padding:10px;font-size:16px}
+ .subpage .stack-diagram>div{font-size:20px}.subpage .source-links a{min-width:0;overflow-wrap:anywhere}
+}
+@media(min-width:650px) and (max-width:900px){
+ .story .chapter,body.is-static .story .chapter,body[data-motion] .story .chapter{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:36px;align-items:center}
+ .story .chapter h1,body.is-static .story .chapter h1{font-size:52px}.story .chapter h2,body.is-static .story .chapter h2{font-size:46px}.story #hardware h2{font-size:40px}
+ .story #trustee,.story #recovery,body.is-static .story #trustee,body.is-static .story #recovery{display:block}.story #trustee .chapter-copy,.story #recovery .chapter-copy{max-width:620px}
+ .story .mobile-recovery{max-width:500px!important}
+}
+@media(max-width:360px){
+ .story .scroll-link{margin-left:0;display:flex;margin-top:6px}.story .chapter.hero{padding-top:96px!important}.story .mobile-art{width:224px!important;aspect-ratio:244/526}
+ .footer-top{column-gap:14px}.footer-col{font-size:16px}.global-footer{padding-inline:20px}.signing-paths{column-gap:14px}.signing-chip strong{font-size:19px}.signing-chip small{font-size:10px}
+ .subpage .node-stack{grid-template-columns:1fr}.subpage .test-list li{grid-template-columns:1fr;gap:8px}.subpage .test-list .test-result{text-align:left}
+}
+/* Static space is retained on compact screens without allocating a canvas. */
+body.is-static[data-engineering=universe] .engineering-frame{background-image:radial-gradient(#ffffff38 .6px,transparent .8px);background-size:43px 57px}
+@media(max-width:900px){.universe-canvas{display:none!important}.engineering-frame{background-image:radial-gradient(#ffffff38 .6px,transparent .8px);background-size:43px 57px}.reveal.in-view{animation:none!important}}
+
+@media(max-width:900px){.subpage .ink-panel .eyebrow{font:10px/1.6 Arial,sans-serif;letter-spacing:.12em}.story .mobile-art [class^=device-]{display:none}}
+
+@media(max-width:900px){.subpage .article-section .eyebrow{font:10px/1.6 Arial,sans-serif;letter-spacing:.12em}.subpage .source,.subpage .article-section .source{font:12px/1.6 Arial,sans-serif}.subpage .ink-panel .source{font-size:12px}}
+</style></head><body class="subpage editorial"><a class="skip" href="#main">Skip to content</a><header class="global-header"><a class="brand" href="../../index.html" aria-label="Winnow home"><img src="../../assets/logo/winnow-lockup-orange-ink.svg" width="140" height="35" alt="Winnow"></a><nav class="nav-main" aria-label="Main"><a class="nav-desktop" href="../../technical.html">How it works</a><a class="nav-desktop" href="../../protection.html">Your protection</a><details class="site-menu"><summary>Explore</summary><div class="menu-panel"><a href="../../technical.html">How it works</a><a href="../../protection.html">Multisig + recovery</a><a href="../../wallet-architecture.html">Architecture</a><a href="../../whats-next.html">Roadmap</a><a href="../../privacy-guide.html">Privacy</a><a href="../../lean-native.html">Built with LeanNative</a><a href="../../source.html">Open source</a><a href="../../guides.html">Guides</a><a href="../../updates.html">Release notes</a><a href="../../blog/index.html">Writing</a><a href="https://apps.apple.com/app/id6801502501">Get Winnow</a></div></details></nav><a class="download-link" href="https://apps.apple.com/app/id6801502501">Get Winnow ↗</a></header><main id="main" class="article-main">
         <article class="article-card">
             <header class="article-header">
-                <p class="eyebrow"><a href="/blog/">Winnow blog</a></p>
+                <p class="eyebrow"><a href="../../blog/index.html">Winnow blog</a></p>
                 <h1>Why Lightning Is Leaving Winnow</h1>
                 <p class="article-subtitle">I added it, then took it out. The next Lightning wallet will start with a different foundation.</p>
                 <div class="article-byline">
@@ -36,7 +317,7 @@
             <div class="article-content">
 <p>I have pulled Lightning from Winnow. Winnow goes back to being a Bitcoin wallet written in Swift. I still want an iOS Lightning wallet, but I intend to build it separately, around an established Lightning implementation.</p>
 <p>This is becoming a habit. I built Tor into Winnow, removed it, and brought access back through gateways. Each retreat has taught me something about where the wallet should end.</p>
-<p>With Tor, I wanted access to more of the Bitcoin network. Embedding a whole networking stack was one way to get there. Eventually I found a smaller boundary: Winnow could speak SOCKS to a gateway and keep checking the Bitcoin data itself. The transport could live elsewhere. I described that route in <a href="/blog/tailscale-workaround-tor-i2p/">A Tailscale Workaround for Tor and I2P</a>.</p>
+<p>With Tor, I wanted access to more of the Bitcoin network. Embedding a whole networking stack was one way to get there. Eventually I found a smaller boundary: Winnow could speak SOCKS to a gateway and keep checking the Bitcoin data itself. The transport could live elsewhere. I described that route in <a href="../../blog/tailscale-workaround-tor-i2p/index.html">A Tailscale Workaround for Tor and I2P</a>.</p>
 <p>Lightning asks a harder question. Where does the responsibility for the money live?</p>
 <p>My first answer was to write the engine in Swift. It fit the app. I could follow the code from the interface down into the protocol, and the tests could put it opposite another implementation and make payments work. There is real satisfaction in that. There is also a temptation to mistake a working payment for a finished wallet.</p>
 <p>A payment arriving is evidence about the path it took. It says much less about what happens when the channel must close, the chain reorganizes, or the app disappears halfway through an operation.</p>
@@ -71,8 +352,54 @@
             </div>
         </article>
 
-        <p class="back-to-writing"><a href="/blog/">← All writing</a></p>
-    </main>
-    <footer><p><a href="/blog/">Winnow blog</a> · Written by <a href="https://apnewman.com">Alex Newman</a> · <a href="/blog/feed.xml">RSS</a></p></footer>
-</body>
-</html>
+        <p class="back-to-writing"><a href="../../blog/index.html">← All writing</a></p>
+    </main><footer class="global-footer"><div class="footer-top"><div class="footer-brand"><a href="../../index.html"><img src="../../assets/logo/winnow-lockup-orange-ink.svg" width="140" height="35" alt="Winnow"></a><p>Bitcoin on your iPhone.<br>A plan for what comes next.</p></div><div class="footer-col"><span class="footer-label">The wallet</span><a href="../../technical.html">How it works</a><a href="../../protection.html">Multisig + recovery</a><a href="../../privacy-guide.html">Privacy</a><a href="https://apps.apple.com/app/id6801502501">Download ↗</a></div><div class="footer-col"><span class="footer-label">The engineering</span><a href="../../wallet-architecture.html">Architecture</a><a href="../../technical.html#testing">Test results</a><a href="../../whats-next.html">Roadmap</a><a href="../../lean-native.html">LeanNative</a></div><div class="footer-col"><span class="footer-label">In the open</span><a href="../../source.html">Source + documentation</a><a href="../../guides.html">Guides</a><a href="../../updates.html">Release notes</a><a href="../../blog/index.html">Writing</a><a href="https://github.com/winnowwallet/winnow-lean/issues">Report an issue ↗</a></div></div><div class="footer-bottom"><a href="#main">Back to top ↑</a></div></footer><script>(() => {
+  const menu=document.querySelector('.site-menu');
+  document.addEventListener('click',e=>{if(e.target.closest('a.skip')){const main=document.getElementById('main');main.tabIndex=-1;main.focus({preventScroll:true});}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu?.open){menu.open=false;menu.querySelector('summary').focus();}});
+  document.addEventListener('click',e=>{if(menu?.open&&!menu.contains(e.target))menu.open=false;});
+  const here=location.pathname.includes('/blog/')?'blog/index.html':location.pathname.split('/').pop()||'index.html';
+  document.querySelectorAll('.menu-panel a').forEach(a=>{if(a.getAttribute('href').replace(/^(\.\.\/)+/,'')===here)a.setAttribute('aria-current','page');});
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in-view');observer.unobserve(e.target);}}),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+  const roadmap=document.querySelector('[data-roadmap]');
+  if(roadmap){
+    const options={path:'A luminous path connects the work. Scroll to follow it, with every milestone available in normal page flow.',chapters:'Large chapter numbers, quiet layouts and deliberately staged type. The clearest editorial direction.',board:'A compact view of the whole picture. Three status cards settle gently into place.'};
+    function setOption(name){if(!options[name])name='path';roadmap.dataset.roadmap=name;const description=document.querySelector('.option-description');if(description)description.textContent=options[name];document.querySelectorAll('[data-roadmap-option]').forEach(a=>a.setAttribute('aria-current',String(a.dataset.roadmapOption===name)));schedule();}
+    document.querySelectorAll('[data-roadmap-option]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const u=new URL(location);u.searchParams.set('view',a.dataset.roadmapOption);history.pushState({},'',u);setOption(a.dataset.roadmapOption);}));
+    addEventListener('popstate',()=>setOption(new URLSearchParams(location.search).get('view')));
+    const stage=document.querySelector('.roadmap-stage'),svg=stage.querySelector('svg'),path=stage.querySelector('.draw'),spark=stage.querySelector('circle');let frame=0,geometry='',length=0;
+    function measurePath(){
+      const {width:w,height:h}=svg.getBoundingClientRect();
+      const nodes=[...stage.querySelectorAll('.roadmap-number')].map(el=>({x:el.parentElement.offsetLeft+el.offsetLeft+el.offsetWidth/2,y:el.parentElement.offsetTop+el.offsetTop+el.offsetHeight/2}));
+      const layout=getComputedStyle(stage).getPropertyValue('--roadmap-layout').trim();
+      const key=`${layout}:${w}:${h}:${JSON.stringify(nodes)}`;
+      if(!w||!h||key===geometry)return;
+      geometry=key;
+      // Use CSS-pixel coordinates so the stroke end and light share one geometry,
+      // including narrow mobile layouts. No stretched or non-scaling dash math.
+      svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+      let d;
+      if(layout==='wide'){
+        // Restore the original broad, continuous desktop curve.
+        const a=w*.07,b=w*.86;
+        d=`M${a} 0 C${a} ${h*.16} ${b} ${h*.18} ${b} ${h*.33} S${a} ${h*.5} ${a} ${h*.66} S${b} ${h*.84} ${b} ${h}`;
+      }else{
+        // Mobile gets its own narrow rail, following actual wrapped content.
+        d=`M${nodes[0].x} ${nodes[0].y}`;
+        nodes.slice(1).forEach((b,i)=>{const a=nodes[i],span=b.y-a.y,dir=i%2?-1:1;d+=` C${a.x+4*dir} ${a.y+span*.33} ${b.x-4*dir} ${b.y-span*.33} ${b.x} ${b.y}`;});
+      }
+      svg.querySelectorAll('path').forEach(el=>el.setAttribute('d',d));
+      path.removeAttribute('pathLength');length=path.getTotalLength();
+      path.style.strokeDasharray=String(length);
+    }
+    function paint(){frame=0;if(roadmap.dataset.roadmap!=='path')return;measurePath();if(reduced.matches){path.style.strokeDashoffset=0;spark.style.display='none';return;}const r=stage.getBoundingClientRect();const p=Math.max(0,Math.min(1,(innerHeight*.7-r.top)/(r.height-innerHeight*.25)));path.style.strokeDashoffset=String(length*(1-p));const pt=path.getPointAtLength(length*p);spark.setAttribute('cx',pt.x);spark.setAttribute('cy',pt.y);spark.style.display='';}
+    function schedule(){if(!frame)frame=requestAnimationFrame(paint);}
+    addEventListener('scroll',schedule,{passive:true});addEventListener('resize',schedule);new ResizeObserver(schedule).observe(stage);reduced.addEventListener('change',schedule);document.fonts?.ready.then(schedule);setOption(new URLSearchParams(location.search).get('view'));
+  }
+  const output=document.querySelector('.policy-output');
+  if(output){const policies={pair:['Both devices are required.','Your phone and hardware each sign, with both keys required for a transfer. Back up each key and choose a separate recovery rule if you want an additional path.',['Your phone|Your hardware']],shared:['Any two members can approve.','You + trustee, you + provider, or trustee + provider. Any of these pairs can approve under the normal rule; the trustee and provider can approve together without your signature.',['You|Trustee','You|Provider','Trustee|Provider']],delay:['A separate path, after the delay.','The recovery keys and threshold are chosen in advance. Time is measured from each coin’s confirmation. Adding this path does not restrict the normal spending rule.',['Chosen recovery keys|Time condition']]};
+  document.querySelectorAll('[data-policy]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-policy]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));const [h,p,pairs]=policies[b.dataset.policy];output.replaceChildren();const title=document.createElement('h3');title.textContent=h;const copy=document.createElement('p');copy.textContent=p;output.append(title,copy);pairs.forEach(pair=>{const el=document.createElement('div');el.className='approval-pair';pair.split('|').forEach((s,i)=>{if(i){const plus=document.createElement('i');plus.textContent='+';el.append(plus);}el.append(document.createTextNode(s));});output.append(el);});}));}
+})();
+</script></body></html>
