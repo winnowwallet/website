@@ -60,7 +60,11 @@ TEST_HEADINGS = {
     "testShippedCensus": "Settings: the peer census, backup and multisig accounts",
     "testSilentPaymentSend": "A silent payment",
     "testSpentElsewhere": "Coins spent from another device",
-    "testCardForOnePerson": "A card for one person",
+    "testCardForOnePerson": "A card for one person: receive, pay, rotate and spend",
+    "testCardRestoreFromBackup": "Restoring a post-backup card from iCloud",
+    "testSegwitMultisigJoinSign": "A SegWit v0 multisig account, joined and co-signed",
+    "testAccountFollowsDevices": "Accounts and paired Ledgers that follow your devices",
+    "testTwoWalletsOneDevice": "Multiple profiles on one device, with global sync",
 }
 # The hero's three modes with CI media: the first of each mode's screenshots the manifest has. Without one,
 # that mode keeps its committed reference screenshot and words.

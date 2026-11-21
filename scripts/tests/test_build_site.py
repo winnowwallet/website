@@ -340,5 +340,72 @@ class CIMediaTests(unittest.TestCase):
         with unittest.mock.patch("sys.argv", argv + ["--check"]), self.assertRaises(SystemExit):
             site.main()
 
+    def test_lean_journeys_have_headings_and_captions(self):
+        expected_tests = [
+            "testCreateReceiveSendConfirm",
+            "testLedgerPairVerifySpend",
+            "testLedgerCardTwoOfTwo",
+            "testMultisigTwoOfThreeWithRecovery",
+            "testFeeBumpReplaceConfirm",
+            "testRetryAfterNoPeers",
+            "testShippedCensus",
+            "testSilentPaymentSend",
+            "testSpentElsewhere",
+            "testCardForOnePerson",
+            "testCardRestoreFromBackup",
+            "testSegwitMultisigJoinSign",
+            "testAccountFollowsDevices",
+            "testTwoWalletsOneDevice",
+        ]
+        for test_name in expected_tests:
+            self.assertIn(test_name, site.TEST_HEADINGS)
+        journeys = json.loads((site.ROOT / "docs/journeys.json").read_text())
+        captions = site.check_inventory(site.ROOT, journeys)
+        self.assertNotIn("50-card-for-dana", captions)
+        self.assertNotIn("51-card-payments-from-dana", captions)
+        self.assertIn("50-fee-bump-review", captions)
+        self.assertIn("51-fee-bump-confirmed", captions)
+        new_shots = [
+            ("70-card-for-dana-address", "testCardForOnePerson"),
+            ("71-card-for-dana-card", "testCardForOnePerson"),
+            ("72-card-payer-review", "testCardForOnePerson"),
+            ("73-card-payments-from-dana", "testCardForOnePerson"),
+            ("74-card-address-rotated", "testCardForOnePerson"),
+            ("75-card-coins-spent", "testCardForOnePerson"),
+            ("76-card-restore-icloud", "testCardRestoreFromBackup"),
+            ("77-card-restore-found", "testCardRestoreFromBackup"),
+            ("78-card-restore-spent", "testCardRestoreFromBackup"),
+            ("80-segwit-join", "testSegwitMultisigJoinSign"),
+            ("81-segwit-funded", "testSegwitMultisigJoinSign"),
+            ("82-segwit-review", "testSegwitMultisigJoinSign"),
+            ("83-segwit-signed", "testSegwitMultisigJoinSign"),
+            ("84-segwit-confirmed", "testSegwitMultisigJoinSign"),
+            ("85-devices-first", "testAccountFollowsDevices"),
+            ("86-devices-second-watching", "testAccountFollowsDevices"),
+            ("87-devices-watch-only", "testAccountFollowsDevices"),
+            ("88-devices-ledger-sync", "testAccountFollowsDevices"),
+            ("90-profiles-one", "testTwoWalletsOneDevice"),
+            ("91-profiles-add", "testTwoWalletsOneDevice"),
+            ("92-profiles-two-renamed", "testTwoWalletsOneDevice"),
+            ("93-profiles-inactive-funded", "testTwoWalletsOneDevice"),
+            ("94-profiles-one-signature", "testTwoWalletsOneDevice"),
+            ("95-profiles-switched", "testTwoWalletsOneDevice"),
+            ("96-profiles-two-signatures", "testTwoWalletsOneDevice"),
+        ]
+        for shot_name, _ in new_shots:
+            self.assertIn(shot_name, captions)
+        manifest = {"screenshots": [{"name": name, "test": test, "width": 1179, "height": 2556}
+                                    for name, test in new_shots]}
+        acts = site.ci_acts(manifest, captions)
+        self.assertEqual([heading for heading, _ in acts], [
+            site.TEST_HEADINGS["testCardForOnePerson"],
+            site.TEST_HEADINGS["testCardRestoreFromBackup"],
+            site.TEST_HEADINGS["testSegwitMultisigJoinSign"],
+            site.TEST_HEADINGS["testAccountFollowsDevices"],
+            site.TEST_HEADINGS["testTwoWalletsOneDevice"],
+        ])
+        rendered_captions = [caption for _, shots in acts for _, caption, _, _ in shots]
+        self.assertEqual(rendered_captions, [captions[name] for name, _ in new_shots])
+
 if __name__ == "__main__":
     unittest.main()

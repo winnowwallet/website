@@ -42,14 +42,36 @@
     "description": "On Receive, under From one person, type a payer’s name. Winnow makes an ordinary address for them, for any wallet or an exchange, and a card for a payer who uses Winnow. The card holds a code made for them and neither of the wallet’s keys. Each payment made with it goes to an address of its own, and Activity names it as received from them.",
     "journey": [
       "Open Receive. Under From one person, type the payer’s name and make their address and card.",
-      "The payer, holding only the card, pays its first two addresses.",
-      "Activity names both payments as received from that person, though nobody labelled them."
+      "The payer saves the card in Winnow and pays it to a fresh address, and also pays the ordinary address.",
+      "Activity names both payments as received from that person; their ordinary address advances after payment, and spending coins received through the card confirms."
     ],
     "tests": [],
-    "limitations": "Give the address and the card only to that person: anyone who has them can see what is paid with them. A wallet that holds only its account key cannot make a card. The recorded journey’s payer is the test node, working from the card’s text alone.",
+    "limitations": "Give the address and the card only to that person: anyone who has them can see what is paid with them. A wallet that holds only its account key cannot make a card.",
     "screenshots": {
-      "50-card-for-dana": "An address and a card for one person",
-      "51-card-payments-from-dana": "Activity names both payments as that person’s"
+      "70-card-for-dana-address": "Ordinary address for one person on Receive",
+      "71-card-for-dana-card": "Payment card for one person on Receive",
+      "72-card-payer-review": "Paying a saved person’s card to a fresh address",
+      "73-card-payments-from-dana": "Activity names both payments as received from that person",
+      "74-card-address-rotated": "The person’s ordinary address advances after payment",
+      "75-card-coins-spent": "Spending coins received through a card confirms"
+    }
+  },
+  {
+    "id": "card-restore",
+    "section": "everyday",
+    "title": "Restore a post-backup card from iCloud",
+    "description": "Payment cards derive from the wallet’s seed. Restoring an iCloud backup saved before a card existed still discovers payments sent to that card and lets you spend them.",
+    "journey": [
+      "Back up a wallet to iCloud, then create a card for one person and receive a payment through it.",
+      "Restore the pre-card backup from iCloud on a fresh device.",
+      "Winnow discovers the post-backup card payment and spends the restored coin."
+    ],
+    "tests": [],
+    "limitations": "The recorded journey uses a simulated iCloud store rather than live Apple CloudKit.",
+    "screenshots": {
+      "76-card-restore-icloud": "Restoring a pre-card backup from iCloud",
+      "77-card-restore-found": "Post-backup card payment discovered on restore",
+      "78-card-restore-spent": "Spending the restored card coin confirms"
     }
   },
   {
@@ -181,6 +203,27 @@
     }
   },
   {
+    "id": "segwit-multisig",
+    "section": "advanced",
+    "title": "Join and co-sign a SegWit v0 multisig account",
+    "description": "Join a SegWit v0 wsh(sortedmulti(…)) multisig account shared by co-signers, receive into it, review a co-signer’s PSBT, add this phone’s ECDSA signature, and watch the payment confirm.",
+    "journey": [
+      "Open Settings → Security → Multisig accounts, join a SegWit v0 2-of-3 descriptor, and receive bitcoin into it.",
+      "Import a co-signer’s PSBT, review the payment, and add this phone’s ECDSA signature.",
+      "Finalize and broadcast the co-signed transaction and see it confirm."
+    ],
+    "tests": [],
+    "limitations": "SegWit v0 multisig accounts are join-only: another wallet builds the descriptor and PSBTs, and this phone reviews and co-signs.",
+    "guide": "/vaults",
+    "screenshots": {
+      "80-segwit-join": "Joining a SegWit v0 2-of-3 multisig account",
+      "81-segwit-funded": "The SegWit v0 account receives bitcoin",
+      "82-segwit-review": "Reviewing a co-signer’s PSBT",
+      "83-segwit-signed": "Adding this phone’s ECDSA signature",
+      "84-segwit-confirmed": "The SegWit v0 payment confirms"
+    }
+  },
+  {
     "id": "recovery",
     "section": "everyday",
     "title": "Back up and restore",
@@ -196,6 +239,46 @@
       "31-settings-backup": "Backup settings",
       "32-backup-file-sheet": "Save a backup file",
       "33-icloud-sheet": "The iCloud copy"
+    }
+  },
+  {
+    "id": "device-sync",
+    "section": "everyday",
+    "title": "Accounts and paired Ledgers across devices",
+    "description": "Multisig accounts and paired Ledgers backed up through iCloud follow your other devices automatically. A second device that does not hold the signing key lists the account under Watching with its balance and next address.",
+    "journey": [
+      "Back up an account and paired Ledger from the first device.",
+      "Open Winnow on a second device signed into the same iCloud account and see the account listed under Watching.",
+      "Open the watch-only account page to inspect its balance and next address, and check the paired Ledger and multi-device sync status."
+    ],
+    "tests": [],
+    "limitations": "The recorded journey uses a simulated iCloud store shared between two device sessions rather than live Apple CloudKit.",
+    "screenshots": {
+      "85-devices-first": "First device backs up an account and paired Ledger",
+      "86-devices-second-watching": "Second device lists the account under Watching",
+      "87-devices-watch-only": "Watch-only account page with balance and next address",
+      "88-devices-ledger-sync": "Paired Ledger and multi-device iCloud sync status"
+    }
+  },
+  {
+    "id": "profiles",
+    "section": "advanced",
+    "title": "Keep multiple profiles on one device",
+    "description": "Under Settings → Profiles, keep more than one wallet profile on the same phone, rename them, and switch between them. Global sync keeps inactive profiles up to date in the background.",
+    "journey": [
+      "Open Settings → Profiles, add a second profile on the same device, and rename both profiles.",
+      "Fund the inactive profile and confirm global sync discovers its balance in the background.",
+      "Sign a shared 2-of-2 payment with the first profile, switch directly to the second profile to add the second signature, and prepare to broadcast."
+    ],
+    "tests": [],
+    "screenshots": {
+      "90-profiles-one": "Settings → Profiles before adding a second profile",
+      "91-profiles-add": "Adding a second profile on the same device",
+      "92-profiles-two-renamed": "Two profiles kept on one device, renamed",
+      "93-profiles-inactive-funded": "Inactive profile synced in the background",
+      "94-profiles-one-signature": "First profile signs a shared 2-of-2 payment",
+      "95-profiles-switched": "Switching directly to the second profile to sign",
+      "96-profiles-two-signatures": "Both profiles signed, ready to broadcast"
     }
   },
   {
